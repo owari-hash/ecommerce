@@ -45,10 +45,7 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex-shrink-0 flex flex-col leading-tight">
             <span className="text-2xl font-black text-[#1565C0] tracking-tight">
-              TURBO<span className="text-orange-500">TECH</span>
-            </span>
-            <span className="text-[9px] text-gray-400 font-semibold tracking-[0.2em] uppercase -mt-0.5">
-              Электрон барааны дэлгүүр
+              ИХ <span className="text-orange-500">НАЯД</span>
             </span>
           </Link>
 

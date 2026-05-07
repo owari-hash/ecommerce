@@ -1,0 +1,111 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+function Item({
+  href,
+  label,
+  icon,
+}: {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const active = pathname === href;
+
+  return (
+    <Link
+      href={href}
+      className={`flex flex-col items-center justify-center gap-0.5 py-2 flex-1 ${
+        active ? 'text-primary' : 'text-gray-500'
+      }`}
+    >
+      <span className="h-6 w-6">{icon}</span>
+      <span className="text-[10px] font-medium">{label}</span>
+    </Link>
+  );
+}
+
+export default function MobileBottomNav() {
+  return (
+    <nav className="md:hidden fixed left-0 right-0 bottom-0 z-50 bg-white border-t border-gray-200">
+      <div className="max-w-7xl mx-auto px-2">
+        <div className="flex items-stretch">
+          <Item
+            href="/"
+            label="Нүүр"
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1v-10.5z"
+                />
+              </svg>
+            }
+          />
+          <Item
+            href="/categories"
+            label="Ангилал"
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            }
+          />
+          <Item
+            href="/account/wishlists"
+            label="Хадгалсан"
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"
+                />
+              </svg>
+            }
+          />
+          <Item
+            href="/checkout"
+            label="Сагс"
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 6h15l-1.5 9h-13L5 3H3m6 18a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm9 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"
+                />
+              </svg>
+            }
+          />
+          <Item
+            href="/account"
+            label="Бүртгэл"
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M20 21a8 8 0 1 0-16 0m8-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"
+                />
+              </svg>
+            }
+          />
+        </div>
+      </div>
+    </nav>
+  );
+}
+

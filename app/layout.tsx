@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import CompareBar from "./components/CompareBar";
+import MobileBottomNav from "./components/MobileBottomNav";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -11,7 +13,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Turbotech | Электрон барааны дэлгүүр",
+  title: "Их Наяд | Электрон барааны дэлгүүр",
   description: "ЭЛЕКТРОН БАРААНЫ ДЭЛГҮҮР",
 };
 
@@ -22,8 +24,10 @@ export default function RootLayout({
     <html lang="mn" className={inter.variable}>
       <body className="min-h-screen flex flex-col bg-[#f5f6f8]">
         <Header />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 pb-24 md:pb-0">{children}</main>
         <Footer />
+        <CompareBar />
+        <MobileBottomNav />
       </body>
     </html>
   );

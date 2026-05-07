@@ -44,9 +44,8 @@ export default function Footer() {
           <div className="lg:col-span-2">
             <div className="mb-4">
               <span className="text-2xl font-black text-white tracking-tight">
-                TURBO<span className="text-orange-500">TECH</span>
+                ИХ <span className="text-orange-500">НАЯД</span>
               </span>
-              <div className="text-[10px] text-gray-400 tracking-widest mt-0.5">ЭЛЕКТРОН БАРААНЫ ДЭЛГҮҮР</div>
             </div>
             <div className="space-y-2 text-sm">
               <div className="font-semibold text-white mb-2">Холбоо барих</div>
@@ -87,7 +86,7 @@ export default function Footer() {
       <div className="border-t border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between text-xs text-gray-500 gap-2">
           <span>© 2026. Бүх эрх хуулиар хамгаалагдсан.</span>
-          <span>Powered by Turbotech</span>
+          <span>Powered by Их Наяд</span>
         </div>
       </div>
     </footer>
