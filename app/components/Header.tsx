@@ -253,7 +253,7 @@ export default function Header() {
                         <div className="mt-3 text-center">
                           <button onClick={() => { setShowSuggestions(false); router.push(`/search?q=${encodeURIComponent(search)}`); }}
                             className="text-sm text-primary font-bold hover:underline">
-                            Бүх бүтээгдэхүүнийг үзэх ({searchSuggestions.length})
+                            Бүх бүтээгдэхүүнийг үзэх {searchSuggestions.length > 0 ? `(${searchSuggestions.length})` : ''}
                           </button>
                         </div>
                       </>
