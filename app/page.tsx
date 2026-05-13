@@ -579,13 +579,17 @@ export default function HomePage() {
 
           <Link
             href="/brands"
-            className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-3 sm:p-4 flex items-center gap-2 sm:gap-3"
+            className="group flex flex-col items-center text-center shrink-0 w-24 sm:w-auto"
           >
-            <div className="text-xl sm:text-2xl">🏷️</div>
-            <div className="text-xs sm:text-sm font-bold text-gray-800">Брэнд</div>
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gray-50 text-gray-500 flex items-center justify-center text-2xl sm:text-3xl mb-3 shadow-sm group-hover:shadow-md group-hover:-translate-y-1 transition-all duration-300 border border-white">
+              🏷️
+            </div>
+            <div className="text-xs sm:text-sm font-bold text-gray-700 group-hover:text-primary transition-colors leading-tight px-1">
+              Брэндүүд
+            </div>
           </Link>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
