@@ -26,32 +26,56 @@ export default function Carousel({
   slideClassName,
   autoplayMs,
   showDots = true,
-  showArrows = true,
+  showArrows = false,
   ariaLabel = 'carousel',
 }: Props) {
   const len = slides.length;
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
-  const drag = useRef<{ startX: number; lastX: number; active: boolean }>({
-    startX: 0,
-    lastX: 0,
-    active: false,
-  });
+  const [dragOffset, setDragOffset] = useState(0);
+  const [dragging, setDragging] = useState(false);
+
+  const drag = useRef<{
+    startX: number;
+    prevX: number;
+    prevTime: number;
+    velocity: number; // px/ms
+    active: boolean;
+    captured: boolean; // pointer capture only set after threshold crossed
+  }>({ startX: 0, prevX: 0, prevTime: 0, velocity: 0, active: false, captured: false });
 
   const safeIdx = useMemo(() => clampIndex(idx, len), [idx, len]);
 
   useEffect(() => {
-    if (!autoplayMs || autoplayMs < 1000) return;
+    const playbackMs = autoplayMs || 5000;
+    if (playbackMs < 1000) return;
     if (paused) return;
     if (len <= 1) return;
 
-    const t = window.setInterval(() => setIdx((x) => x + 1), autoplayMs);
+    const t = window.setInterval(() => setIdx((x) => x + 1), playbackMs);
     return () => window.clearInterval(t);
   }, [autoplayMs, paused, len]);
 
   if (len === 0) return null;
 
   const go = (next: number) => setIdx(clampIndex(next, len));
+
+  const endDrag = (el: HTMLElement, pointerId: number) => {
+    if (!drag.current.active) return;
+    const dx = drag.current.prevX - drag.current.startX;
+    const v = drag.current.velocity;
+    drag.current.active = false;
+    if (drag.current.captured) {
+      el.releasePointerCapture(pointerId);
+      drag.current.captured = false;
+    }
+    setPaused(false);
+    setDragging(false);
+    setDragOffset(0);
+
+    if (dx < -40 || v < -0.4) go(safeIdx + 1);
+    else if (dx > 40 || v > 0.4) go(safeIdx - 1);
+  };
 
   return (
     <section
@@ -62,27 +86,34 @@ export default function Carousel({
     >
       <div className={`relative overflow-hidden ${viewportClassName ?? ''}`}>
         <div
-          className="flex transition-transform duration-500 ease-out will-change-transform"
-          style={{ transform: `translateX(-${safeIdx * 100}%)` }}
+          className={`flex will-change-transform select-none cursor-grab active:cursor-grabbing touch-pan-y ${
+            dragging ? '' : 'transition-transform duration-500 ease-out'
+          }`}
+          style={{ transform: `translateX(calc(-${safeIdx * 100}% + ${dragOffset}px))` }}
+          onDragStart={(e) => e.preventDefault()}
           onPointerDown={(e) => {
-            drag.current = { startX: e.clientX, lastX: e.clientX, active: true };
-            (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+            const now = Date.now();
+            drag.current = { startX: e.clientX, prevX: e.clientX, prevTime: now, velocity: 0, active: true, captured: false };
             setPaused(true);
           }}
           onPointerMove={(e) => {
             if (!drag.current.active) return;
-            drag.current.lastX = e.clientX;
+            const now = Date.now();
+            const dt = now - drag.current.prevTime;
+            if (dt > 0) drag.current.velocity = (e.clientX - drag.current.prevX) / dt;
+            drag.current.prevX = e.clientX;
+            drag.current.prevTime = now;
+            const offset = e.clientX - drag.current.startX;
+            // Capture pointer only once drag threshold is crossed — preserves click events on tap
+            if (!drag.current.captured && Math.abs(offset) > 8) {
+              (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+              drag.current.captured = true;
+              setDragging(true);
+            }
+            if (drag.current.captured) setDragOffset(offset);
           }}
-          onPointerUp={(e) => {
-            if (!drag.current.active) return;
-            const dx = drag.current.lastX - drag.current.startX;
-            drag.current.active = false;
-            (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-            setPaused(false);
-            if (Math.abs(dx) < 40) return;
-            if (dx < 0) go(safeIdx + 1);
-            else go(safeIdx - 1);
-          }}
+          onPointerUp={(e) => endDrag(e.currentTarget as HTMLElement, e.pointerId)}
+          onPointerCancel={(e) => endDrag(e.currentTarget as HTMLElement, e.pointerId)}
         >
           {slides.map((node, i) => (
             <div
@@ -135,4 +166,3 @@ export default function Carousel({
     </section>
   );
 }
-

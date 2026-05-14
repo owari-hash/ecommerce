@@ -184,7 +184,7 @@ export default function CategoryListingClient({ category, products }: Props) {
 
   return (
     <div className="flex gap-6">
-      <aside aria-label="filters" className="hidden lg:block w-72 shrink-0 space-y-4">
+      <aside aria-label="filters" className="hidden lg:block w-72 shrink-0 space-y-4 sticky top-24 self-start max-h-[calc(100vh-6rem)] overflow-y-auto">
         <FiltersPanel
           sections={sections}
           setSections={setSections}

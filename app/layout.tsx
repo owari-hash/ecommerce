@@ -4,6 +4,8 @@ import "./globals.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import MobileBottomNav from "./components/MobileBottomNav";
+import CompareBar from "./components/CompareBar";
+import NavigationProgress from "./components/NavigationProgress";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -33,10 +35,12 @@ export default function RootLayout({
   return (
     <html lang="mn" className={inter.variable}>
       <body className="min-h-screen flex flex-col bg-[#f5f6f8] overflow-x-hidden">
+        <NavigationProgress />
         <Header />
         <main className="flex-1 pb-24 md:pb-0">{children}</main>
         <Footer />
         <MobileBottomNav />
+        <CompareBar />
       </body>
     </html>
   );

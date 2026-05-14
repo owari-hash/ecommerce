@@ -29,8 +29,14 @@ export default function Header() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [mobileSearch, setMobileSearch] = useState('');
+  const [mobileDebouncedSearch, setMobileDebouncedSearch] = useState('');
+  const [allBrands, setAllBrands] = useState<string[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const mobileSearchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setCartCount(getCartCount());
@@ -44,6 +50,23 @@ export default function Header() {
       window.removeEventListener('auth:changed', onAuthChange);
     };
   }, []);
+
+  useEffect(() => {
+    const brands = [...new Set(MOCK_PRODUCTS.map(p => p.brand))].sort();
+    setAllBrands(brands);
+  }, []);
+
+  useEffect(() => {
+    if (showMobileSearch) {
+      setTimeout(() => mobileInputRef.current?.focus(), 50);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      setMobileSearch('');
+      setMobileDebouncedSearch('');
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [showMobileSearch]);
 
   const handleLogout = () => {
     logout();
@@ -59,6 +82,20 @@ export default function Header() {
     }
   };
 
+  const handleMobileSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setMobileSearch(value);
+    if (mobileSearchTimeoutRef.current) clearTimeout(mobileSearchTimeoutRef.current);
+    mobileSearchTimeoutRef.current = setTimeout(() => setMobileDebouncedSearch(value), 150);
+  };
+
+  const handleMobileSearchSubmit = () => {
+    if (mobileSearch.trim()) {
+      setShowMobileSearch(false);
+      router.push(`/search?q=${encodeURIComponent(mobileSearch.trim())}`);
+    }
+  };
+
   const searchSuggestions = useMemo(() => {
     if (debouncedSearch.trim().length < 1) return [];
     const query = debouncedSearch.toLowerCase();
@@ -67,6 +104,21 @@ export default function Header() {
       p.brand.toLowerCase().includes(query)
     ).slice(0, 5);
   }, [debouncedSearch]);
+
+  const mobileSuggestions = useMemo(() => {
+    if (mobileDebouncedSearch.trim().length < 1) return [];
+    const query = mobileDebouncedSearch.toLowerCase();
+    return MOCK_PRODUCTS.filter(p =>
+      p.name.toLowerCase().includes(query) ||
+      p.brand.toLowerCase().includes(query)
+    ).slice(0, 5);
+  }, [mobileDebouncedSearch]);
+
+  const filteredBrands = useMemo(() => {
+    if (!mobileDebouncedSearch.trim()) return [];
+    const query = mobileDebouncedSearch.toLowerCase();
+    return allBrands.filter(brand => brand.toLowerCase().includes(query)).slice(0, 4);
+  }, [mobileDebouncedSearch, allBrands]);
 
   const handleSuggestionClick = (slug: string) => {
     setShowSuggestions(false);
@@ -111,6 +163,7 @@ export default function Header() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+      if (mobileSearchTimeoutRef.current) clearTimeout(mobileSearchTimeoutRef.current);
     };
   }, []);
 
@@ -144,9 +197,20 @@ export default function Header() {
             <img src="/logo.png" alt="Их Наяд" className="h-8 sm:h-10 w-auto object-contain" />
           </Link>
 
-          {/* Search */}
-          <div ref={searchRef} className="flex-1 min-w-0 relative">
-            <form onSubmit={handleSearch} className="flex">
+          {/* Mobile: search icon triggers full-screen modal */}
+          <button
+            onClick={() => setShowMobileSearch(true)}
+            className="sm:hidden flex-1 flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-400 bg-gray-50"
+          >
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            Бараа хайх...
+          </button>
+
+          {/* Desktop: full search bar + dropdown */}
+          <div ref={searchRef} className="hidden sm:flex flex-1 min-w-0 relative">
+            <form onSubmit={handleSearch} className="flex w-full">
               <input
                 type="text"
                 value={search}
@@ -163,65 +227,20 @@ export default function Header() {
               </button>
             </form>
 
-            {/* Search Suggestions — mobile-friendly simple list */}
+            {/* Desktop suggestions dropdown */}
             {showSuggestions && search.trim().length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
-                {/* Mobile: simple list; Desktop: two-column */}
-                <div className="block sm:hidden">
-                  {searchSuggestions.length > 0 ? (
-                    <div className="divide-y divide-gray-50">
-                      {searchSuggestions.map((product) => (
-                        <button
-                          key={product.id}
-                          onClick={() => handleSuggestionClick(product.slug)}
-                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-left"
-                        >
-                          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
-                            {product.image
-                              ? <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                              : <span className="text-lg">{CATEGORY_ICONS[product.category]}</span>
-                            }
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="text-sm font-semibold text-gray-800 truncate">{product.name}</div>
-                            <div className="text-xs text-gray-500">{formatPrice(product.price)}</div>
-                          </div>
-                        </button>
-                      ))}
-                      <button
-                        onClick={() => { setShowSuggestions(false); router.push(`/search?q=${encodeURIComponent(search)}`); }}
-                        className="w-full px-4 py-3 text-sm text-primary font-bold text-center bg-gray-50"
-                      >
-                        Бүх үр дүнг харах →
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="px-4 py-6 text-center text-sm text-gray-500">
-                      &ldquo;{search}&rdquo; олдсонгүй
-                      <button
-                        onClick={() => { setShowSuggestions(false); router.push(`/search?q=${encodeURIComponent(search)}`); }}
-                        className="block mt-2 mx-auto text-primary font-medium"
-                      >
-                        Дэлгэрэнгүй хайх →
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Desktop: two-column */}
-                <div className="hidden sm:flex">
+                <div className="flex">
                   <div className="w-52 border-r border-gray-100 p-4 bg-gray-50/50 shrink-0">
-                    <div className="mb-3">
-                      <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Ангилалууд</h4>
-                      <div className="space-y-1">
-                        {categoriesList.map(([key, label]) => (
-                          <Link key={key} href={`/s/${key}`} onClick={() => setShowSuggestions(false)}
-                            className="flex items-center justify-between px-2 py-1.5 text-sm text-gray-700 hover:bg-white hover:text-primary rounded-lg transition-colors">
-                            <span>{label}</span>
-                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" /></svg>
-                          </Link>
-                        ))}
-                      </div>
+                    <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Ангилалууд</h4>
+                    <div className="space-y-1">
+                      {categoriesList.map(([key, label]) => (
+                        <Link key={key} href={`/s/${key}`} onClick={() => setShowSuggestions(false)}
+                          className="flex items-center justify-between px-2 py-1.5 text-sm text-gray-700 hover:bg-white hover:text-primary rounded-lg transition-colors">
+                          <span>{label}</span>
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" /></svg>
+                        </Link>
+                      ))}
                     </div>
                   </div>
                   <div className="flex-1 p-4 min-w-0">
@@ -232,7 +251,7 @@ export default function Header() {
                           {searchSuggestions.map((product) => (
                             <div key={product.id} onClick={() => handleSuggestionClick(product.slug)}
                               className="border border-gray-100 rounded-lg p-2 hover:shadow-sm transition-all cursor-pointer group">
-                              <div className="aspect-square bg-gray-50 rounded-md flex items-center justify-center mb-2 relative overflow-hidden">
+                              <div className="aspect-square bg-gray-50 rounded-md flex items-center justify-center mb-2 overflow-hidden">
                                 {product.image
                                   ? <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                                   : <div className="text-2xl">{CATEGORY_ICONS[product.category]}</div>
@@ -240,11 +259,9 @@ export default function Header() {
                               </div>
                               <p className="text-[9px] text-gray-500 uppercase font-bold mb-0.5">{product.brand}</p>
                               <h5 className="text-[11px] font-medium text-gray-800 line-clamp-2 mb-1.5 group-hover:text-primary transition-colors h-7">{product.name}</h5>
-                              <div className="flex items-baseline gap-1 mb-1">
-                                <span className="text-xs font-black text-gray-900">{formatPrice(product.price)}</span>
-                              </div>
+                              <span className="text-xs font-black text-gray-900">{formatPrice(product.price)}</span>
                               <button onClick={(e) => handleAddToCart(e, product)}
-                                className="w-full bg-primary hover:bg-primary-dark text-white text-[10px] font-bold py-1 rounded transition-colors">
+                                className="w-full mt-1 bg-primary hover:bg-primary-dark text-white text-[10px] font-bold py-1 rounded transition-colors">
                                 Сагсанд нэмэх
                               </button>
                             </div>
@@ -253,7 +270,7 @@ export default function Header() {
                         <div className="mt-3 text-center">
                           <button onClick={() => { setShowSuggestions(false); router.push(`/search?q=${encodeURIComponent(search)}`); }}
                             className="text-sm text-primary font-bold hover:underline">
-                            Бүх бүтээгдэхүүнийг үзэх {searchSuggestions.length > 0 ? `(${searchSuggestions.length})` : ''}
+                            Бүх бүтээгдэхүүнийг үзэх ({searchSuggestions.length})
                           </button>
                         </div>
                       </>
@@ -388,12 +405,161 @@ export default function Header() {
             <Link href="/electronics" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-primary border-b border-gray-100"><span>💻</span> Electronics</Link>
             <Link href="/beauty" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-primary border-b border-gray-100"><span>💄</span> Beauty &amp; Personal Care</Link>
             <Link href="/home-living" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-primary border-b border-gray-100"><span>🏠</span> Home &amp; Living</Link>
-            {/* Auth links in drawer */}
             <div className="p-2 bg-gray-50 text-xs text-gray-500 font-medium mt-2">Бүртгэл</div>
             <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-primary border-b border-gray-100"><span>👤</span> Хувийн мэдээлэл</Link>
             <Link href="/account/wishlists" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-primary border-b border-gray-100"><span>❤️</span> Хадгалсан</Link>
           </div>
         </>
+      )}
+
+      {/* Mobile full-screen search modal */}
+      {showMobileSearch && (
+        <div className="fixed inset-0 z-[200] bg-white flex flex-col sm:hidden">
+          {/* Top bar: back · input · clear */}
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 bg-white shrink-0">
+            <button
+              onClick={() => setShowMobileSearch(false)}
+              className="p-1 text-gray-600 shrink-0"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <div className="flex-1 flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white">
+              <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                ref={mobileInputRef}
+                type="text"
+                value={mobileSearch}
+                onChange={handleMobileSearchChange}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleMobileSearchSubmit(); }}
+                placeholder="Хайлт..."
+                className="flex-1 text-sm focus:outline-none bg-transparent"
+              />
+              {mobileSearch && (
+                <button
+                  onClick={() => { setMobileSearch(''); setMobileDebouncedSearch(''); }}
+                  className="text-gray-400 shrink-0"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Results */}
+          <div className="flex-1 overflow-y-auto">
+            {!mobileSearch.trim() ? (
+              <div className="text-center py-16 text-gray-400">
+                <svg className="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <p className="text-sm">Хайх үгээ оруулна уу</p>
+              </div>
+            ) : (
+              <>
+                {/* Section 1: Санал болгох */}
+                {mobileSuggestions.length > 0 && (
+                  <div className="border-b border-gray-100">
+                    <p className="px-4 pt-4 pb-1 text-xs font-semibold text-gray-400">Санал болгох</p>
+                    {mobileSuggestions.map((product) => (
+                      <button
+                        key={product.id}
+                        onClick={() => { setShowMobileSearch(false); router.push(`/product/${product.slug}`); }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-left active:bg-gray-50"
+                      >
+                        <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <span className="text-sm text-gray-700 truncate">{product.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Section 2: [query] - брэндүүд */}
+                {filteredBrands.length > 0 && (
+                  <div className="border-b border-gray-100">
+                    <p className="px-4 pt-4 pb-1 text-xs font-semibold text-gray-400">{mobileSearch} - брэндүүд</p>
+                    {filteredBrands.map((brand) => (
+                      <Link
+                        key={brand}
+                        href={`/brands/${brand.toLowerCase()}`}
+                        onClick={() => setShowMobileSearch(false)}
+                        className="flex items-center gap-3 px-4 py-3 active:bg-gray-50"
+                      >
+                        <div className="w-10 h-10 rounded-md border border-gray-200 bg-gray-50 flex items-center justify-center shrink-0">
+                          <span className="text-[10px] font-black text-gray-600 text-center leading-tight px-0.5">
+                            {brand.slice(0, 5).toUpperCase()}
+                          </span>
+                        </div>
+                        <span className="flex-1 text-sm font-bold text-gray-800 uppercase tracking-wide">{brand}</span>
+                        <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                {/* Section 3: [query] - бүтээгдэхүүн (horizontal scroll) */}
+                {mobileSuggestions.length > 0 && (
+                  <div className="pb-6">
+                    <p className="px-4 pt-4 pb-3 text-xs font-semibold text-gray-400">{mobileSearch} - бүтээгдэхүүн</p>
+                    <div className="flex gap-3 overflow-x-auto px-4 pb-2" style={{ scrollbarWidth: 'none' }}>
+                      {mobileSuggestions.map((product) => (
+                        <Link
+                          key={product.id}
+                          href={`/product/${product.slug}`}
+                          onClick={() => setShowMobileSearch(false)}
+                          className="shrink-0 w-36 bg-white rounded-xl border border-gray-200 overflow-hidden active:opacity-75"
+                        >
+                          <div className="h-28 bg-gray-50 flex items-center justify-center overflow-hidden relative">
+                            {product.image ? (
+                              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-4xl">{CATEGORY_ICONS[product.category]}</span>
+                            )}
+                            <div className="absolute top-1.5 left-1.5 bg-white/90 rounded px-1 py-0.5">
+                              <span className="text-[9px] font-black text-gray-700">{product.brand}</span>
+                            </div>
+                          </div>
+                          <div className="p-2">
+                            <h4 className="text-xs font-semibold text-gray-800 line-clamp-2 leading-tight mb-1" style={{ minHeight: '2rem' }}>
+                              {product.name}
+                            </h4>
+                            <p className="text-[10px] text-gray-400 mb-2">{CATEGORY_LABELS[product.category]}</p>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-black text-gray-900">{formatPrice(product.price)}</span>
+                              <button
+                                onClick={(e) => { e.preventDefault(); handleAddToCart(e, product); }}
+                                className="bg-primary hover:bg-primary-dark text-white w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-colors"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {mobileSuggestions.length === 0 && filteredBrands.length === 0 && (
+                  <div className="text-center py-16 text-gray-400">
+                    <p className="text-sm">&ldquo;{mobileSearch}&rdquo; олдсонгүй</p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
       )}
     </header>
   );

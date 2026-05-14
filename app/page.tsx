@@ -3,10 +3,13 @@ import {
   CATEGORY_ICONS,
   CATEGORY_LABELS,
   type CatalogCategoryKey,
-  formatPrice,
   MOCK_PRODUCTS,
 } from './lib/mockCatalog';
 import Carousel from './components/Carousel';
+import GroceryBentoMobile from './components/GroceryBentoMobile';
+import ProductCard from './components/ProductCard';
+import ServiceBento from './components/ServiceBento';
+import ElectroBorder from './components/ElectroBorder';
 
 function SectionTitle({
   title,
@@ -77,29 +80,7 @@ function ProductCarousel({ title }: { title: string }) {
         slides={pages.map((page, pageIdx) => (
           <div key={pageIdx} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-3 lg:gap-4">
             {page.map((p, i) => (
-              <Link
-                key={`${p.id}_${pageIdx}_${i}`}
-                href={`/product/${p.slug}`}
-                className="bg-white rounded-xl md:rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden"
-              >
-                <div className="h-20 sm:h-24 md:h-28 bg-gray-50 flex items-center justify-center overflow-hidden">
-                  {p.image ? (
-                    <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
-                  ) : (
-                    <div className="text-2xl sm:text-3xl md:text-4xl opacity-60">{CATEGORY_ICONS[p.category]}</div>
-                  )}
-                </div>
-                <div className="p-2 md:p-3">
-                  <div className="text-[9px] md:text-[10px] text-gray-400 font-black uppercase tracking-wide mb-1">{p.brand}</div>
-                  <div
-                    className="text-xs font-bold text-gray-800 leading-snug"
-                    style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-                  >
-                    {p.name}
-                  </div>
-                  <div className="mt-1.5 md:mt-2 text-xs md:text-sm font-black text-gray-900">{formatPrice(p.price)}</div>
-                </div>
-              </Link>
+              <ProductCard key={`${p.id}_${pageIdx}_${i}`} {...p} />
             ))}
           </div>
         ))}
@@ -201,7 +182,39 @@ const GROCERY_TILES = [
   },
 ];
 
+type GroceryTile = typeof GROCERY_TILES[0];
+
+function BentoCard({ tile, className, style }: { tile: GroceryTile; className?: string; style?: React.CSSProperties }) {
+  return (
+    <Link
+      href={tile.href}
+      className={`group relative overflow-hidden rounded-2xl bg-[#161b22] border border-white/5 hover:border-white/20 transition-all duration-300 hover:shadow-xl hover:shadow-black/60 ${className ?? ''}`}
+      style={style}
+    >
+      <img
+        src={tile.image}
+        alt={tile.label}
+        className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-75 group-hover:scale-105 transition-all duration-500"
+        loading="lazy"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent" />
+      <div className="relative h-full p-4 flex flex-col justify-end">
+        <p className="text-[10px] font-black uppercase tracking-[3px] text-primary mb-1">{tile.sub}</p>
+        <h3 className="text-sm font-black uppercase tracking-wide text-white leading-tight">{tile.label}</h3>
+        <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-widest text-primary group-hover:text-primary-light transition-colors">
+          Дэлгэрэнгүй
+          <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+          </svg>
+        </span>
+      </div>
+    </Link>
+  );
+}
+
 function GroceryBento() {
+  const byId = Object.fromEntries(GROCERY_TILES.map(t => [t.id, t]));
+
   return (
     <section className="bg-[#0d1117] py-8 sm:py-10 mt-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -209,78 +222,54 @@ function GroceryBento() {
           <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide">
             🛒 Хүнсний ангилал
           </h2>
-          <Link href="/grocery" className="text-sm font-bold text-red-400 hover:text-red-300 transition-colors">
+          <Link href="/grocery" className="text-sm font-bold text-primary hover:text-primary-light transition-colors">
             Бүгдийг харах →
           </Link>
         </div>
 
-        {/* Bento grid — desktop */}
-        <div
-          className="hidden md:grid gap-3"
-          style={{
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gridTemplateAreas: `
-              "fresh  fresh  store  dairy"
-              "meat   seafood veg   veg  "
-              "bakery bakery  veg   veg  "
-              "bakery bakery  drinks snacks"
-            `,
-          }}
-        >
-          {GROCERY_TILES.map((tile) => (
-            <Link
-              key={tile.id}
-              href={tile.href}
-              className="group relative overflow-hidden rounded-2xl bg-[#161b22] border border-white/5 hover:border-white/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-black/50"
-              style={{ gridArea: tile.area }}
-            >
-              <img
-                src={tile.image}
-                alt={tile.label}
-                className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-75 group-hover:scale-105 transition-all duration-500"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
-              <div className="relative h-full min-h-[140px] p-4 flex flex-col justify-end">
-                <p className="text-[10px] font-black uppercase tracking-[3px] text-red-400 mb-1">
-                  {tile.sub}
-                </p>
-                <h3 className="text-sm sm:text-base font-black uppercase tracking-wide text-white leading-tight">
-                  {tile.label}
-                </h3>
-                <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-widest text-red-400 group-hover:text-red-300 transition-colors">
-                  Shop Now
-                  <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </div>
-            </Link>
-          ))}
+        {/*
+          Desktop — two independent flex columns so row breaks NEVER align.
+          Left col (50%):  fresh(200) → [meat+seafood](250) → bakery(250)
+          Right col (50%): [dairy+veg](280) → store(240) → [drinks+snacks](180)
+          Total left  ≈ 710px   Total right ≈ 710px  (gap excluded, heights match overall)
+        */}
+        <div className="hidden md:flex gap-2.5">
+          {/* ── LEFT column ── */}
+          <div className="flex flex-col gap-2.5 flex-1">
+            {/* wide top tile */}
+            <BentoCard tile={byId.fresh} style={{ height: 200 }} />
+
+            {/* two side-by-side tiles */}
+            <div className="flex gap-2.5" style={{ height: 250 }}>
+              <BentoCard tile={byId.meat}    className="flex-1" />
+              <BentoCard tile={byId.seafood} className="flex-1" />
+            </div>
+
+            {/* wide bottom tile */}
+            <BentoCard tile={byId.bakery} style={{ height: 250 }} />
+          </div>
+
+          {/* ── RIGHT column ── */}
+          <div className="flex flex-col gap-2.5 flex-1">
+            {/* two side-by-side tiles — taller than left-top */}
+            <div className="flex gap-2.5" style={{ height: 280 }}>
+              <BentoCard tile={byId.dairy} className="flex-1" />
+              <BentoCard tile={byId.veg}   className="flex-1" />
+            </div>
+
+            {/* wide full-width tile */}
+            <BentoCard tile={byId.store} style={{ height: 240 }} />
+
+            {/* two side-by-side tiles — shorter */}
+            <div className="flex gap-2.5" style={{ height: 180 }}>
+              <BentoCard tile={byId.drinks} className="flex-1" />
+              <BentoCard tile={byId.snacks} className="flex-1" />
+            </div>
+          </div>
         </div>
 
-        {/* Mobile: 2-column simple grid */}
-        <div className="grid md:hidden grid-cols-2 gap-3">
-          {GROCERY_TILES.map((tile) => (
-            <Link
-              key={tile.id}
-              href={tile.href}
-              className="group relative overflow-hidden rounded-xl bg-[#161b22] border border-white/5 hover:border-white/20 transition-all"
-            >
-              <img
-                src={tile.image}
-                alt={tile.label}
-                className="absolute inset-0 w-full h-full object-cover opacity-55 group-hover:opacity-70 group-hover:scale-105 transition-all duration-500"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/10" />
-              <div className="relative min-h-[120px] p-3 flex flex-col justify-end">
-                <h3 className="text-xs font-black uppercase tracking-wide text-white leading-tight">{tile.label}</h3>
-                <span className="mt-1 text-[10px] font-black uppercase tracking-widest text-red-400">Shop Now →</span>
-              </div>
-            </Link>
-          ))}
-        </div>
+        {/* Mobile — slideshow carousels */}
+        <GroceryBentoMobile tiles={GROCERY_TILES} />
       </div>
     </section>
   );
@@ -503,26 +492,7 @@ export default function HomePage() {
             return (
               <div key={`${s.kind}_${i}`} className="max-w-7xl mx-auto px-4">
                 <SectionTitle title="Үйлчилгээ" />
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {[
-                    { href: '/leasing-form', label: 'Лизинг хүсэлт', sub: 'Apply now', bg: 'from-red-500 to-red-700', emoji: '📋' },
-                    { href: '/delivery', label: 'Хүргэлт', sub: 'Delivery info', bg: 'from-blue-500 to-blue-700', emoji: '🚚' },
-                    { href: '/contact', label: 'Холбоо барих', sub: 'Contact us', bg: 'from-emerald-500 to-emerald-700', emoji: '📞' },
-                  ].map((a) => (
-                    <Link
-                      key={a.href}
-                      href={a.href}
-                      className={`rounded-2xl bg-gradient-to-br ${a.bg} text-white shadow-sm p-6 hover:shadow-md transition-all flex items-center justify-between`}
-                    >
-                      <div>
-                        <div className="text-xs font-black uppercase tracking-widest opacity-80">Үйлчилгээ</div>
-                        <div className="mt-2 text-lg font-black">{a.label}</div>
-                        <div className="mt-1 text-sm opacity-80 font-semibold">{a.sub}</div>
-                      </div>
-                      <div className="text-5xl opacity-30">{a.emoji}</div>
-                    </Link>
-                  ))}
-                </div>
+                <ServiceBento />
               </div>
             );
           }
@@ -540,55 +510,74 @@ export default function HomePage() {
         })}
       </div>
 
-      {/* Improved Quick Categories Section */}
+      {/* Quick Categories Section */}
       <section className="max-w-7xl mx-auto px-4 mt-12 mb-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-black text-gray-900 tracking-tight">Ангилал</h2>
           <Link href="/categories" className="text-sm font-bold text-primary hover:underline">
-            Бүх ангилал →
+            Бүгдийг харах →
           </Link>
         </div>
 
-        <div className="flex overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-4 md:gap-6">
-          {(Object.keys(CATEGORY_LABELS) as CatalogCategoryKey[]).map((k, i) => {
-            // Curated background colors for icons
-            const bgColors = [
-              'bg-blue-50 text-blue-600', 'bg-purple-50 text-purple-600', 
-              'bg-orange-50 text-orange-600', 'bg-red-50 text-red-600', 
-              'bg-emerald-50 text-emerald-600', 'bg-cyan-50 text-cyan-600',
-              'bg-amber-50 text-amber-600', 'bg-indigo-50 text-indigo-600',
-              'bg-pink-50 text-pink-600'
-            ];
-            const bgColor = bgColors[i % bgColors.length];
-
-            return (
-              <Link
-                key={k}
-                href={`/${k}`}
-                className="group flex flex-col items-center text-center shrink-0 w-24 sm:w-auto"
-              >
-                <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-3xl ${bgColor} flex items-center justify-center text-2xl sm:text-3xl mb-3 shadow-sm group-hover:shadow-md group-hover:-translate-y-1 transition-all duration-300 border border-white`}>
-                  {CATEGORY_ICONS[k]}
-                </div>
-                <div className="text-xs sm:text-sm font-bold text-gray-700 group-hover:text-primary transition-colors leading-tight px-1">
-                  {CATEGORY_LABELS[k]}
-                </div>
-              </Link>
-            );
-          })}
-
-          <Link
-            href="/brands"
-            className="group flex flex-col items-center text-center shrink-0 w-24 sm:w-auto"
-          >
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gray-50 text-gray-500 flex items-center justify-center text-2xl sm:text-3xl mb-3 shadow-sm group-hover:shadow-md group-hover:-translate-y-1 transition-all duration-300 border border-white">
-              🏷️
+        {(() => {
+          const gradients = [
+            'from-blue-400 to-indigo-500',
+            'from-violet-400 to-purple-600',
+            'from-orange-400 to-orange-500',
+            'from-rose-400 to-red-600',
+            'from-emerald-400 to-teal-600',
+            'from-sky-400 to-cyan-600',
+            'from-amber-400 to-orange-500',
+            'from-green-400 to-emerald-600',
+            'from-pink-400 to-rose-500',
+            'from-red-400 to-rose-600',
+            'from-yellow-400 to-amber-500',
+            'from-blue-300 to-cyan-500',
+            'from-green-500 to-green-700',
+            'from-amber-300 to-yellow-500',
+            'from-purple-400 to-violet-600',
+            'from-orange-300 to-red-400',
+          ];
+          const allItems = [
+            ...(Object.keys(CATEGORY_LABELS) as CatalogCategoryKey[]).map((k, i) => ({
+              key: k,
+              href: `/${k}`,
+              icon: CATEGORY_ICONS[k],
+              label: CATEGORY_LABELS[k],
+              gradient: gradients[i % gradients.length],
+            })),
+            { key: 'brands', href: '/brands', icon: '🏷️', label: 'Брэндүүд', gradient: 'from-gray-400 to-gray-600' },
+          ];
+          return (
+            <div className="flex overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2 gap-3 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-9 sm:gap-3">
+              {allItems.map((item) => (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  className="group flex flex-col items-center text-center shrink-0 w-[72px] sm:w-auto"
+                >
+                  <ElectroBorder
+                    borderColor="#ffffff"
+                    borderWidth={1.5}
+                    distortion={0.7}
+                    animationSpeed={0.5}
+                    radius="1rem"
+                    glowBlur={10}
+                    aura={false}
+                    className="w-14 h-14 sm:w-16 sm:h-16 mb-2 group-hover:scale-110 transition-transform duration-200"
+                  >
+                    <div className={`w-full h-full rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center text-2xl sm:text-3xl shadow-md`}>
+                      {item.icon}
+                    </div>
+                  </ElectroBorder>
+                  <div className="text-[10px] sm:text-xs font-bold text-gray-600 group-hover:text-primary transition-colors leading-tight">
+                    {item.label}
+                  </div>
+                </Link>
+              ))}
             </div>
-            <div className="text-xs sm:text-sm font-bold text-gray-700 group-hover:text-primary transition-colors leading-tight px-1">
-              Брэндүүд
-            </div>
-          </Link>
-        </div>
+          );
+        })()}
       </section>
     </div>
   );

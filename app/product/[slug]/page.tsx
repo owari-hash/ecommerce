@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { CATEGORY_ICONS, CATEGORY_LABELS, formatPrice, getProductBySlug, getRelatedProducts } from '../../lib/mockCatalog';
 import ProductDetailClient from './productDetailClient';
 import Carousel from '../../components/Carousel';
+import ProductCard from '../../components/ProductCard';
 
 function chunk<T>(arr: T[], size: number) {
   const out: T[][] = [];
@@ -85,43 +86,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           ariaLabel="Төстэй бараа"
           autoplayMs={7000}
           slides={chunk(related.length ? related : [p], 6).map((page, idx) => (
-            <div key={idx} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div key={idx} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-3 lg:gap-4">
               {page.map((x) => (
-                <Link
-                  key={x.id}
-                  href={`/product/${x.slug}`}
-                  className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden"
-                >
-                  <div className="h-28 bg-gray-50 flex items-center justify-center overflow-hidden">
-                    {x.image ? (
-                      <img 
-                        src={x.image} 
-                        alt={x.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="text-4xl opacity-60">{CATEGORY_ICONS[x.category]}</div>
-                    )}
-                  </div>
-                  <div className="p-3">
-                    <div className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-1">
-                      {x.brand}
-                    </div>
-                    <div
-                      className="text-xs font-semibold text-gray-800 leading-snug"
-                      style={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {x.name}
-                    </div>
-                    <div className="mt-2 text-sm font-black text-gray-900">{formatPrice(x.price)}</div>
-                  </div>
-                </Link>
+                <ProductCard key={x.id} {...x} />
               ))}
             </div>
           ))}

@@ -1,6 +1,14 @@
 'use client';
 
-export type CompareItem = { id: string; title: string; slug?: string };
+export type CompareItem = {
+  id: string;
+  title: string;
+  slug?: string;
+  image?: string;
+  brand?: string;
+  price?: number;
+  oldPrice?: number;
+};
 
 const STORAGE_KEY = 'Их Наяд Плаза.compare.items.v1';
 const MAX_ITEMS = 4;
@@ -35,4 +43,3 @@ export function toggleCompare(item: CompareItem) {
   writeCompare(next);
   return next;
 }
-
