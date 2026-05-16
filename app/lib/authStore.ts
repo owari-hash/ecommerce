@@ -1,130 +1,86 @@
-'use client';
+'use client'
 
 export type User = {
-  id: string;
-  phone: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  registeredAt: string;
-};
-
-const STORAGE_KEY = 'Их Наяд Плаза.auth.v1';
-const USERS_KEY = 'Их Наяд Плаза.users.v1';
-
-export function getUsers(): Array<{ phone: string; email: string; password: string; firstName: string; lastName: string }> {
-  try {
-    const raw = window.localStorage.getItem(USERS_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  email: string
+  firstName: string
+  lastName: string
+  phone?: string
 }
 
-function saveUsers(users: Array<{ phone: string; email: string; password: string; firstName: string; lastName: string }>) {
-  try {
-    window.localStorage.setItem(USERS_KEY, JSON.stringify(users));
-  } catch {
-    // ignore
+// In-memory auth state (set after API login, cleared on logout)
+let _currentUser: User | null = null
+
+function dispatchChange() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('auth:changed'))
   }
 }
 
 export function readAuth(): User | null {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed.id !== 'string') return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-export function writeAuth(user: User | null) {
-  try {
-    if (user) {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-    } else {
-      window.localStorage.removeItem(STORAGE_KEY);
-    }
-    window.dispatchEvent(new Event('auth:changed'));
-  } catch {
-    // ignore
-  }
-}
-
-export function login(phoneOrEmail: string, password: string): User | null {
-  const users = getUsers();
-  const normalizedInput = phoneOrEmail.trim().toLowerCase();
-  
-  const user = users.find(
-    (u) => (u.phone === normalizedInput || u.email.toLowerCase() === normalizedInput) && u.password === password
-  );
-  
-  if (!user) return null;
-  
-  const authUser: User = {
-    id: Math.random().toString(36).substr(2, 9),
-    phone: user.phone,
-    email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    registeredAt: new Date().toISOString(),
-  };
-  
-  writeAuth(authUser);
-  return authUser;
-}
-
-export function register(data: {
-  phone: string;
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-}): { success: boolean; error?: string } {
-  const users = getUsers();
-  const normalizedPhone = data.phone.trim();
-  const normalizedEmail = data.email.trim().toLowerCase();
-  
-  // Check if user already exists
-  if (users.some((u) => u.phone === normalizedPhone)) {
-    return { success: false, error: 'Энэ утасны дугаар бүртгэгдсэн байна' };
-  }
-  if (users.some((u) => u.email.toLowerCase() === normalizedEmail)) {
-    return { success: false, error: 'Энэ и-мэйл хаяг бүртгэгдсэн байна' };
-  }
-  
-  // Add new user
-  users.push({
-    phone: normalizedPhone,
-    email: normalizedEmail,
-    password: data.password,
-    firstName: data.firstName,
-    lastName: data.lastName,
-  });
-  saveUsers(users);
-  
-  // Auto login after registration
-  const authUser: User = {
-    id: Math.random().toString(36).substr(2, 9),
-    phone: normalizedPhone,
-    email: normalizedEmail,
-    firstName: data.firstName,
-    lastName: data.lastName,
-    registeredAt: new Date().toISOString(),
-  };
-  
-  writeAuth(authUser);
-  return { success: true };
-}
-
-export function logout() {
-  writeAuth(null);
+  return _currentUser
 }
 
 export function isLoggedIn(): boolean {
-  return readAuth() !== null;
+  return _currentUser !== null
+}
+
+export async function login(email: string, password: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
+    const data = await res.json()
+    if (!res.ok) return { success: false, error: data.error ?? 'Нэвтрэх амжилтгүй боллоо' }
+    _currentUser = data.user
+    dispatchChange()
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Сервертэй холбогдох боломжгүй байна' }
+  }
+}
+
+export async function register(data: {
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+  phone?: string
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    const json = await res.json()
+    if (!res.ok) return { success: false, error: json.error ?? 'Бүртгэл амжилтгүй боллоо' }
+    _currentUser = json.user
+    dispatchChange()
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Сервертэй холбогдох боломжгүй байна' }
+  }
+}
+
+export async function logout(): Promise<void> {
+  await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
+  _currentUser = null
+  dispatchChange()
+}
+
+// Call on app init to restore session from cookie (asks server to validate)
+export async function restoreSession(): Promise<void> {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
+    const res = await fetch(`${apiUrl}/api/users/me`, { credentials: 'include' })
+    if (res.ok) {
+      const user = await res.json()
+      _currentUser = { email: user.email, firstName: user.firstName, lastName: user.lastName, phone: user.phone }
+      dispatchChange()
+    }
+  } catch {
+    // no session
+  }
 }
