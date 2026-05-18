@@ -7,6 +7,12 @@ export function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-tenant-host', host)
 
+  // Forward tenant query parameter as x-tenant-slug header
+  const tenantSlug = request.nextUrl.searchParams.get('tenant')
+  if (tenantSlug) {
+    requestHeaders.set('x-tenant-slug', tenantSlug)
+  }
+
   return NextResponse.next({ request: { headers: requestHeaders } })
 }
 

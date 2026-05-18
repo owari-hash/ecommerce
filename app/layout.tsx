@@ -38,7 +38,8 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const headersList = await headers();
   const host = headersList.get("x-tenant-host") ?? headersList.get("host") ?? "localhost";
-  const config = await fetchTenantConfig(host);
+  const tenantSlug = headersList.get("x-tenant-slug");
+  const config = await fetchTenantConfig(host, tenantSlug);
 
   // Override Tailwind @theme defaults with tenant branding
   const cssVars = `

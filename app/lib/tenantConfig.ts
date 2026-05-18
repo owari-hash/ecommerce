@@ -50,16 +50,18 @@ const DEFAULT_CONFIG: TenantConfig = {
   features: { reviews: false, chat: false, loyaltyProgram: false },
 }
 
-// cache() deduplicates per request — layout and page.tsx both call this but hit the API once
-export const fetchTenantConfig = cache(async (host: string): Promise<TenantConfig> => {
+export const fetchTenantConfig = cache(async (host: string, tenantSlug?: string | null): Promise<TenantConfig> => {
   if (process.env.USE_MOCK_DATA === 'true') {
     return DEFAULT_CONFIG
   }
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
+  const url = tenantSlug 
+    ? `${apiUrl}/api/config?tenant=${encodeURIComponent(tenantSlug)}`
+    : `${apiUrl}/api/config`
 
   try {
-    const res = await fetch(`${apiUrl}/api/config`, {
+    const res = await fetch(url, {
       headers: { host, 'x-tenant-host': host },
       next: { revalidate: 60 },
     })

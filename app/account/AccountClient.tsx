@@ -31,7 +31,7 @@ export default function AccountClient() {
     return () => window.removeEventListener('auth:changed', onAuthChange);
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -41,16 +41,16 @@ export default function AccountClient() {
       return;
     }
 
-    const result = login(loginPhone, loginPassword);
-    if (result) {
-      setUser(result);
+    const result = await login(loginPhone, loginPassword);
+    if (result.success) {
+      setUser(readAuth());
       setSuccess('Амжилттай нэвтэрлээ!');
     } else {
-      setError('Утасны дугаар/И-мэйл эсвэл нууц үг буруу байна');
+      setError(result.error || 'Утасны дугаар/И-мэйл эсвэл нууц үг буруу байна');
     }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -75,7 +75,7 @@ export default function AccountClient() {
       return;
     }
 
-    const result = register({
+    const result = await register({
       phone: regPhone,
       email: regEmail,
       password: regPassword,
@@ -91,8 +91,8 @@ export default function AccountClient() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setUser(null);
     setActiveTab('login');
     setLoginPhone('');
