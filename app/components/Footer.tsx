@@ -93,7 +93,7 @@ export default function Footer() {
       <div className="border-t border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between text-xs text-gray-500 gap-2">
           <span>© 2026. Бүх эрх хуулиар хамгаалагдсан.</span>
-          <span>Powered by {branding.name || 'Их Наяд'}</span>
+          <span>Powered by Zevtabs</span>
         </div>
       </div>
     </footer>
