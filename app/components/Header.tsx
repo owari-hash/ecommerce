@@ -8,23 +8,26 @@ import { MOCK_PRODUCTS, CATEGORY_ICONS, CATEGORY_LABELS, formatPrice } from '../
 import { addToCart } from '../lib/cartStore';
 import MegaMenu from './MegaMenu';
 import { useTenant } from '../lib/TenantContext';
+import { useTenantHref } from '../lib/useTenantHref';
+
+const ALL_BRANDS = [...new Set(MOCK_PRODUCTS.map((p) => p.brand))].sort();
 
 
 export default function Header() {
   const { branding, contact, tenantId } = useTenant();
+  const tenantHref = useTenantHref();
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
-  const [user, setUser] = useState<User | null>(null);
+  const [cartCount, setCartCount] = useState(() => getCartCount());
+  const [user, setUser] = useState<User | null>(() => readAuth());
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [mobileSearch, setMobileSearch] = useState('');
   const [mobileDebouncedSearch, setMobileDebouncedSearch] = useState('');
-  const [allBrands, setAllBrands] = useState<string[]>([]);
   const [categories, setCategories] = useState<{ label: string; href: string }[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -32,8 +35,6 @@ export default function Header() {
   const mobileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setCartCount(getCartCount());
-    setUser(readAuth());
     const onCartChange = () => setCartCount(getCartCount());
     const onAuthChange = () => setUser(readAuth());
     window.addEventListener('cart:changed', onCartChange);
@@ -44,10 +45,6 @@ export default function Header() {
     };
   }, []);
 
-  useEffect(() => {
-    const brands = [...new Set(MOCK_PRODUCTS.map(p => p.brand))].sort();
-    setAllBrands(brands);
-  }, []);
 
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
@@ -57,11 +54,11 @@ export default function Header() {
         if (!body?.data?.length) return;
         const roots = (body.data as { name: string; slug: string; parentId: string | null }[])
           .filter((c) => !c.parentId)
-          .map((c) => ({ label: c.name, href: `/${c.slug}` }));
+          .map((c) => ({ label: c.name, href: tenantHref(`/${c.slug}`) }));
         setCategories(roots);
       })
       .catch(console.error);
-  }, [tenantId]);
+  }, [tenantId, tenantHref]);
 
   useEffect(() => {
     if (showMobileSearch) {
@@ -124,8 +121,8 @@ export default function Header() {
   const filteredBrands = useMemo(() => {
     if (!mobileDebouncedSearch.trim()) return [];
     const query = mobileDebouncedSearch.toLowerCase();
-    return allBrands.filter(brand => brand.toLowerCase().includes(query)).slice(0, 4);
-  }, [mobileDebouncedSearch, allBrands]);
+    return ALL_BRANDS.filter(brand => brand.toLowerCase().includes(query)).slice(0, 4);
+  }, [mobileDebouncedSearch]);
 
   const handleSuggestionClick = (slug: string) => {
     setShowSuggestions(false);

@@ -32,16 +32,27 @@ export interface TenantContact {
   address: string
 }
 
+export interface TenantPromo {
+  visible: boolean
+  label: string
+  discount: string
+  subtitle: string
+  href: string
+}
+
 export interface TenantConfig {
   tenantId: string
+  slug: string
   branding: TenantBranding
   theme: TenantTheme
   features: TenantFeatures
   contact?: TenantContact
+  promo?: TenantPromo
 }
 
 const DEFAULT_CONFIG: TenantConfig = {
   tenantId: 'default',
+  slug: 'default',
   branding: {
     name: 'Их Наяд',
     logo: '',

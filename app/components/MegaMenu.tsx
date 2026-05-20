@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useTenant } from '../lib/TenantContext';
+import { useTenantHref } from '../lib/useTenantHref';
 
 export type SubCategory = {
   label: string;
@@ -48,7 +49,10 @@ function getIcon(slug: string, image: string): string {
 }
 
 export default function MegaMenu() {
-  const { tenantId } = useTenant();
+  const tenant = useTenant();
+  const { tenantId } = tenant;
+  const promo = tenant.promo;
+  const tenantHref = useTenantHref();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -72,15 +76,15 @@ export default function MegaMenu() {
           roots.map((root) => ({
             icon: getIcon(root.slug, root.image),
             label: root.name,
-            href: `/${root.slug}`,
+            href: tenantHref(`/${root.slug}`),
             subcategories: all
               .filter((c) => c.parentId === root.id)
               .map((child) => ({
                 label: child.name,
-                href: `/${root.slug}/${child.slug}`,
+                href: tenantHref(`/${root.slug}/${child.slug}`),
               })),
             featured: root.image?.startsWith('http')
-              ? { image: root.image, title: root.name, href: `/${root.slug}` }
+              ? { image: root.image, title: root.name, href: tenantHref(`/${root.slug}`) }
               : undefined,
           }))
         );
@@ -324,28 +328,30 @@ export default function MegaMenu() {
                   </>
                 )}
 
-                <div
-                  className={`rounded-xl overflow-hidden border border-gray-100 bg-gradient-to-br from-red-500 via-red-600 to-red-700 text-white p-4 relative group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
-                    isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-                  }`}
-                  style={{ transitionDelay: isVisible ? '150ms' : '0ms' }}
-                >
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
-                  <div className="relative">
-                    <p className="text-[10px] font-black uppercase opacity-80 tracking-wider">Хязгаартай</p>
-                    <p className="text-2xl font-black mt-1">30% OFF</p>
-                    <p className="text-sm opacity-90 mb-3">Бүх электрон бараа</p>
-                    <Link
-                      href="/electronics"
-                      className="inline-flex items-center gap-1 bg-white text-red-600 px-4 py-2 rounded-lg text-sm font-black hover:bg-gray-100 transition-colors shadow-lg"
-                    >
-                      Харах
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </Link>
+                {(promo?.visible ?? true) && (
+                  <div
+                    className={`rounded-xl overflow-hidden border border-gray-100 bg-gradient-to-br from-red-500 via-red-600 to-red-700 text-white p-4 relative group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
+                      isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                    }`}
+                    style={{ transitionDelay: isVisible ? '150ms' : '0ms' }}
+                  >
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
+                    <div className="relative">
+                      <p className="text-[10px] font-black uppercase opacity-80 tracking-wider">{promo?.label ?? 'Хязгаартай'}</p>
+                      <p className="text-2xl font-black mt-1">{promo?.discount ?? '30% OFF'}</p>
+                      {promo?.subtitle && <p className="text-sm opacity-90 mb-3">{promo.subtitle}</p>}
+                      <Link
+                        href={tenantHref(promo?.href ?? '/')}
+                        className="inline-flex items-center gap-1 bg-white text-red-600 px-4 py-2 rounded-lg text-sm font-black hover:bg-gray-100 transition-colors shadow-lg mt-3"
+                      >
+                        Харах
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </Link>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div
                   className={`rounded-xl border border-gray-100 bg-gray-50 p-3 transition-all duration-300 ${
