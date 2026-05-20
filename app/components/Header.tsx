@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { getCartCount } from '../lib/cartStore';
 import { readAuth, logout, type User } from '../lib/authStore';
-import { MOCK_PRODUCTS, CATEGORY_ICONS, formatPrice } from '../lib/mockCatalog';
+import { MOCK_PRODUCTS, CATEGORY_ICONS, CATEGORY_LABELS, formatPrice } from '../lib/mockCatalog';
 import { addToCart } from '../lib/cartStore';
 import MegaMenu from './MegaMenu';
 import { useTenant } from '../lib/TenantContext';
