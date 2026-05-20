@@ -91,9 +91,24 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
     console.error('Failed to fetch dynamic server data:', e);
   }
 
-  // Filter products by matched category ID or category slug matching
+  // Collect all descendant category IDs so parent pages show child products too
+  function collectDescendantIds(parentId: string, allCats: any[]): string[] {
+    const ids: string[] = [];
+    const queue = [parentId];
+    while (queue.length) {
+      const current = queue.shift()!;
+      ids.push(current);
+      allCats.filter((c) => c.parentId === current).forEach((c) => queue.push(c.id));
+    }
+    return ids;
+  }
+
+  const categoryIds = matchedCategoryId
+    ? new Set(collectDescendantIds(matchedCategoryId, categories))
+    : new Set<string>();
+
   const filteredProducts = rawProducts.filter(
-    (p: any) => p.categoryId === matchedCategoryId || p.categoryId === categoryKey
+    (p: any) => categoryIds.has(p.categoryId) || p.categoryId === categoryKey
   );
 
   const bannerImage = CATEGORY_BANNER_IMAGES[categoryKey] || DEFAULT_BANNER;

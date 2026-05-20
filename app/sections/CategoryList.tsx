@@ -1,13 +1,11 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useTenant } from '../lib/TenantContext'
+import { useTenantHref } from '../lib/useTenantHref'
 import { CATEGORY_ICONS } from '../lib/mockCatalog'
-
-interface CategoryListProps {
-  showBrands?: boolean
-}
 
 interface Category {
   id: string
@@ -18,8 +16,13 @@ interface Category {
   status: string
 }
 
-export default function CategoryList({ showBrands = true }: CategoryListProps) {
+function isUrl(s: string) {
+  return s.startsWith('http://') || s.startsWith('https://')
+}
+
+export default function CategoryList({ showBrands = true }: { showBrands?: boolean }) {
   const { tenantId } = useTenant()
+  const tenantHref = useTenantHref()
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -28,13 +31,11 @@ export default function CategoryList({ showBrands = true }: CategoryListProps) {
     fetch(`${apiUrl}/api/categories/public?tenantId=${tenantId}`)
       .then((res) => res.json())
       .then((body) => {
-        if (body && body.data) {
-          // Only show active parent categories on homepage list
-          const activeRoots = body.data.filter((c: Category) => c.status === 'active' && !c.parentId)
-          setCategories(activeRoots)
+        if (body?.data) {
+          setCategories(body.data.filter((c: Category) => c.status === 'active' && !c.parentId))
         }
       })
-      .catch((err) => console.error('Failed to fetch categories', err))
+      .catch(console.error)
       .finally(() => setLoading(false))
   }, [tenantId])
 
@@ -57,18 +58,21 @@ export default function CategoryList({ showBrands = true }: CategoryListProps) {
   const items = [
     ...categories.map((c) => ({
       key: c.id,
-      href: `/${c.slug}`,
-      icon: c.image || CATEGORY_ICONS[c.slug as keyof typeof CATEGORY_ICONS] || '📁',
+      href: tenantHref(`/${c.slug}`),
+      imageUrl: c.image && isUrl(c.image) ? c.image : null,
+      emoji: (!c.image || !isUrl(c.image))
+        ? (c.image || CATEGORY_ICONS[c.slug as keyof typeof CATEGORY_ICONS] || '📁')
+        : null,
       label: c.name,
     })),
-    ...(showBrands ? [{ key: 'brands', href: '/brands', icon: '🏷️', label: 'Брэндүүд' }] : []),
+    ...(showBrands ? [{ key: 'brands', href: tenantHref('/brands'), imageUrl: null, emoji: '🏷️', label: 'Брэндүүд' }] : []),
   ]
 
   return (
     <section className="max-w-7xl mx-auto px-4 mt-12 mb-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-black text-gray-900 tracking-tight">Ангилал</h2>
-        <Link href="/categories" className="text-sm font-bold text-primary hover:underline">
+        <Link href={tenantHref('/categories')} className="text-sm font-bold text-primary hover:underline">
           Бүгдийг харах →
         </Link>
       </div>
@@ -79,8 +83,18 @@ export default function CategoryList({ showBrands = true }: CategoryListProps) {
             href={item.href}
             className="group flex flex-col items-center text-center shrink-0 w-[72px] sm:w-auto gap-2"
           >
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-2 border-gray-200 group-hover:border-primary flex items-center justify-center text-2xl sm:text-3xl group-hover:scale-110 transition-all duration-200">
-              {item.icon}
+            <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-2 border-gray-200 group-hover:border-primary overflow-hidden group-hover:scale-110 transition-all duration-200 flex items-center justify-center">
+              {item.imageUrl ? (
+                <Image
+                  src={item.imageUrl}
+                  alt={item.label}
+                  fill
+                  className="object-cover"
+                  sizes="64px"
+                />
+              ) : (
+                <span className="text-2xl sm:text-3xl">{item.emoji}</span>
+              )}
             </div>
             <span className="text-[10px] sm:text-xs font-bold text-gray-600 group-hover:text-primary transition-colors leading-tight">
               {item.label}
