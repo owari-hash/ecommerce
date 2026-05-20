@@ -4,24 +4,14 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { getCartCount } from '../lib/cartStore';
 import { readAuth, logout, type User } from '../lib/authStore';
-import { MOCK_PRODUCTS, CATEGORY_ICONS, CATEGORY_LABELS, formatPrice, type CatalogCategoryKey } from '../lib/mockCatalog';
+import { MOCK_PRODUCTS, CATEGORY_ICONS, formatPrice } from '../lib/mockCatalog';
 import { addToCart } from '../lib/cartStore';
 import MegaMenu from './MegaMenu';
 import { useTenant } from '../lib/TenantContext';
 
-const categories = [
-  { label: 'Зөөврийн компьютер', href: '/laptop' },
-  { label: 'Суурин компьютер', href: '/computer' },
-  { label: 'Ухаалаг төхөөрөмж', href: '/smartphone-and-tablet' },
-  { label: 'Консоль', href: '/console' },
-  { label: 'Аудио төхөөрөмж', href: '/audio-equipment' },
-  { label: 'Гэр ахуй', href: '/home' },
-  { label: 'Дагалдах хэрэгсэл', href: '/accessories' },
-  { label: 'Брэнд', href: '/brands' },
-];
 
 export default function Header() {
-  const { branding, contact } = useTenant();
+  const { branding, contact, tenantId } = useTenant();
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -35,6 +25,7 @@ export default function Header() {
   const [mobileSearch, setMobileSearch] = useState('');
   const [mobileDebouncedSearch, setMobileDebouncedSearch] = useState('');
   const [allBrands, setAllBrands] = useState<string[]>([]);
+  const [categories, setCategories] = useState<{ label: string; href: string }[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const mobileSearchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -57,6 +48,20 @@ export default function Header() {
     const brands = [...new Set(MOCK_PRODUCTS.map(p => p.brand))].sort();
     setAllBrands(brands);
   }, []);
+
+  useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+    fetch(`${apiUrl}/api/categories/public?tenantId=${tenantId}`)
+      .then((r) => r.json())
+      .then((body) => {
+        if (!body?.data?.length) return;
+        const roots = (body.data as { name: string; slug: string; parentId: string | null }[])
+          .filter((c) => !c.parentId)
+          .map((c) => ({ label: c.name, href: `/${c.slug}` }));
+        setCategories(roots);
+      })
+      .catch(console.error);
+  }, [tenantId]);
 
   useEffect(() => {
     if (showMobileSearch) {
@@ -152,8 +157,8 @@ export default function Header() {
   };
 
   const categoriesList = useMemo(() => {
-    return Object.entries(CATEGORY_LABELS).slice(0, 5) as [CatalogCategoryKey, string][];
-  }, []);
+    return categories.slice(0, 5);
+  }, [categories]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -241,10 +246,10 @@ export default function Header() {
                   <div className="w-52 border-r border-gray-100 p-4 bg-gray-50/50 shrink-0">
                     <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Ангилалууд</h4>
                     <div className="space-y-1">
-                      {categoriesList.map(([key, label]) => (
-                        <Link key={key} href={`/s/${key}`} onClick={() => setShowSuggestions(false)}
+                      {categoriesList.map((cat) => (
+                        <Link key={cat.href} href={cat.href} onClick={() => setShowSuggestions(false)}
                           className="flex items-center justify-between px-2 py-1.5 text-sm text-gray-700 hover:bg-white hover:text-primary rounded-lg transition-colors">
-                          <span>{label}</span>
+                          <span>{cat.label}</span>
                           <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" /></svg>
                         </Link>
                       ))}
