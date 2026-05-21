@@ -12,7 +12,8 @@ export type SubCategory = {
 };
 
 export type MainCategory = {
-  icon: string;
+  imageUrl?: string | null;
+  emoji?: string | null;
   label: string;
   href: string;
   subcategories: SubCategory[];
@@ -23,32 +24,6 @@ export type MainCategory = {
   };
 };
 
-const SLUG_ICONS: Record<string, string> = {
-  electronics: '💻',
-  'kitchen-electronics': '🍳',
-  'home-electronics': '🏠',
-  grocery: '🛒',
-  fashion: '👕',
-  clothing: '👕',
-  beauty: '💄',
-  health: '💊',
-  sports: '⚽',
-  books: '📚',
-  automotive: '🚗',
-  pets: '🐾',
-  home: '🏡',
-  household: '🧴',
-  food: '🍔',
-  services: '🎫',
-  baby: '👶',
-  accessories: '🎒',
-};
-
-function getIcon(slug: string, image: string): string {
-  if (image && image.length <= 4 && !/^https?:\/\//.test(image)) return image;
-  return SLUG_ICONS[slug] ?? '📦';
-}
-
 function getApiUrl() {
   if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
   if (typeof window !== 'undefined') {
@@ -57,15 +32,52 @@ function getApiUrl() {
   return 'http://localhost:8000';
 }
 
+function cleanImageUrl(url: string | undefined): string {
+  if (!url) return '';
+  let cleaned = url.trim();
+  cleaned = cleaned.replace(/^(Оруулах|оруулах|[Oo]ruulah|[Uu]pload)/g, '').trim();
+  return cleaned;
+}
+
 function resolveImageUrl(url: string | undefined) {
   if (!url) return '';
+  const cleaned = cleanImageUrl(url);
+  if (!cleaned) return '';
   const apiUrl = getApiUrl();
-  const uploadMatch = url.match(/\/upload\/(.+)$/);
+  const uploadMatch = cleaned.match(/\/upload\/(.+)$/);
   if (uploadMatch) {
     return `${apiUrl}/upload/${uploadMatch[1]}`;
   }
-  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
-  return url.startsWith('/') ? `${apiUrl}${url}` : `${apiUrl}/upload/${url}`;
+  if (cleaned.startsWith('http://') || cleaned.startsWith('https://') || cleaned.startsWith('data:')) return cleaned;
+  return cleaned.startsWith('/') ? `${apiUrl}${cleaned}` : `${apiUrl}/upload/${cleaned}`;
+}
+
+function resolveCategoryIcon(image: string | undefined) {
+  if (!image) {
+    return { imageUrl: null, emoji: null };
+  }
+  
+  const cleaned = cleanImageUrl(image);
+  if (!cleaned) {
+    return { imageUrl: null, emoji: null };
+  }
+  
+  // Custom Emoji Support: if it's a short text string without common URL path structures, render it as emoji directly
+  if (cleaned.length <= 4 && !cleaned.includes('/') && !cleaned.includes('.')) {
+    return { imageUrl: null, emoji: cleaned };
+  }
+  
+  const apiUrl = getApiUrl();
+  const uploadMatch = cleaned.match(/\/upload\/(.+)$/);
+  let imageUrl = '';
+  if (uploadMatch) {
+    imageUrl = `${apiUrl}/upload/${uploadMatch[1]}`;
+  } else if (cleaned.startsWith('http://') || cleaned.startsWith('https://') || cleaned.startsWith('data:')) {
+    imageUrl = cleaned;
+  } else {
+    imageUrl = cleaned.startsWith('/') ? `${apiUrl}${cleaned}` : `${apiUrl}/upload/${cleaned}`;
+  }
+  return { imageUrl, emoji: null };
 }
 
 export default function MegaMenu() {
@@ -93,20 +105,24 @@ export default function MegaMenu() {
         }[];
         const roots = all.filter((c) => !c.parentId);
         setMegaCategories(
-          roots.map((root) => ({
-            icon: getIcon(root.slug, root.image),
-            label: root.name,
-            href: tenantHref(`/${root.slug}`),
-            subcategories: all
-              .filter((c) => c.parentId === root.id)
-              .map((child) => ({
-                label: child.name,
-                href: tenantHref(`/${root.slug}/${child.slug}`),
-              })),
-            featured: root.image
-              ? { image: resolveImageUrl(root.image), title: root.name, href: tenantHref(`/${root.slug}`) }
-              : undefined,
-          }))
+          roots.map((root) => {
+            const iconResolved = resolveCategoryIcon(root.image);
+            return {
+              imageUrl: iconResolved.imageUrl,
+              emoji: iconResolved.emoji,
+              label: root.name,
+              href: tenantHref(`/${root.slug}`),
+              subcategories: all
+                .filter((c) => c.parentId === root.id)
+                .map((child) => ({
+                  label: child.name,
+                  href: tenantHref(`/${root.slug}/${child.slug}`),
+                })),
+              featured: root.image
+                ? { image: resolveImageUrl(root.image), title: root.name, href: tenantHref(`/${root.slug}`) }
+                : undefined,
+            };
+          })
         );
       })
       .catch(console.error);
@@ -202,9 +218,17 @@ export default function MegaMenu() {
                       }}
                       onMouseEnter={() => setActiveCategory(cat.label)}
                     >
-                      <span className="text-xl group-hover:scale-110 transition-transform duration-200">
-                        {cat.icon}
-                      </span>
+                      {cat.imageUrl ? (
+                        <div className="w-5 h-5 relative shrink-0 overflow-hidden rounded-md group-hover:scale-110 transition-transform duration-200">
+                          <Image src={cat.imageUrl} alt={cat.label} fill className="object-cover" sizes="20px" />
+                        </div>
+                      ) : cat.emoji ? (
+                        <span className="text-xl group-hover:scale-110 transition-transform duration-200">{cat.emoji}</span>
+                      ) : (
+                        <svg className="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                        </svg>
+                      )}
                       <span className="truncate">{cat.label}</span>
                       <svg
                         className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-40 transition-opacity"
@@ -233,8 +257,16 @@ export default function MegaMenu() {
                           style={{ transitionDelay: '50ms' }}
                         >
                           <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-100">
-                            <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-2xl">
-                              {cat.icon}
+                            <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center overflow-hidden relative shrink-0">
+                              {cat.imageUrl ? (
+                                <Image src={cat.imageUrl} alt={cat.label} fill className="object-cover" sizes="40px" />
+                              ) : cat.emoji ? (
+                                <span className="text-2xl">{cat.emoji}</span>
+                              ) : (
+                                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                </svg>
+                              )}
                             </div>
                             <div>
                               <h3 className="font-black text-gray-900 text-lg">{cat.label}</h3>
@@ -304,9 +336,17 @@ export default function MegaMenu() {
                             transitionProperty: 'opacity, transform, border-color, box-shadow',
                           }}
                         >
-                          <span className="text-3xl group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                            {cat.icon}
-                          </span>
+                          <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center overflow-hidden relative border border-gray-100 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                            {cat.imageUrl ? (
+                              <Image src={cat.imageUrl} alt={cat.label} fill className="object-cover" sizes="48px" />
+                            ) : cat.emoji ? (
+                              <span className="text-3xl">{cat.emoji}</span>
+                            ) : (
+                              <svg className="w-6 h-6 text-gray-400 group-hover:text-primary transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                              </svg>
+                            )}
+                          </div>
                           <span className="text-xs text-gray-700 text-center leading-tight font-medium">
                             {cat.label}
                           </span>
