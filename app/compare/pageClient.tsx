@@ -121,7 +121,7 @@ export default function ComparePageClient() {
                       {/* Image */}
                       <div className="relative w-full aspect-[4/3] bg-gray-50 rounded-xl overflow-hidden">
                         {p.image ? (
-                          <Image src={p.image} alt={p.title} fill className="object-cover" sizes="220px" />
+                          <Image src={p.image} alt={p.title} fill className="object-cover" sizes="220px" unoptimized={true} />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-5xl opacity-30">{icon}</div>
                         )}

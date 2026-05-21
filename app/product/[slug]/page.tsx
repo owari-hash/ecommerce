@@ -144,6 +144,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             categoryLabel,
             icon,
             image: p.images?.[0],
+            images: p.images || [],
             price: formatPrice(p.salePrice ?? p.price),
             oldPrice: p.salePrice ? formatPrice(p.price) : undefined,
             props: specs,

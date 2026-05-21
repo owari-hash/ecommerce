@@ -17,6 +17,7 @@ type Props = {
     categoryLabel: string;
     icon: string;
     image?: string;
+    images?: string[];
     price: string;
     oldPrice?: string;
     props: Array<{ k: string; v: string }>;
@@ -57,16 +58,27 @@ export default function ProductDetailClient({ product }: Props) {
   }, [product.id]);
 
   const images = useMemo(() => {
+    if (product.images && product.images.length > 0) {
+      return product.images.map((imgUrl, i) => ({
+        id: `img-${i}`,
+        src: imgUrl,
+        alt: `${product.name} - ${i + 1}`,
+        label: `View ${i + 1}`,
+        isImage: true,
+      }));
+    }
     const mainImage = product.image || product.icon;
     const isRealImage = !!product.image;
-    return new Array(6).fill(null).map((_, i) => ({
-      id: `img-${i}`,
-      src: mainImage,
-      alt: `${product.name} - ${i + 1}`,
-      label: `View ${i + 1}`,
-      isImage: isRealImage,
-    }));
-  }, [product.image, product.icon, product.name]);
+    return [
+      {
+        id: 'img-0',
+        src: mainImage,
+        alt: product.name,
+        label: 'View 1',
+        isImage: isRealImage,
+      },
+    ];
+  }, [product.images, product.image, product.icon, product.name]);
 
   useEffect(() => {
     if (!zoomOpen) return;
@@ -104,7 +116,7 @@ export default function ProductDetailClient({ product }: Props) {
             >
               <div className="relative h-64 sm:h-80 md:h-[400px] flex items-center justify-center">
                 {images[imgIdx]?.isImage ? (
-                  <Image src={images[imgIdx].src} alt={images[imgIdx].alt} fill className="object-contain p-2" sizes="(max-width:768px) 100vw, 50vw" />
+                  <Image src={images[imgIdx].src} alt={images[imgIdx].alt} fill className="object-contain p-2" sizes="(max-width:768px) 100vw, 50vw" unoptimized={true} />
                 ) : (
                   <div className="text-7xl sm:text-8xl opacity-50 select-none">{product.icon}</div>
                 )}
@@ -124,61 +136,69 @@ export default function ProductDetailClient({ product }: Props) {
             </button>
 
             {/* Prev / Next arrows */}
-            <div className="absolute inset-y-0 left-0 z-30 flex items-center pl-2">
-              <button
-                type="button"
-                onClick={() => setImgIdx((x) => (x - 1 + images.length) % images.length)}
-                className="bg-white/90 hover:bg-white border border-gray-200 rounded-full w-8 h-8 flex items-center justify-center shadow-sm text-gray-600"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-            </div>
-            <div className="absolute inset-y-0 right-0 z-30 flex items-center pr-2">
-              <button
-                type="button"
-                onClick={() => setImgIdx((x) => (x + 1) % images.length)}
-                className="bg-white/90 hover:bg-white border border-gray-200 rounded-full w-8 h-8 flex items-center justify-center shadow-sm text-gray-600"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
+            {images.length > 1 && (
+              <>
+                <div className="absolute inset-y-0 left-0 z-30 flex items-center pl-2">
+                  <button
+                    type="button"
+                    onClick={() => setImgIdx((x) => (x - 1 + images.length) % images.length)}
+                    className="bg-white/90 hover:bg-white border border-gray-200 rounded-full w-8 h-8 flex items-center justify-center shadow-sm text-gray-600"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="absolute inset-y-0 right-0 z-30 flex items-center pr-2">
+                  <button
+                    type="button"
+                    onClick={() => setImgIdx((x) => (x + 1) % images.length)}
+                    className="bg-white/90 hover:bg-white border border-gray-200 rounded-full w-8 h-8 flex items-center justify-center shadow-sm text-gray-600"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              </>
+            )}
 
             {/* Dot indicator */}
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex gap-1">
-              {images.map((_, i) => (
-                <button key={i} onClick={() => setImgIdx(i)}
-                  className={`w-1.5 h-1.5 rounded-full transition-colors ${i === imgIdx ? 'bg-primary' : 'bg-gray-300'}`}
-                />
-              ))}
-            </div>
+            {images.length > 1 && (
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex gap-1">
+                {images.map((_, i) => (
+                  <button key={i} onClick={() => setImgIdx(i)}
+                    className={`w-1.5 h-1.5 rounded-full transition-colors ${i === imgIdx ? 'bg-primary' : 'bg-gray-300'}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Thumbnails */}
-          <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-            {images.map((img, i) => (
-              <button
-                key={img.id}
-                type="button"
-                onClick={() => setImgIdx(i)}
-                className={`rounded-xl border overflow-hidden shrink-0 w-14 h-14 sm:w-16 sm:h-16 bg-gray-50 transition-colors ${
-                  i === imgIdx ? 'border-primary' : 'border-gray-200 hover:border-gray-300'
-                }`}
-                aria-label={img.label}
-              >
-                <div className="relative h-full w-full flex items-center justify-center">
-                  {img.isImage ? (
-                    <Image src={img.src} alt={img.alt} fill className="object-contain p-1" sizes="64px" />
-                  ) : (
-                    <div className="text-xl opacity-60">{product.icon}</div>
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
+          {images.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+              {images.map((img, i) => (
+                <button
+                  key={img.id}
+                  type="button"
+                  onClick={() => setImgIdx(i)}
+                  className={`rounded-xl border overflow-hidden shrink-0 w-14 h-14 sm:w-16 sm:h-16 bg-gray-50 transition-colors ${
+                    i === imgIdx ? 'border-primary' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  aria-label={img.label}
+                >
+                  <div className="relative h-full w-full flex items-center justify-center">
+                    {img.isImage ? (
+                      <Image src={img.src} alt={img.alt} fill className="object-contain p-1" sizes="64px" unoptimized={true} />
+                    ) : (
+                      <div className="text-xl opacity-60">{product.icon}</div>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* ── Zoom modal ── */}
@@ -201,21 +221,25 @@ export default function ProductDetailClient({ product }: Props) {
                 {/* Image area */}
                 <div className="flex-1 bg-gray-50 flex items-center justify-center overflow-hidden select-none relative">
                   {/* Prev/Next on sides */}
-                  <button onClick={() => setImgIdx((x) => (x - 1 + images.length) % images.length)}
-                    className="absolute left-2 bg-white/90 border border-gray-200 rounded-full w-9 h-9 flex items-center justify-center shadow-sm z-10">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                  </button>
-                  <button onClick={() => setImgIdx((x) => (x + 1) % images.length)}
-                    className="absolute right-2 bg-white/90 border border-gray-200 rounded-full w-9 h-9 flex items-center justify-center shadow-sm z-10">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                  </button>
+                  {images.length > 1 && (
+                    <>
+                      <button onClick={() => setImgIdx((x) => (x - 1 + images.length) % images.length)}
+                        className="absolute left-2 bg-white/90 border border-gray-200 rounded-full w-9 h-9 flex items-center justify-center shadow-sm z-10">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                      </button>
+                      <button onClick={() => setImgIdx((x) => (x + 1) % images.length)}
+                        className="absolute right-2 bg-white/90 border border-gray-200 rounded-full w-9 h-9 flex items-center justify-center shadow-sm z-10">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                      </button>
+                    </>
+                  )}
 
                   {images[imgIdx]?.isImage ? (
                     <div
                       className="relative w-full h-full"
                       style={{ transform: `scale(${zoom.scale}) rotate(${zoom.rot}deg) scaleX(${zoom.flipX ? -1 : 1}) scaleY(${zoom.flipY ? -1 : 1})`, transition: 'transform 120ms ease-out' }}
                     >
-                      <Image src={images[imgIdx].src} alt={images[imgIdx].alt} fill className="object-contain" sizes="95vw" />
+                      <Image src={images[imgIdx].src} alt={images[imgIdx].alt} fill className="object-contain" sizes="95vw" unoptimized={true} />
                     </div>
                   ) : (
                     <div className="text-[180px] opacity-50"

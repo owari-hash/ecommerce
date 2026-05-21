@@ -42,7 +42,7 @@ export default function CompareBar() {
                 <div key={item.id} className="relative shrink-0 group/thumb">
                   <div className="relative w-12 h-12 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center">
                     {item.image ? (
-                      <Image src={item.image} alt={item.title} fill className="object-cover" sizes="48px" />
+                      <Image src={item.image} alt={item.title} fill className="object-cover" sizes="48px" unoptimized={true} />
                     ) : (
                       <span className="text-xl">📦</span>
                     )}

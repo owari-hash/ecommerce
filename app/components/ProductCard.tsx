@@ -56,6 +56,7 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"
             sizes="(max-width:640px) 50vw, (max-width:1280px) 25vw, 20vw"
+            unoptimized={true}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-4xl opacity-30">
