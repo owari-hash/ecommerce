@@ -5,13 +5,20 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { getCartCount, addToCart } from '../lib/cartStore';
 import { readAuth, logout, type User } from '../lib/authStore';
-import { MOCK_PRODUCTS, CATEGORY_ICONS, CATEGORY_LABELS, formatPrice } from '../lib/mockCatalog';
+import { formatPrice } from '../lib/mockCatalog';
 import MegaMenu from './MegaMenu';
 import { useTenant } from '../lib/TenantContext';
 import { useTenantHref } from '../lib/useTenantHref';
 
-const ALL_BRANDS = [...new Set(MOCK_PRODUCTS.map((p) => p.brand))].sort();
-
+type SearchProduct = {
+  id: string;
+  slug: string;
+  name: string;
+  brand: string;
+  price: number;
+  oldPrice?: number;
+  image?: string;
+};
 
 export default function Header() {
   const { branding, contact, tenantId } = useTenant();
@@ -29,6 +36,7 @@ export default function Header() {
   const [mobileSearch, setMobileSearch] = useState('');
   const [mobileDebouncedSearch, setMobileDebouncedSearch] = useState('');
   const [categories, setCategories] = useState<{ label: string; href: string }[]>([]);
+  const [apiProducts, setApiProducts] = useState<SearchProduct[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const mobileSearchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -59,6 +67,39 @@ export default function Header() {
       })
       .catch(console.error);
   }, [tenantId, tenantHref]);
+
+  useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+    fetch(`${apiUrl}/api/products/public?tenantId=${tenantId}`)
+      .then((r) => r.json())
+      .then((body) => {
+        if (!body?.data) return;
+        setApiProducts(
+          body.data.map((p: any): SearchProduct => {
+            const rawImg = p.images?.[0];
+            let image: string | undefined;
+            if (rawImg) {
+              const cleaned = rawImg.trim();
+              if (cleaned.startsWith('http://') || cleaned.startsWith('https://') || cleaned.startsWith('data:')) {
+                image = cleaned;
+              } else {
+                image = `${apiUrl}/upload/${cleaned.replace(/^\/?(upload\/)?/, '')}`;
+              }
+            }
+            return {
+              id: p.id,
+              slug: p.slug || p.id,
+              name: p.name,
+              brand: (p.brandId && p.brandId !== 'br1') ? p.brandId : 'Дэлгүүр',
+              price: p.salePrice || p.price,
+              oldPrice: p.salePrice ? p.price : undefined,
+              image,
+            };
+          })
+        );
+      })
+      .catch(console.error);
+  }, [tenantId]);
 
   useEffect(() => {
     if (showMobileSearch) {
@@ -103,26 +144,27 @@ export default function Header() {
   const searchSuggestions = useMemo(() => {
     if (debouncedSearch.trim().length < 1) return [];
     const query = debouncedSearch.toLowerCase();
-    return MOCK_PRODUCTS.filter(p =>
+    return apiProducts.filter(p =>
       p.name.toLowerCase().includes(query) ||
       p.brand.toLowerCase().includes(query)
     ).slice(0, 5);
-  }, [debouncedSearch]);
+  }, [debouncedSearch, apiProducts]);
 
   const mobileSuggestions = useMemo(() => {
     if (mobileDebouncedSearch.trim().length < 1) return [];
     const query = mobileDebouncedSearch.toLowerCase();
-    return MOCK_PRODUCTS.filter(p =>
+    return apiProducts.filter(p =>
       p.name.toLowerCase().includes(query) ||
       p.brand.toLowerCase().includes(query)
     ).slice(0, 5);
-  }, [mobileDebouncedSearch]);
+  }, [mobileDebouncedSearch, apiProducts]);
 
   const filteredBrands = useMemo(() => {
     if (!mobileDebouncedSearch.trim()) return [];
     const query = mobileDebouncedSearch.toLowerCase();
-    return ALL_BRANDS.filter(brand => brand.toLowerCase().includes(query)).slice(0, 4);
-  }, [mobileDebouncedSearch]);
+    const brands = [...new Set(apiProducts.map(p => p.brand))].sort();
+    return brands.filter(brand => brand.toLowerCase().includes(query)).slice(0, 4);
+  }, [mobileDebouncedSearch, apiProducts]);
 
   const handleSuggestionClick = (slug: string) => {
     setShowSuggestions(false);
@@ -130,7 +172,7 @@ export default function Header() {
     router.push(tenantHref(`/product/${slug}`));
   };
 
-  const handleAddToCart = (e: React.MouseEvent, product: typeof MOCK_PRODUCTS[0]) => {
+  const handleAddToCart = (e: React.MouseEvent, product: SearchProduct) => {
     e.stopPropagation();
     addToCart({
       id: product.id,
@@ -138,7 +180,7 @@ export default function Header() {
       name: product.name,
       price: product.price,
       oldPrice: product.oldPrice,
-      icon: CATEGORY_ICONS[product.category],
+      icon: '📦',
       brand: product.brand,
     });
     setShowToast(true);
@@ -262,8 +304,8 @@ export default function Header() {
                               className="border border-gray-100 rounded-lg p-2 hover:shadow-sm transition-all cursor-pointer group">
                               <div className="relative aspect-square bg-gray-50 rounded-md flex items-center justify-center mb-2 overflow-hidden">
                                 {product.image
-                                  ? <Image src={product.image} alt={product.name} fill className="object-cover" sizes="120px" />
-                                  : <div className="text-2xl">{CATEGORY_ICONS[product.category]}</div>
+                                  ? <Image src={product.image} alt={product.name} fill className="object-cover" sizes="120px" unoptimized />
+                                  : <div className="text-2xl">📦</div>
                                 }
                               </div>
                               <p className="text-[9px] text-gray-500 uppercase font-bold mb-0.5">{product.brand}</p>
@@ -529,9 +571,9 @@ export default function Header() {
                         >
                           <div className="h-28 bg-gray-50 flex items-center justify-center overflow-hidden relative">
                             {product.image ? (
-                              <Image src={product.image} alt={product.name} fill className="object-cover" sizes="144px" />
+                              <Image src={product.image} alt={product.name} fill className="object-cover" sizes="144px" unoptimized />
                             ) : (
-                              <span className="text-4xl">{CATEGORY_ICONS[product.category]}</span>
+                              <span className="text-4xl">📦</span>
                             )}
                             <div className="absolute top-1.5 left-1.5 bg-white/90 rounded px-1 py-0.5">
                               <span className="text-[9px] font-black text-gray-700">{product.brand}</span>
@@ -541,7 +583,7 @@ export default function Header() {
                             <h4 className="text-xs font-semibold text-gray-800 line-clamp-2 leading-tight mb-1" style={{ minHeight: '2rem' }}>
                               {product.name}
                             </h4>
-                            <p className="text-[10px] text-gray-400 mb-2">{CATEGORY_LABELS[product.category]}</p>
+                            <p className="text-[10px] text-gray-400 mb-2">{product.brand}</p>
                             <div className="flex items-center justify-between">
                               <span className="text-sm font-black text-gray-900">{formatPrice(product.price)}</span>
                               <button

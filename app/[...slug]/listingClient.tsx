@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useMemo, useState, useEffect } from 'react';
 import { addToCart } from '../lib/cartStore';
 import { useTenantHref } from '../lib/useTenantHref';
+import { useTenant } from '../lib/TenantContext';
 import { readCompare, toggleCompare, writeCompare } from '../lib/compareStore';
 import { formatPrice } from '../lib/mockCatalog';
 
@@ -328,6 +329,15 @@ function parsePrice(price: string): number {
   return parseInt(price.replace(/[^0-9]/g, ''), 10) || 0;
 }
 
+function resolveLogoUrl(logo: string | undefined): string {
+  if (!logo) return '';
+  const apiUrl = getApiUrl();
+  const uploadMatch = logo.match(/\/upload\/(.+)$/);
+  if (uploadMatch) return `${apiUrl}/upload/${uploadMatch[1]}`;
+  if (logo.startsWith('http://') || logo.startsWith('https://') || logo.startsWith('data:')) return logo;
+  return logo.startsWith('/') ? `${apiUrl}${logo}` : `${apiUrl}/upload/${logo}`;
+}
+
 export default function CategoryListingClient({
   category,
   products,
@@ -336,6 +346,8 @@ export default function CategoryListingClient({
   currentCategoryId,
 }: Props) {
   const tenantHref = useTenantHref();
+  const { branding } = useTenant();
+  const logoFallback = resolveLogoUrl(branding.logo);
   const [brandQuery, setBrandQuery] = useState('');
   const [selectedBrands, setSelectedBrands] = useState<Record<string, boolean>>({});
   const [selectedStatuses, setSelectedStatuses] = useState<Record<string, boolean>>({});
@@ -615,6 +627,16 @@ export default function CategoryListingClient({
                       fill
                       className="object-cover"
                       sizes="(max-width:640px) 50vw, (max-width:1280px) 33vw, 25vw"
+                      unoptimized
+                    />
+                  ) : logoFallback ? (
+                    <Image
+                      src={logoFallback}
+                      alt={branding.name ?? 'Logo'}
+                      fill
+                      className="object-contain p-6 opacity-20"
+                      sizes="(max-width:640px) 50vw, (max-width:1280px) 33vw, 25vw"
+                      unoptimized
                     />
                   ) : (
                     <div className="text-4xl md:text-6xl opacity-60">{category.icon}</div>

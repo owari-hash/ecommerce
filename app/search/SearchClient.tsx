@@ -3,29 +3,71 @@
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { useMemo } from 'react';
-import { MOCK_PRODUCTS, CATEGORY_ICONS, formatPrice, CATEGORY_LABELS } from '../lib/mockCatalog';
+import { useMemo, useState, useEffect } from 'react';
+import { formatPrice, CATEGORY_LABELS } from '../lib/mockCatalog';
+import { useTenant } from '../lib/TenantContext';
+
+type SearchProduct = {
+  id: string;
+  slug: string;
+  name: string;
+  brand: string;
+  price: number;
+  oldPrice?: number;
+  image?: string;
+  isSale: boolean;
+  isNew: boolean;
+};
 
 export default function SearchClient() {
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
+  const { tenantId } = useTenant();
+  const [apiProducts, setApiProducts] = useState<SearchProduct[]>([]);
+
+  useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+    fetch(`${apiUrl}/api/products/public?tenantId=${tenantId}`)
+      .then(r => r.json())
+      .then(body => {
+        if (!body?.data) return;
+        setApiProducts(
+          body.data.map((p: any): SearchProduct => {
+            const rawImg = p.images?.[0];
+            let image: string | undefined;
+            if (rawImg) {
+              const cleaned = rawImg.trim();
+              if (cleaned.startsWith('http://') || cleaned.startsWith('https://') || cleaned.startsWith('data:')) {
+                image = cleaned;
+              } else {
+                image = `${apiUrl}/upload/${cleaned.replace(/^\/?(upload\/)?/, '')}`;
+              }
+            }
+            return {
+              id: p.id,
+              slug: p.slug || p.id,
+              name: p.name,
+              brand: (p.brandId && p.brandId !== 'br1') ? p.brandId : 'Дэлгүүр',
+              price: p.salePrice || p.price,
+              oldPrice: p.salePrice ? p.price : undefined,
+              image,
+              isSale: !!p.salePrice,
+              isNew: !!p.featured,
+            };
+          })
+        );
+      })
+      .catch(console.error);
+  }, [tenantId]);
 
   const results = useMemo(() => {
     if (!query.trim()) return [];
-    
     const normalizedQuery = query.toLowerCase().trim();
-    
-    return MOCK_PRODUCTS.filter((p) => {
-      const nameMatch = p.name.toLowerCase().includes(normalizedQuery);
-      const brandMatch = p.brand.toLowerCase().includes(normalizedQuery);
-      const categoryMatch = CATEGORY_LABELS[p.category].toLowerCase().includes(normalizedQuery);
-      const propsMatch = p.props.some(
-        (prop) => prop.k.toLowerCase().includes(normalizedQuery) || prop.v.toLowerCase().includes(normalizedQuery)
-      );
-      
-      return nameMatch || brandMatch || categoryMatch || propsMatch;
-    });
-  }, [query]);
+    return apiProducts.filter((p) =>
+      p.name.toLowerCase().includes(normalizedQuery) ||
+      p.brand.toLowerCase().includes(normalizedQuery)
+    );
+  }, [query, apiProducts]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -85,10 +127,11 @@ export default function SearchClient() {
                     fill
                     className="object-cover"
                     sizes="(max-width:640px) 50vw, 25vw"
+                    unoptimized
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-4xl">
-                    {CATEGORY_ICONS[product.category]}
+                    📦
                   </div>
                 )}
                 {product.isSale && (
@@ -121,7 +164,7 @@ export default function SearchClient() {
                 
                 <div className="mt-2 flex items-baseline gap-2">
                   <span className="text-sm font-black text-gray-900">
-                    {formatPrice(product.price)}
+                    {product.price ? formatPrice(product.price) : '—'}
                   </span>
                   {product.oldPrice && (
                     <span className="text-xs text-gray-400 line-through">
