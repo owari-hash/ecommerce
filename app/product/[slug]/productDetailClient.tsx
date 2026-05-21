@@ -12,6 +12,7 @@ type Props = {
     id: string;
     slug: string;
     name: string;
+    description?: string;
     brand: string;
     category: string;
     categoryLabel: string;
@@ -432,13 +433,28 @@ export default function ProductDetailClient({ product }: Props) {
             </div>
             <div className="pt-4">
               {tab === 'details' && (
-                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-500">
-                  Тайлбар оруулаагүй байна
+                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700 leading-relaxed">
+                  {product.description ? (
+                    <p>{product.description}</p>
+                  ) : (
+                    <p className="text-gray-400">Тайлбар оруулаагүй байна</p>
+                  )}
                 </div>
               )}
               {tab === 'specs' && (
-                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-500">
-                  Үзүүлэлт хэсэг (placeholder)
+                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                  {product.props.length > 0 ? (
+                    <dl className="divide-y divide-gray-100">
+                      {product.props.map((x) => (
+                        <div key={x.k} className="flex items-start justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
+                          <dt className="text-xs font-bold text-gray-500 min-w-[120px] shrink-0">{x.k}</dt>
+                          <dd className="text-xs font-semibold text-gray-800 text-right">{x.v}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  ) : (
+                    <p className="text-sm text-gray-400">Үзүүлэлт байхгүй байна</p>
+                  )}
                 </div>
               )}
               {tab === 'reviews' && (

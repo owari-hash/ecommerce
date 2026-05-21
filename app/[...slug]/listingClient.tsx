@@ -723,177 +723,107 @@ export default function CategoryListingClient({
       <div className="hidden xl:block w-80 shrink-0" aria-hidden="true" />
       <aside
         aria-label="comparison"
-        className="hidden xl:flex flex-col fixed top-24 right-0 w-80 bottom-0 z-30 overflow-y-auto px-4 py-4"
+        className="hidden xl:block fixed top-24 right-0 w-80 bottom-0 z-30 overflow-y-auto px-3 py-4"
       >
-        <div className="w-full space-y-4 pb-8 bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-        <style>{`
-          .compare-bar-container {
-            display: none !important;
-          }
-        `}</style>
-        <div className="flex items-center justify-between pb-2 border-b border-gray-50">
-          <h2 className="font-black text-gray-900 text-sm flex items-center gap-1.5">
-            <span>⚖️ Харьцуулалт</span>
-            <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs font-bold">
-              {comparedProducts.length}
-            </span>
-          </h2>
-          {comparedProducts.length > 0 && (
-            <button
-              type="button"
-              onClick={() => {
-                writeCompare([]);
-              }}
-              className="text-xs font-bold text-gray-500 hover:text-primary transition-colors"
-            >
-              Цэвэрлэх
-            </button>
-          )}
-        </div>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+          <style>{`
+            .compare-bar-container { display: none !important; }
+          `}</style>
 
-        {comparedProducts.length === 0 ? (
-          <div className="py-12 px-4 text-center bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
-            <div className="text-4xl mb-3 animate-pulse">⚖️</div>
-            <h3 className="text-xs font-bold text-gray-700 mb-1">Харьцуулах бараа сонгоно уу</h3>
-            <p className="text-[11px] text-gray-400 leading-normal max-w-[200px] mx-auto">
-              Барааны "Харьцуулах" сонголтыг идэвхжүүлж зэрэгцүүлэн харах боломжтой
-            </p>
+          {/* Header */}
+          <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+            <h2 className="font-black text-gray-900 text-sm flex items-center gap-2">
+              <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Харьцуулалт
+              {comparedProducts.length > 0 && (
+                <span className="bg-primary text-white text-[10px] font-black px-1.5 py-0.5 rounded-full leading-none">
+                  {comparedProducts.length}
+                </span>
+              )}
+            </h2>
+            {comparedProducts.length > 0 && (
+              <button type="button" onClick={() => writeCompare([])}
+                className="text-[11px] font-bold text-gray-400 hover:text-red-500 transition-colors">
+                Цэвэрлэх
+              </button>
+            )}
           </div>
-        ) : (
-          <div className="space-y-4">
-            {/* List of Compared Product Cards */}
-            <div className="space-y-2.5">
-              {comparedProducts.map((p, idx) => {
-                const colors = [
-                  { border: 'border-emerald-500', text: 'text-emerald-500', bg: 'bg-emerald-500' },
-                  { border: 'border-purple-500', text: 'text-purple-500', bg: 'bg-purple-500' },
-                  { border: 'border-amber-500', text: 'text-amber-500', bg: 'bg-amber-500' },
-                  { border: 'border-blue-500', text: 'text-blue-500', bg: 'bg-blue-500' }
-                ];
-                return (
-                  <div key={p.id} className="relative flex gap-2.5 p-2 bg-gray-50/70 border border-gray-100 rounded-xl group/item">
-                    <div className={`relative w-10 h-10 rounded-lg overflow-hidden shrink-0 border-2 ${colors[idx % 4].border} bg-white flex items-center justify-center`}>
-                      {p.images?.[0] ? (
-                        <Image src={p.images[0]} alt={p.name} fill className="object-cover" sizes="40px" unoptimized />
-                      ) : (
-                        <span className="text-base">📦</span>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[9px] text-gray-400 font-bold uppercase">{p.brandId || 'Дэлгүүр'}</div>
-                      <div className="text-xs font-bold text-gray-800 truncate pr-4">{p.name}</div>
-                      <div className="text-xs font-black text-gray-900 mt-0.5">
-                        {formatPrice(p.salePrice ? p.salePrice : p.price)}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        toggleCompare({
-                          id: p.id,
-                          title: p.name,
-                          slug: p.slug,
-                          brand: p.brandId || 'Дэлгүүр',
-                          image: p.images?.[0],
-                          price: p.salePrice || p.price,
-                        });
-                      }}
-                      className="absolute top-1.5 right-1.5 w-4 h-4 bg-gray-200 hover:bg-red-500 hover:text-white text-gray-500 rounded-full flex items-center justify-center text-[10px] font-black transition-colors"
-                    >
-                      ×
-                    </button>
-                  </div>
-                );
-              })}
+
+          {comparedProducts.length === 0 ? (
+            <div className="py-8 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center mx-auto mb-3">
+                <svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <p className="text-xs font-bold text-gray-600 mb-1">Харьцуулах бараа сонгоно уу</p>
+              <p className="text-[11px] text-gray-400 leading-relaxed">
+                Бараа бүрийн доор байрлах<br />&ldquo;Харьцуулах&rdquo; товчийг дарна уу
+              </p>
             </div>
-
-            {/* Live Parameter Matrix */}
-            <div className="space-y-4 pt-2 border-t border-gray-100">
-              {/* Price Row */}
-              <div className="bg-gray-50/30 p-2.5 rounded-xl border border-gray-100">
-                <div className="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Үнэ</div>
-                <div className="space-y-1.5">
-                  {comparedProducts.map((p, idx) => {
-                    const colors = [
-                      { border: 'border-emerald-500', text: 'text-emerald-500', bg: 'bg-emerald-500' },
-                      { border: 'border-purple-500', text: 'text-purple-500', bg: 'bg-purple-500' },
-                      { border: 'border-amber-500', text: 'text-amber-500', bg: 'bg-amber-500' },
-                      { border: 'border-blue-500', text: 'text-blue-500', bg: 'bg-blue-500' }
-                    ];
-                    return (
-                      <div key={p.id} className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <span className={`w-2 h-2 rounded-full shrink-0 ${colors[idx % 4].bg}`} />
-                          <span className="font-semibold text-gray-600 truncate">{p.name.split(' (')[0]}</span>
-                        </div>
-                        <span className="font-bold text-gray-900 shrink-0">
-                          {formatPrice(p.salePrice ? p.salePrice : p.price)}
-                        </span>
+          ) : (
+            <>
+              {/* Product cards */}
+              <div className="space-y-2">
+                {comparedProducts.map((p, idx) => {
+                  const rings = ['ring-emerald-400','ring-purple-400','ring-amber-400','ring-blue-400'];
+                  const dots = ['bg-emerald-500','bg-purple-500','bg-amber-500','bg-blue-500'];
+                  const texts = ['text-emerald-600','text-purple-600','text-amber-600','text-blue-600'];
+                  return (
+                    <div key={p.id} className="flex items-center gap-2.5 p-2 rounded-xl bg-gray-50/80 border border-gray-100 group">
+                      <div className={`relative w-9 h-9 rounded-lg ring-2 ${rings[idx%4]} bg-white shrink-0 overflow-hidden flex items-center justify-center`}>
+                        {p.images?.[0]
+                          ? <Image src={p.images[0]} alt={p.name} fill className="object-cover" sizes="36px" unoptimized />
+                          : <span className="text-sm">📦</span>
+                        }
                       </div>
-                    );
-                  })}
-                </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[9px] font-black uppercase text-gray-400 leading-none">{p.brandId||'Дэлгүүр'}</div>
+                        <div className="text-[11px] font-bold text-gray-800 truncate leading-tight mt-0.5">{p.name}</div>
+                        <div className={`text-[11px] font-black leading-none mt-0.5 ${texts[idx%4]}`}>
+                          {formatPrice(p.salePrice||p.price)}
+                        </div>
+                      </div>
+                      <button type="button"
+                        onClick={() => toggleCompare({ id:p.id, title:p.name, slug:p.slug, brand:p.brandId||'Дэлгүүр', image:p.images?.[0], price:p.salePrice||p.price })}
+                        className="w-5 h-5 rounded-full bg-gray-200 hover:bg-red-500 text-gray-500 hover:text-white flex items-center justify-center text-[11px] font-black shrink-0 transition-colors opacity-0 group-hover:opacity-100"
+                      >×</button>
+                    </div>
+                  );
+                })}
               </div>
 
-              {/* Brand Row */}
-              <div className="bg-gray-50/30 p-2.5 rounded-xl border border-gray-100">
-                <div className="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Брэнд</div>
-                <div className="space-y-1.5">
-                  {comparedProducts.map((p, idx) => {
-                    const colors = [
-                      { border: 'border-emerald-500', text: 'text-emerald-500', bg: 'bg-emerald-500' },
-                      { border: 'border-purple-500', text: 'text-purple-500', bg: 'bg-purple-500' },
-                      { border: 'border-amber-500', text: 'text-amber-500', bg: 'bg-amber-500' },
-                      { border: 'border-blue-500', text: 'text-blue-500', bg: 'bg-blue-500' }
-                    ];
-                    return (
-                      <div key={p.id} className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <span className={`w-2 h-2 rounded-full shrink-0 ${colors[idx % 4].bg}`} />
-                          <span className="font-semibold text-gray-600 truncate">{p.name.split(' (')[0]}</span>
-                        </div>
-                        <span className="font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded text-[10px] uppercase shrink-0">
-                          {p.brandId || 'Дэлгүүр'}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Dynamic Specifications */}
-              {["Материал", "Баталгаат хугацаа", "Үйлдвэрлэсэн улс"].map(specKey => {
-                return (
-                  <div key={specKey} className="bg-gray-50/30 p-2.5 rounded-xl border border-gray-100">
-                    <div className="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">{specKey}</div>
-                    <div className="space-y-2">
+              {/* Comparison spec grid */}
+              <div className="border-t border-gray-100 pt-3 space-y-3">
+                {[
+                  { label: 'Үнэ', getValue: (p: any) => String(formatPrice(p.salePrice||p.price)) },
+                  { label: 'Брэнд', getValue: (p: any) => String(p.brandId||'Дэлгүүр') },
+                  { label: 'Материал', getValue: (p: any) => String(p.specifications?.['Материал']||'—') },
+                  { label: 'Баталгаа', getValue: (p: any) => String(p.specifications?.['Баталгаат хугацаа']||'—') },
+                  { label: 'Улс', getValue: (p: any) => String(p.specifications?.['Үйлдвэрлэсэн улс']||'—') },
+                ].map(({ label, getValue }) => (
+                  <div key={label}>
+                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-wide mb-1.5">{label}</div>
+                    <div className="flex gap-1.5">
                       {comparedProducts.map((p, idx) => {
-                        const colors = [
-                          { border: 'border-emerald-500', text: 'text-emerald-500', bg: 'bg-emerald-500' },
-                          { border: 'border-purple-500', text: 'text-purple-500', bg: 'bg-purple-500' },
-                          { border: 'border-amber-500', text: 'text-amber-500', bg: 'bg-amber-500' },
-                          { border: 'border-blue-500', text: 'text-blue-500', bg: 'bg-blue-500' }
-                        ];
-                        const val = p.specifications?.[specKey] || 'Тодорхойгүй';
+                        const bgs = ['bg-emerald-500','bg-purple-500','bg-amber-500','bg-blue-500'];
+                        const lightBgs = ['bg-emerald-50','bg-purple-50','bg-amber-50','bg-blue-50'];
+                        const borders = ['border-emerald-200','border-purple-200','border-amber-200','border-blue-200'];
                         return (
-                          <div key={p.id} className="space-y-0.5">
-                            <div className="flex items-center gap-1.5 text-xs">
-                              <span className={`w-2 h-2 rounded-full shrink-0 ${colors[idx % 4].bg}`} />
-                              <span className="font-semibold text-gray-500 truncate">{p.name.split(' (')[0]}</span>
-                            </div>
-                            <div className="pl-3.5 text-xs font-bold text-gray-800 leading-normal">
-                              {val}
-                            </div>
+                          <div key={p.id} className={`flex-1 flex flex-col items-center text-center rounded-lg p-1.5 border ${lightBgs[idx%4]} ${borders[idx%4]}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${bgs[idx%4]} mb-1`} />
+                            <span className="text-[10px] font-bold text-gray-700 leading-tight break-words w-full">{getValue(p)}</span>
                           </div>
                         );
                       })}
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </aside>
 

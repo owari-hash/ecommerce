@@ -24,7 +24,8 @@ async function fetchProductData(tenantId: string, slugOrId: string) {
   const categories: any[] = catRes.ok ? (await catRes.json())?.data ?? [] : [];
 
   const product = products.find(
-    (p: any) => p.slug === slugOrId || p.id === slugOrId,
+    (p: any) => p.slug === slugOrId || p.id === slugOrId ||
+      p.slug === decodeURIComponent(slugOrId) || p.id === decodeURIComponent(slugOrId),
   );
 
   return { product, products, categories };
@@ -139,6 +140,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             id: p.id,
             slug: p.slug || p.id,
             name: p.name,
+            description: p.description || '',
             brand: (p.brandId && p.brandId !== 'br1') ? p.brandId : 'Дэлгүүр',
             category: categorySlug,
             categoryLabel,
@@ -153,19 +155,27 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       </div>
 
       {relatedVMs.length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">Төстэй бараа</h2>
-          <Carousel
-            ariaLabel="Төстэй бараа"
-            autoplayMs={7000}
-            slides={chunk(relatedVMs, 6).map((page, idx) => (
-              <div key={idx} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-3 lg:gap-4">
-                {page.map((x) => (
-                  <ProductCard key={x.id} {...x} />
-                ))}
-              </div>
+        <div className="mt-10">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-xl font-black text-gray-900">Төстэй бараа</h2>
+              <p className="text-sm text-gray-400 mt-0.5">{categoryLabel} ангиллын бусад бараанууд</p>
+            </div>
+            <Link
+              href={`/${categorySlug}`}
+              className="text-sm font-bold text-primary hover:text-primary-dark flex items-center gap-1 transition-colors"
+            >
+              Бүгдийг үзэх
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
+            {relatedVMs.map((x) => (
+              <ProductCard key={x.id} {...x} />
             ))}
-          />
+          </div>
         </div>
       )}
     </div>
