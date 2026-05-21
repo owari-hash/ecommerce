@@ -49,6 +49,17 @@ function getIcon(slug: string, image: string): string {
   return SLUG_ICONS[slug] ?? '📦';
 }
 
+function resolveImageUrl(url: string | undefined) {
+  if (!url) return '';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+  const uploadMatch = url.match(/\/upload\/(.+)$/);
+  if (uploadMatch) {
+    return `${apiUrl}/upload/${uploadMatch[1]}`;
+  }
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+  return url.startsWith('/') ? `${apiUrl}${url}` : `${apiUrl}/upload/${url}`;
+}
+
 export default function MegaMenu() {
   const tenant = useTenant();
   const { tenantId } = tenant;
@@ -84,8 +95,8 @@ export default function MegaMenu() {
                 label: child.name,
                 href: tenantHref(`/${root.slug}/${child.slug}`),
               })),
-            featured: root.image?.startsWith('http')
-              ? { image: root.image, title: root.name, href: tenantHref(`/${root.slug}`) }
+            featured: root.image
+              ? { image: resolveImageUrl(root.image), title: root.name, href: tenantHref(`/${root.slug}`) }
               : undefined,
           }))
         );

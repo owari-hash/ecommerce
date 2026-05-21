@@ -20,10 +20,26 @@ type Props = {
   image?: string;
 };
 
+function isUrl(s: string) {
+  return s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:')
+}
+
+function resolveProductImageUrl(url: string | undefined) {
+  if (!url) return '';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+  const uploadMatch = url.match(/\/upload\/(.+)$/);
+  if (uploadMatch) {
+    return `${apiUrl}/upload/${uploadMatch[1]}`;
+  }
+  if (isUrl(url)) return url;
+  return url.startsWith('/') ? `${apiUrl}${url}` : `${apiUrl}/upload/${url}`;
+}
+
 export default function ProductCard({ id, slug, name, brand, category, price, oldPrice, isNew, image }: Props) {
   const tenantHref = useTenantHref();
   const discountPct = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
   const [inCompare, setInCompare] = useState(false);
+  const resolvedImage = resolveProductImageUrl(image);
 
   useEffect(() => {
     const update = () => setInCompare(readCompare().some((x) => x.id === id));
@@ -39,7 +55,7 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
   const handleCompare = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleCompare({ id, title: name, slug, image, brand, price, oldPrice });
+    toggleCompare({ id, title: name, slug, image: resolvedImage, brand, price, oldPrice });
   };
 
   return (
@@ -49,9 +65,9 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
     >
       {/* Image */}
       <div className="relative aspect-[4/3] bg-gray-50 overflow-hidden">
-        {image ? (
+        {resolvedImage ? (
           <Image
-            src={image}
+            src={resolvedImage}
             alt={name}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"

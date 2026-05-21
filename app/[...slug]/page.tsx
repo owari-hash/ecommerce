@@ -136,9 +136,14 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
 
     if (catBanner) {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
-      bannerImage = catBanner.startsWith('http')
-        ? catBanner
-        : `${apiUrl}${catBanner}`;
+      const uploadMatch = catBanner.match(/\/upload\/(.+)$/);
+      if (uploadMatch) {
+        bannerImage = `${apiUrl}/upload/${uploadMatch[1]}`;
+      } else {
+        bannerImage = catBanner.startsWith('http') || catBanner.startsWith('data:')
+          ? catBanner
+          : (catBanner.startsWith('/') ? `${apiUrl}${catBanner}` : `${apiUrl}/upload/${catBanner}`);
+      }
     }
   }
 

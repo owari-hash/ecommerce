@@ -17,7 +17,19 @@ interface Category {
 }
 
 function isUrl(s: string) {
-  return s.startsWith('http://') || s.startsWith('https://')
+  return s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:')
+}
+
+function resolveImageUrl(url: string | undefined, defaultEmoji: string = '📁') {
+  if (!url) return { imageUrl: null, emoji: defaultEmoji }
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
+  const uploadMatch = url.match(/\/upload\/(.+)$/);
+  if (uploadMatch) {
+    return { imageUrl: `${apiUrl}/upload/${uploadMatch[1]}`, emoji: null };
+  }
+  if (isUrl(url)) return { imageUrl: url, emoji: null }
+  const imageUrl = url.startsWith('/') ? `${apiUrl}${url}` : `${apiUrl}/upload/${url}`
+  return { imageUrl, emoji: null }
 }
 
 export default function CategoryList({ showBrands = true }: { showBrands?: boolean }) {
@@ -56,15 +68,16 @@ export default function CategoryList({ showBrands = true }: { showBrands?: boole
   }
 
   const items = [
-    ...categories.map((c) => ({
-      key: c.id,
-      href: tenantHref(`/${c.slug}`),
-      imageUrl: c.image && isUrl(c.image) ? c.image : null,
-      emoji: (!c.image || !isUrl(c.image))
-        ? (c.image || CATEGORY_ICONS[c.slug as keyof typeof CATEGORY_ICONS] || '📁')
-        : null,
-      label: c.name,
-    })),
+    ...categories.map((c) => {
+      const resolved = resolveImageUrl(c.image, CATEGORY_ICONS[c.slug as keyof typeof CATEGORY_ICONS] || '📁')
+      return {
+        key: c.id,
+        href: tenantHref(`/${c.slug}`),
+        imageUrl: resolved.imageUrl,
+        emoji: resolved.emoji,
+        label: c.name,
+      }
+    }),
     ...(showBrands ? [{ key: 'brands', href: tenantHref('/brands'), imageUrl: null, emoji: '🏷️', label: 'Брэндүүд' }] : []),
   ]
 

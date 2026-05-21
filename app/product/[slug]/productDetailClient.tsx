@@ -37,6 +37,21 @@ function parsePrice(price: string): number {
   return parseInt(price.replace(/[^0-9]/g, ''), 10) || 0;
 }
 
+function isUrl(s: string) {
+  return s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:')
+}
+
+function resolveProductImageUrl(url: string | undefined) {
+  if (!url) return '';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+  const uploadMatch = url.match(/\/upload\/(.+)$/);
+  if (uploadMatch) {
+    return `${apiUrl}/upload/${uploadMatch[1]}`;
+  }
+  if (isUrl(url)) return url;
+  return url.startsWith('/') ? `${apiUrl}${url}` : `${apiUrl}/upload/${url}`;
+}
+
 export default function ProductDetailClient({ product }: Props) {
   const [tab, setTab] = useState<'details' | 'specs' | 'reviews'>('details');
   const [imgIdx, setImgIdx] = useState(0);
@@ -61,13 +76,13 @@ export default function ProductDetailClient({ product }: Props) {
     if (product.images && product.images.length > 0) {
       return product.images.map((imgUrl, i) => ({
         id: `img-${i}`,
-        src: imgUrl,
+        src: resolveProductImageUrl(imgUrl),
         alt: `${product.name} - ${i + 1}`,
         label: `View ${i + 1}`,
         isImage: true,
       }));
     }
-    const mainImage = product.image || product.icon;
+    const mainImage = resolveProductImageUrl(product.image || product.icon);
     const isRealImage = !!product.image;
     return [
       {
