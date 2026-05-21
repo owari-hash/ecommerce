@@ -52,9 +52,10 @@ function BentoCard({ tile, className, style }: { tile: GroceryTile; className?: 
 
 interface GroceryBentoProps {
   tiles?: GroceryTile[]
+  sectionTitle?: string
 }
 
-export default function GroceryBento({ tiles }: GroceryBentoProps) {
+export default function GroceryBento({ tiles, sectionTitle }: GroceryBentoProps) {
   // Use provided tiles when 9 are configured; otherwise fall back to defaults
   const t = tiles && tiles.length >= 9 ? tiles.slice(0, 9) : DEFAULT_TILES
 
@@ -62,7 +63,9 @@ export default function GroceryBento({ tiles }: GroceryBentoProps) {
     <section className="bg-[#0d1117] py-8 sm:py-10 mt-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide">🛒 Хүнсний ангилал</h2>
+          <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide">
+            {sectionTitle && sectionTitle.trim() ? sectionTitle : '🛒 Хүнсний ангилал'}
+          </h2>
           <Link href={t[0]?.href ?? '/grocery'} className="text-sm font-bold text-primary hover:text-primary-light transition-colors">
             Бүгдийг харах →
           </Link>

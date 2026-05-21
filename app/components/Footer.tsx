@@ -1,6 +1,8 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTenant } from '../lib/TenantContext';
+import { useTenantHref } from '../lib/useTenantHref';
 
 const footerSections = [
   {
@@ -37,10 +39,9 @@ const footerSections = [
   },
 ];
 
-import { useTenant } from '../lib/TenantContext';
-
 export default function Footer() {
   const { branding, contact } = useTenant();
+  const tenantHref = useTenantHref();
   return (
     <footer className="bg-[#0a1628] text-gray-300 mt-10 mb-20 md:mb-0">
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
@@ -79,7 +80,7 @@ export default function Footer() {
               <ul className="space-y-2">
                 {section.links.map(link => (
                   <li key={link.href}>
-                    <Link href={link.href} className="text-sm text-gray-400 hover:text-white transition-colors">
+                    <Link href={tenantHref(link.href)} className="text-sm text-gray-400 hover:text-white transition-colors">
                       {link.label}
                     </Link>
                   </li>

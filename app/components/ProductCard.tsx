@@ -63,7 +63,9 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
   const handleCompare = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleCompare({ id, title: name, slug, image: resolvedImage, brand, price, oldPrice });
+    const next = toggleCompare({ id, title: name, slug, image: resolvedImage, brand, price, oldPrice });
+    // Set state immediately — don't wait for the compare:changed event to propagate
+    setInCompare(next.some((x) => x.id === id));
   };
 
   return (
@@ -106,9 +108,9 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
           type="button"
           onClick={handleCompare}
           aria-label={inCompare ? 'Харьцуулахаас хасах' : 'Харьцуулахад нэмэх'}
-          className={`absolute top-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center shadow transition-all duration-150 ${
+          className={`absolute top-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center shadow transition-colors duration-150 ${
             inCompare
-              ? 'bg-primary text-white'
+              ? 'bg-primary text-white opacity-100'
               : 'bg-white/90 text-gray-400 hover:text-primary opacity-0 group-hover:opacity-100'
           }`}
         >

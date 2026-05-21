@@ -671,7 +671,7 @@ export default function CategoryListingClient({
                         e.stopPropagation();
                         const price = parsePrice(p.price);
                         const oldPrice = p.oldPrice ? parsePrice(p.oldPrice) : undefined;
-                        toggleCompare({
+                        const next = toggleCompare({
                           id: p.id,
                           title: p.name,
                           slug: p.slug,
@@ -680,6 +680,8 @@ export default function CategoryListingClient({
                           price,
                           oldPrice,
                         });
+                        // Immediately sync — don't wait for the compare:changed event
+                        setCompareIds(new Set(next.map((x) => x.id)));
                       }}
                       className="rounded border-gray-300 text-primary focus:ring-primary w-3.5 h-3.5 cursor-pointer"
                     />
