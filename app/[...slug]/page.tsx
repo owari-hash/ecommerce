@@ -193,7 +193,7 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
           </div>
         ) : (
           <CategoryListingClient
-            category={{ key: categoryKey, label, icon: '📦' }}
+            category={{ key: categoryKey, label, icon: '📦', id: matchedCategoryId }}
             products={filteredProducts.map((p: any) => ({
               id: p.id,
               slug: p.slug || p.id,
@@ -204,6 +204,9 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
               badge: p.featured ? 'Шинэ' : p.salePrice ? 'Хямдрал' : null,
               image: p.images?.[0],
             }))}
+            categories={categories}
+            allProducts={rawProducts}
+            currentCategoryId={matchedCategoryId}
           />
         )}
       </div>
