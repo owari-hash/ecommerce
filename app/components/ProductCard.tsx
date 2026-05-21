@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { CATEGORY_ICONS, type CatalogCategoryKey, formatPrice } from '../lib/mockCatalog';
 import { toggleCompare, readCompare } from '../lib/compareStore';
 import { useTenantHref } from '../lib/useTenantHref';
+import { useTenant } from '../lib/TenantContext';
 
 type Props = {
   id: string;
@@ -45,9 +46,11 @@ function resolveProductImageUrl(url: string | undefined) {
 
 export default function ProductCard({ id, slug, name, brand, category, price, oldPrice, isNew, image }: Props) {
   const tenantHref = useTenantHref();
+  const { branding } = useTenant();
   const discountPct = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
   const [inCompare, setInCompare] = useState(false);
   const resolvedImage = resolveProductImageUrl(image);
+  const fallbackImage = resolveProductImageUrl(branding.logo);
 
   useEffect(() => {
     const update = () => setInCompare(readCompare().some((x) => x.id === id));
@@ -84,6 +87,17 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
             sizes="(max-width:640px) 50vw, (max-width:1280px) 25vw, 20vw"
             unoptimized={true}
           />
+        ) : fallbackImage ? (
+          <div className="w-full h-full flex items-center justify-center bg-gray-50 p-6">
+            <Image
+              src={fallbackImage}
+              alt={branding.name ?? 'Logo'}
+              fill
+              className="object-contain opacity-25"
+              sizes="(max-width:640px) 50vw, (max-width:1280px) 25vw, 20vw"
+              unoptimized={true}
+            />
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-4xl opacity-30">
             {CATEGORY_ICONS[category]}

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { toggleCompare, readCompare } from '../../lib/compareStore';
 import { addToCart } from '../../lib/cartStore';
 import { Lens } from '../../components/Lens';
+import { useTenant } from '../../lib/TenantContext';
 
 type Props = {
   product: {
@@ -62,6 +63,7 @@ function resolveProductImageUrl(url: string | undefined) {
 }
 
 export default function ProductDetailClient({ product }: Props) {
+  const { branding } = useTenant();
   const [tab, setTab] = useState<'details' | 'specs' | 'reviews'>('details');
   const [imgIdx, setImgIdx] = useState(0);
   const [zoomOpen, setZoomOpen] = useState(false);
@@ -81,6 +83,8 @@ export default function ProductDetailClient({ product }: Props) {
     };
   }, [product.id]);
 
+  const logoFallback = resolveProductImageUrl(branding.logo);
+
   const images = useMemo(() => {
     if (product.images && product.images.length > 0) {
       return product.images.map((imgUrl, i) => ({
@@ -89,20 +93,40 @@ export default function ProductDetailClient({ product }: Props) {
         alt: `${product.name} - ${i + 1}`,
         label: `View ${i + 1}`,
         isImage: true,
+        isLogo: false,
       }));
     }
-    const mainImage = resolveProductImageUrl(product.image || product.icon);
-    const isRealImage = !!product.image;
-    return [
-      {
+    if (product.image) {
+      return [{
         id: 'img-0',
-        src: mainImage,
+        src: resolveProductImageUrl(product.image),
         alt: product.name,
         label: 'View 1',
-        isImage: isRealImage,
-      },
-    ];
-  }, [product.images, product.image, product.icon, product.name]);
+        isImage: true,
+        isLogo: false,
+      }];
+    }
+    // No product image — fall back to tenant logo
+    if (logoFallback) {
+      return [{
+        id: 'img-logo',
+        src: logoFallback,
+        alt: branding.name ?? 'Logo',
+        label: 'Logo',
+        isImage: true,
+        isLogo: true,
+      }];
+    }
+    // Last resort: emoji icon
+    return [{
+      id: 'img-0',
+      src: '',
+      alt: product.name,
+      label: 'View 1',
+      isImage: false,
+      isLogo: false,
+    }];
+  }, [product.images, product.image, product.name, logoFallback, branding.name]);
 
   useEffect(() => {
     if (!zoomOpen) return;
@@ -140,7 +164,14 @@ export default function ProductDetailClient({ product }: Props) {
             >
               <div className="relative h-64 sm:h-80 md:h-[400px] flex items-center justify-center">
                 {images[imgIdx]?.isImage ? (
-                  <Image src={images[imgIdx].src} alt={images[imgIdx].alt} fill className="object-contain p-2" sizes="(max-width:768px) 100vw, 50vw" unoptimized={true} />
+                  <Image
+                    src={images[imgIdx].src}
+                    alt={images[imgIdx].alt}
+                    fill
+                    className={`object-contain p-2 ${images[imgIdx].isLogo ? 'opacity-20' : ''}`}
+                    sizes="(max-width:768px) 100vw, 50vw"
+                    unoptimized={true}
+                  />
                 ) : (
                   <div className="text-7xl sm:text-8xl opacity-50 select-none">{product.icon}</div>
                 )}
@@ -214,7 +245,7 @@ export default function ProductDetailClient({ product }: Props) {
                 >
                   <div className="relative h-full w-full flex items-center justify-center">
                     {img.isImage ? (
-                      <Image src={img.src} alt={img.alt} fill className="object-contain p-1" sizes="64px" unoptimized={true} />
+                      <Image src={img.src} alt={img.alt} fill className={`object-contain p-1 ${img.isLogo ? 'opacity-20' : ''}`} sizes="64px" unoptimized={true} />
                     ) : (
                       <div className="text-xl opacity-60">{product.icon}</div>
                     )}
@@ -263,7 +294,7 @@ export default function ProductDetailClient({ product }: Props) {
                       className="relative w-full h-full"
                       style={{ transform: `scale(${zoom.scale}) rotate(${zoom.rot}deg) scaleX(${zoom.flipX ? -1 : 1}) scaleY(${zoom.flipY ? -1 : 1})`, transition: 'transform 120ms ease-out' }}
                     >
-                      <Image src={images[imgIdx].src} alt={images[imgIdx].alt} fill className="object-contain" sizes="95vw" unoptimized={true} />
+                      <Image src={images[imgIdx].src} alt={images[imgIdx].alt} fill className={`object-contain ${images[imgIdx].isLogo ? 'opacity-20' : ''}`} sizes="95vw" unoptimized={true} />
                     </div>
                   ) : (
                     <div className="text-[180px] opacity-50"
