@@ -24,9 +24,17 @@ function isUrl(s: string) {
   return s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:')
 }
 
+function getApiUrl() {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (typeof window !== 'undefined') {
+    return `${window.location.protocol}//${window.location.hostname}:8000`;
+  }
+  return 'http://localhost:8000';
+}
+
 function resolveProductImageUrl(url: string | undefined) {
   if (!url) return '';
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+  const apiUrl = getApiUrl();
   const uploadMatch = url.match(/\/upload\/(.+)$/);
   if (uploadMatch) {
     return `${apiUrl}/upload/${uploadMatch[1]}`;

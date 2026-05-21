@@ -20,9 +20,17 @@ function isUrl(s: string) {
   return s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:')
 }
 
+function getApiUrl() {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (typeof window !== 'undefined') {
+    return `${window.location.protocol}//${window.location.hostname}:8000`;
+  }
+  return 'http://localhost:8000';
+}
+
 function resolveImageUrl(url: string | undefined, defaultEmoji: string = '📁') {
   if (!url) return { imageUrl: null, emoji: defaultEmoji }
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
+  const apiUrl = getApiUrl()
   const uploadMatch = url.match(/\/upload\/(.+)$/);
   if (uploadMatch) {
     return { imageUrl: `${apiUrl}/upload/${uploadMatch[1]}`, emoji: null };
@@ -39,7 +47,7 @@ export default function CategoryList({ showBrands = true }: { showBrands?: boole
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
+    const apiUrl = getApiUrl()
     fetch(`${apiUrl}/api/categories/public?tenantId=${tenantId}`)
       .then((res) => res.json())
       .then((body) => {

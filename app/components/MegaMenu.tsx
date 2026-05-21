@@ -49,9 +49,17 @@ function getIcon(slug: string, image: string): string {
   return SLUG_ICONS[slug] ?? '📦';
 }
 
+function getApiUrl() {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (typeof window !== 'undefined') {
+    return `${window.location.protocol}//${window.location.hostname}:8000`;
+  }
+  return 'http://localhost:8000';
+}
+
 function resolveImageUrl(url: string | undefined) {
   if (!url) return '';
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+  const apiUrl = getApiUrl();
   const uploadMatch = url.match(/\/upload\/(.+)$/);
   if (uploadMatch) {
     return `${apiUrl}/upload/${uploadMatch[1]}`;
@@ -71,7 +79,7 @@ export default function MegaMenu() {
   const [megaCategories, setMegaCategories] = useState<MainCategory[]>([]);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+    const apiUrl = getApiUrl();
     fetch(`${apiUrl}/api/categories/public?tenantId=${tenantId}`)
       .then((r) => r.json())
       .then((body) => {
