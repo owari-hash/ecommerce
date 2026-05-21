@@ -470,27 +470,33 @@ export default function CategoryListingClient({
   };
 
   return (
-    <div className="flex gap-6">
-      {/* Desktop Filters */}
-      <aside aria-label="filters" className="hidden lg:block w-72 shrink-0 space-y-4 sticky top-24 self-start">
-        <FiltersPanel
-          sections={sections}
-          setSections={setSections}
-          brandQuery={brandQuery}
-          setBrandQuery={setBrandQuery}
-          visibleBrands={visibleBrands}
-          selectedBrands={selectedBrands}
-          setSelectedBrands={setSelectedBrands}
-          selectedStatuses={selectedStatuses}
-          setSelectedStatuses={setSelectedStatuses}
-          statusCounts={statusCounts}
-          brandCounts={brandCounts}
-          onClearAll={clearAll}
-          categories={categories}
-          categoryCounts={categoryCounts}
-          currentCategoryId={currentCategoryId}
-          tenantHref={tenantHref}
-        />
+    <div className="flex gap-0 relative">
+      {/* Desktop Filters - Fixed Left */}
+      <div className="hidden lg:block w-72 xl:w-72 shrink-0" aria-hidden="true" />
+      <aside
+        aria-label="filters"
+        className="hidden lg:flex flex-col fixed top-24 left-0 w-72 bottom-0 z-30 overflow-y-auto px-4 py-4"
+      >
+        <div className="w-full space-y-4 pb-8">
+          <FiltersPanel
+            sections={sections}
+            setSections={setSections}
+            brandQuery={brandQuery}
+            setBrandQuery={setBrandQuery}
+            visibleBrands={visibleBrands}
+            selectedBrands={selectedBrands}
+            setSelectedBrands={setSelectedBrands}
+            selectedStatuses={selectedStatuses}
+            setSelectedStatuses={setSelectedStatuses}
+            statusCounts={statusCounts}
+            brandCounts={brandCounts}
+            onClearAll={clearAll}
+            categories={categories}
+            categoryCounts={categoryCounts}
+            currentCategoryId={currentCategoryId}
+            tenantHref={tenantHref}
+          />
+        </div>
       </aside>
 
       {/* Mobile Filters Modal */}
@@ -713,11 +719,13 @@ export default function CategoryListingClient({
         </section>
       </div>
 
-      {/* Right Column - Dynamic Comparison Panel */}
+      {/* Right Column - Dynamic Comparison Panel - Fixed Right */}
+      <div className="hidden xl:block w-80 shrink-0" aria-hidden="true" />
       <aside
         aria-label="comparison"
-        className="hidden xl:block w-80 shrink-0 sticky top-24 self-start max-h-[calc(100vh-6rem)] overflow-y-auto space-y-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-4"
+        className="hidden xl:flex flex-col fixed top-24 right-0 w-80 bottom-0 z-30 overflow-y-auto px-4 py-4"
       >
+        <div className="w-full space-y-4 pb-8 bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
         <style>{`
           .compare-bar-container {
             display: none !important;
@@ -886,6 +894,7 @@ export default function CategoryListingClient({
             </div>
           </div>
         )}
+        </div>
       </aside>
 
       {/* Mobile filter drawer */}
