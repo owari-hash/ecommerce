@@ -25,7 +25,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string[] }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const categoryKey = slug[slug.length - 1];
+  const categoryKey = decodeURIComponent(slug[slug.length - 1]);
 
   const headersList = await headers();
   const host = headersList.get('x-tenant-host') ?? headersList.get('host') ?? 'localhost';
@@ -50,7 +50,7 @@ export async function generateMetadata({
 
 export default async function CatchAllShopPage({ params }: { params: Promise<{ slug: string[] }> }) {
   const { slug } = await params;
-  const categoryKey = slug[slug.length - 1];
+  const categoryKey = decodeURIComponent(slug[slug.length - 1]);
 
   const headersList = await headers();
   const host = headersList.get('x-tenant-host') ?? headersList.get('host') ?? 'localhost';
@@ -172,14 +172,17 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
           <Link href="/" className="hover:text-primary transition-colors">
             Нүүр
           </Link>
-          {slug.map((s, i) => (
-            <React.Fragment key={i}>
-              <span className="text-gray-300">/</span>
-              <span className={i === slug.length - 1 ? "text-gray-900" : "text-gray-500"}>
-                {categoryNameMap.get(s) || s}
-              </span>
-            </React.Fragment>
-          ))}
+          {slug.map((s, i) => {
+            const decoded = decodeURIComponent(s);
+            return (
+              <React.Fragment key={i}>
+                <span className="text-gray-300">/</span>
+                <span className={i === slug.length - 1 ? "text-gray-900" : "text-gray-500"}>
+                  {categoryNameMap.get(decoded) || decoded}
+                </span>
+              </React.Fragment>
+            );
+          })}
         </nav>
 
         {filteredProducts.length === 0 ? (
