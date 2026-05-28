@@ -24,7 +24,7 @@ export default async function AboutPage() {
   const primaryColor = config?.branding?.primaryColor ?? '#D32F2F';
   const initials = name.slice(0, 2).toUpperCase();
 
-  // Split description by newline into paragraphs; fall back to placeholder
+  // Split description by newline into paragraphs; fall back to placeholdersss
   const rawDesc = config?.branding?.description ?? '';
   const paragraphs = rawDesc
     .split('\n')
