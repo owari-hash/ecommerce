@@ -147,7 +147,7 @@ export default function AccountClient() {
               🛒 Миний сагс
             </Link>
             <Link
-              href="#"
+              href="/account/orders"
               className="block px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium text-sm transition-colors"
             >
               📦 Захиалгын түүх
