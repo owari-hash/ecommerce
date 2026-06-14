@@ -2,9 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { readAuth, login, register, logout, type User } from '../lib/authStore';
 
 export default function AccountClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') ?? '/account';
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [error, setError] = useState('');
@@ -45,6 +49,8 @@ export default function AccountClient() {
     if (result.success) {
       setUser(readAuth());
       setSuccess('Амжилттай нэвтэрлээ!');
+      // Redirect back to where the user came from (e.g. /checkout)
+      setTimeout(() => router.replace(redirectTo), 300);
     } else {
       setError(result.error || 'Утасны дугаар/И-мэйл эсвэл нууц үг буруу байна');
     }
@@ -86,6 +92,8 @@ export default function AccountClient() {
     if (result.success) {
       setUser(readAuth());
       setSuccess('Амжилттай бүртгүүллээ!');
+      // Redirect back to where the user came from (e.g. /checkout)
+      setTimeout(() => router.replace(redirectTo), 300);
     } else {
       setError(result.error || 'Бүртгэл амжилтгүй боллоо');
     }

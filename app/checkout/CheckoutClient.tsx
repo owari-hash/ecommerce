@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   readCart,
-  writeCart,
   removeFromCart,
   updateQuantity,
   clearCart,
@@ -13,6 +13,7 @@ import {
 } from '../lib/cartStore';
 import { useTenantHref } from '../lib/useTenantHref';
 import { useTenant } from '../lib/TenantContext';
+import { restoreSession, readAuth, isLoggedIn } from '../lib/authStore';
 
 const paymentMethods = [
   { id: 'qpay', name: 'QPay', icon: '💳', color: 'bg-blue-600' },
@@ -38,6 +39,8 @@ function formatPrice(price: number): string {
 export default function CheckoutClient() {
   const tenantHref = useTenantHref();
   const { tenantId } = useTenant();
+  const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
   const [items, setItems] = useState<CartItem[]>([]);
   const [selectedPayment, setSelectedPayment] = useState<string>('');
   const [selectedBank, setSelectedBank] = useState<string>('');
@@ -57,7 +60,26 @@ export default function CheckoutClient() {
   });
 
   useEffect(() => {
-    setItems(readCart());
+    // Restore session from httpOnly cookie, then enforce login
+    restoreSession().then(() => {
+      if (!isLoggedIn()) {
+        router.replace('/account?redirect=/checkout');
+        return;
+      }
+      // Pre-fill form with logged-in user's info
+      const user = readAuth();
+      if (user) {
+        setCustomerInfo((prev) => ({
+          ...prev,
+          lastName: user.lastName ?? '',
+          firstName: user.firstName ?? '',
+          phone: user.phone ?? '',
+          email: user.email ?? '',
+        }));
+      }
+      setAuthChecked(true);
+      setItems(readCart());
+    });
 
     const onCartChange = () => setItems(readCart());
     window.addEventListener('cart:changed', onCartChange);
@@ -67,6 +89,15 @@ export default function CheckoutClient() {
   const total = useMemo(() => getCartTotal(), [items]);
   const shipping = total >= 500000 ? 0 : 15000;
   const finalTotal = total + shipping;
+
+  // Show spinner while session is being verified
+  if (!authChecked) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const handleQuantityChange = (id: string, delta: number) => {
     const item = items.find((x) => x.id === id);
