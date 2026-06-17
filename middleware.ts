@@ -6,12 +6,14 @@ export function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-tenant-host", host);
 
-  // Priority: env var (hard-wired deployment) > URL query param (?tenant=slug)
-  // No cookies — cookies would lock a browser session to one tenant.
+  // Priority: env var > URL query param > /preview/[store] path segment
   const envSlug = process.env.TENANT_SLUG ?? "";
   const querySlug = request.nextUrl.searchParams.get("tenant") ?? "";
+  const pathname = request.nextUrl.pathname;
+  const previewMatch = pathname.match(/^\/preview\/([^/]+)/);
+  const pathSlug = previewMatch ? previewMatch[1] : "";
 
-  const tenantSlug = envSlug || querySlug;
+  const tenantSlug = envSlug || querySlug || pathSlug;
   if (tenantSlug) {
     requestHeaders.set("x-tenant-slug", tenantSlug);
   }

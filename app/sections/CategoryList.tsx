@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useTenant } from '../lib/TenantContext'
 import { useTenantHref } from '../lib/useTenantHref'
-import { CATEGORY_ICONS } from '../lib/mockCatalog'
+import { CATEGORY_ICONS, getMockCategoriesByTenantId } from '../lib/mockCatalog'
 
 interface Category {
   id: string
@@ -102,11 +102,10 @@ export default function CategoryList({ showBrands = true }: { showBrands?: boole
     fetch(`${apiUrl}/api/categories/public?tenantId=${tenantId}`)
       .then((res) => res.json())
       .then((body) => {
-        if (body?.data) {
-          setCategories(body.data.filter((c: Category) => c.status === 'active' && !c.parentId))
-        }
+        const cats = body?.data?.filter((c: Category) => c.status === 'active' && !c.parentId) ?? []
+        setCategories(cats.length > 0 ? cats : getMockCategoriesByTenantId(tenantId) as Category[])
       })
-      .catch(console.error)
+      .catch(() => setCategories(getMockCategoriesByTenantId(tenantId) as Category[]))
       .finally(() => setLoading(false))
   }, [tenantId])
 

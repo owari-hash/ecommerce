@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { useTenant } from '../lib/TenantContext'
 import Carousel from '../components/Carousel'
 import ProductCard from '../components/ProductCard'
+import { MOCK_PRODUCTS } from '../lib/mockCatalog'
 
 interface ProductGridProps {
   title?: string
@@ -38,7 +39,7 @@ export default function ProductGrid({
     fetch(`${apiUrl}/api/products/public?tenantId=${tenantId}`)
       .then((res) => res.json())
       .then((body) => {
-        if (body && body.data) {
+        if (body?.data?.length > 0) {
           const mapped = body.data.map((p: any) => ({
             id: p.id,
             slug: p.slug,
@@ -53,9 +54,11 @@ export default function ProductGrid({
             stock: p.stock,
           }))
           setProducts(mapped)
+        } else {
+          setProducts(MOCK_PRODUCTS as any[])
         }
       })
-      .catch((err) => console.error('Failed to fetch products', err))
+      .catch(() => setProducts(MOCK_PRODUCTS as any[]))
       .finally(() => setLoading(false))
   }, [tenantId])
 
