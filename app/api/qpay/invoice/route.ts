@@ -5,7 +5,7 @@ const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { tenantId, ...rest } = body;
-  const url = tenantId ? `${API}/api/qpay/invoice?tenant=${tenantId}` : `${API}/api/qpay/invoice`;
+  const url = tenantId ? `${API}/api/qpay/invoice?tenantId=${tenantId}` : `${API}/api/qpay/invoice`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
