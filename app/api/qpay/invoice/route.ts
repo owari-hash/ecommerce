@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
     headers: { 'Content-Type': 'application/json', 'x-tenant-host': host },
     body: JSON.stringify(body),
   });
+  //response
   const data = await res.json();
   return NextResponse.json(data, { status: res.status });
 }
