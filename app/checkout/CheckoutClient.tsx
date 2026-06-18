@@ -132,7 +132,7 @@ export default function CheckoutClient() {
       const res = await fetch('/api/qpay/invoice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ zakhialgiinDugaar: orderNum, dun: finalTotal, tailbar: `Захиалга ${orderNum}` }),
+        body: JSON.stringify({ tenantId, zakhialgiinDugaar: orderNum, dun: finalTotal, tailbar: `Захиалга ${orderNum}` }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? 'QPay invoice үүсгэхэд алдаа гарлаа');
