@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { fetchTenantConfig } from '../../lib/tenantConfig';
-import { CATEGORY_ICONS, formatPrice } from '../../lib/mockCatalog';
+import { CATEGORY_ICONS, formatPrice, MOCK_PRODUCTS, ALL_MOCK_CATEGORIES } from '../../lib/mockCatalog';
 import ProductDetailClient from './productDetailClient';
 import Carousel from '../../components/Carousel';
 import ProductCard from '../../components/ProductCard';
@@ -13,22 +13,55 @@ function chunk<T>(arr: T[], size: number) {
   return out;
 }
 
+function buildMockApiProduct(p: (typeof MOCK_PRODUCTS)[number]) {
+  return {
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    brandId: p.brand,
+    categoryId: p.category,
+    price: p.isSale ? (p.oldPrice ?? p.price) : p.price,
+    salePrice: p.isSale ? p.price : null,
+    featured: p.isNew ?? false,
+    images: p.image ? [p.image] : [],
+    specifications: Object.fromEntries(p.props.map((x) => [x.k, x.v])),
+    stock: 10,
+    isPosLinked: false,
+  }
+}
+
+function getMockProductData(slugOrId: string) {
+  const decoded = decodeURIComponent(slugOrId)
+  const mock = MOCK_PRODUCTS.find((x) => x.slug === slugOrId || x.id === slugOrId || x.slug === decoded || x.id === decoded)
+  const mockCats = ALL_MOCK_CATEGORIES.map((c) => ({ id: c.id, slug: c.slug, name: c.name, parentId: c.parentId }))
+  return {
+    product: mock ? buildMockApiProduct(mock) : null,
+    products: MOCK_PRODUCTS.map(buildMockApiProduct),
+    categories: mockCats,
+  }
+}
+
 async function fetchProductData(tenantId: string, slugOrId: string) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
-  const [prodRes, catRes] = await Promise.all([
-    fetch(`${apiUrl}/api/products/public?tenantId=${tenantId}`, { cache: 'no-store' }),
-    fetch(`${apiUrl}/api/categories/public?tenantId=${tenantId}`, { cache: 'no-store' }),
-  ]);
+  try {
+    const [prodRes, catRes] = await Promise.all([
+      fetch(`${apiUrl}/api/products/public?tenantId=${tenantId}`, { cache: 'no-store' }),
+      fetch(`${apiUrl}/api/categories/public?tenantId=${tenantId}`, { cache: 'no-store' }),
+    ]);
 
-  const products: any[] = prodRes.ok ? (await prodRes.json())?.data ?? [] : [];
-  const categories: any[] = catRes.ok ? (await catRes.json())?.data ?? [] : [];
+    const products: any[] = prodRes.ok ? (await prodRes.json())?.data ?? [] : [];
+    const categories: any[] = catRes.ok ? (await catRes.json())?.data ?? [] : [];
 
-  const product = products.find(
-    (p: any) => p.slug === slugOrId || p.id === slugOrId ||
-      p.slug === decodeURIComponent(slugOrId) || p.id === decodeURIComponent(slugOrId),
-  );
+    if (products.length > 0) {
+      const product = products.find(
+        (p: any) => p.slug === slugOrId || p.id === slugOrId ||
+          p.slug === decodeURIComponent(slugOrId) || p.id === decodeURIComponent(slugOrId),
+      );
+      return { product, products, categories };
+    }
+  } catch { /* fall through to mock data */ }
 
-  return { product, products, categories };
+  return getMockProductData(slugOrId);
 }
 
 export async function generateMetadata({

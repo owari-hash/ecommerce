@@ -3,7 +3,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { fetchTenantConfig } from '../lib/tenantConfig';
-import { formatPrice } from '../lib/mockCatalog';
+import { formatPrice, MOCK_PRODUCTS, ALL_MOCK_CATEGORIES, getMockCategoriesByTenantId } from '../lib/mockCatalog';
 import CategoryListingClient from './listingClient';
 import React from 'react';
 
@@ -76,11 +76,6 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
     if (catRes.ok) {
       const catBody = await catRes.json();
       categories = catBody?.data || [];
-      const matchedCat = categories.find((c: any) => c.slug === categoryKey);
-      if (matchedCat) {
-        label = matchedCat.name;
-        matchedCategoryId = matchedCat.id;
-      }
     }
 
     if (prodRes.ok) {
@@ -89,6 +84,31 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
     }
   } catch (e) {
     console.error('Failed to fetch dynamic server data:', e);
+  }
+
+  // Fall back to mock data when API is unavailable
+  if (categories.length === 0) {
+    categories = getMockCategoriesByTenantId(config.tenantId).map((c) => ({
+      id: c.id, slug: c.slug, name: c.name, parentId: c.parentId,
+    }));
+  }
+  if (rawProducts.length === 0) {
+    rawProducts = MOCK_PRODUCTS.map((p) => ({
+      id: p.id, slug: p.slug, name: p.name,
+      brandId: p.brand, categoryId: p.category,
+      price: p.isSale ? (p.oldPrice ?? p.price) : p.price,
+      salePrice: p.isSale ? p.price : null,
+      featured: p.isNew ?? false,
+      images: p.image ? [p.image] : [],
+      stock: 10,
+    }));
+  }
+
+  // Resolve label and category ID now that categories array is final
+  const resolvedCat = categories.find((c: any) => c.slug === categoryKey);
+  if (resolvedCat) {
+    label = resolvedCat.name;
+    matchedCategoryId = resolvedCat.id;
   }
 
   // Collect all descendant category IDs so parent pages show child products too
