@@ -25,13 +25,6 @@ const paymentMethods = [
   { id: 'leasing', name: 'Лизинг', icon: '📋', color: 'bg-primary' },
 ];
 
-const banks = [
-  { id: 'khan', name: 'ХААН Банк', icon: '🏦' },
-  { id: 'golomt', name: 'Голомт Банк', icon: '🏛️' },
-  { id: 'tdb', name: 'Худалдаа Хөгжлийн Банк', icon: '🏪' },
-  { id: 'state', name: 'Төрийн Банк', icon: '🏛️' },
-];
-
 function formatPrice(price: number): string {
   return price.toLocaleString('mn-MN') + '₮';
 }
@@ -43,12 +36,15 @@ export default function CheckoutClient() {
   const [authChecked, setAuthChecked] = useState(false);
   const [items, setItems] = useState<CartItem[]>([]);
   const [selectedPayment, setSelectedPayment] = useState<string>('');
-  const [selectedBank, setSelectedBank] = useState<string>('');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [successOrderNumber, setSuccessOrderNumber] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [qpayInvoice, setQpayInvoice] = useState<any>(null);
+  const [qpayLoading, setQpayLoading] = useState(false);
+  const [qpayPaid, setQpayPaid] = useState(false);
+  const [qpayOrderNum, setQpayOrderNum] = useState<string>('');
 
   // Customer info
   const [customerInfo, setCustomerInfo] = useState({
@@ -117,49 +113,75 @@ export default function CheckoutClient() {
     setItems([]);
   };
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     if (!selectedPayment) return;
     setShowPaymentModal(true);
+    if (selectedPayment === 'qpay') {
+      await generateQpayInvoice();
+    }
   };
 
-  const processPayment = async () => {
+  const generateQpayInvoice = async () => {
+    setQpayLoading(true);
+    setQpayInvoice(null);
+    setQpayPaid(false);
+    setErrorMessage('');
+    try {
+      const orderNum = `ORD-${Date.now()}`;
+      setQpayOrderNum(orderNum);
+      const res = await fetch('/api/qpay/invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ zakhialgiinDugaar: orderNum, dun: finalTotal, tailbar: `Захиалга ${orderNum}` }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? 'QPay invoice үүсгэхэд алдаа гарлаа');
+      setQpayInvoice(body.data);
+      // Poll every 3s
+      const interval = setInterval(async () => {
+        const r = await fetch('/api/qpay/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ zakhialgiinDugaar: orderNum }),
+        });
+        const b = await r.json();
+        if (b?.data?.paid) {
+          clearInterval(interval);
+          setQpayPaid(true);
+          await processPaymentWithMethod('qpay', orderNum);
+        }
+      }, 3000);
+    } catch (err: any) {
+      setErrorMessage(err.message);
+    } finally {
+      setQpayLoading(false);
+    }
+  };
+
+  const processPaymentWithMethod = async (method: string, orderRef?: string) => {
     setIsProcessing(true);
     setErrorMessage('');
     try {
       const orderData = {
         tenantId,
-        customerInfo: {
-          lastName: customerInfo.lastName,
-          firstName: customerInfo.firstName,
-          phone: customerInfo.phone,
-          email: customerInfo.email,
-          address: customerInfo.address,
-        },
+        customerInfo,
         items: items.map((item) => ({
           productId: item.id,
           name: item.name,
           quantity: item.quantity,
           price: item.price,
         })),
-        paymentMethod: selectedPayment,
+        paymentMethod: method,
+        ...(orderRef && { qpayRef: orderRef }),
       };
-
       const res = await fetch('/api/orders/public', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),
       });
-
       const body = await res.json();
-
-      if (!res.ok) {
-        throw new Error(body.error ?? 'Захиалга хийхэд алдаа гарлаа.');
-      }
-
-      const createdOrder = body.data;
-      setSuccessOrderNumber(createdOrder.orderNumber);
+      if (!res.ok) throw new Error(body.error ?? 'Захиалга хийхэд алдаа гарлаа.');
+      setSuccessOrderNumber(body.data.orderNumber);
       setShowPaymentModal(false);
       setShowSuccessModal(true);
       clearCart();
@@ -170,6 +192,8 @@ export default function CheckoutClient() {
       setIsProcessing(false);
     }
   };
+
+  const processPayment = () => processPaymentWithMethod(selectedPayment);
 
   const isFormValid =
     customerInfo.lastName &&
@@ -424,31 +448,58 @@ export default function CheckoutClient() {
 
             {selectedPayment === 'qpay' && (
               <div className="space-y-4">
-                <p className="text-sm text-gray-600">Банкаа сонгоно уу:</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {banks.map((bank) => (
-                    <button
-                      key={bank.id}
-                      onClick={() => setSelectedBank(bank.id)}
-                      className={`p-3 rounded-xl border text-center transition-all ${
-                        selectedBank === bank.id
-                          ? 'border-primary bg-red-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <span className="text-2xl">{bank.icon}</span>
-                      <p className="text-xs font-medium mt-1">{bank.name}</p>
-                    </button>
-                  ))}
-                </div>
-                {selectedBank && (
-                  <div className="bg-gray-50 rounded-xl p-4 text-center">
-                    <p className="text-sm text-gray-600 mb-2">QPay QR код</p>
-                    <div className="w-40 h-40 bg-gray-200 rounded-xl mx-auto flex items-center justify-center">
-                      <span className="text-4xl">📱</span>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2">Банкны апп-аар уншуулна уу</p>
+                {qpayLoading && (
+                  <div className="flex flex-col items-center py-8 gap-3">
+                    <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                    <p className="text-sm text-gray-500">QPay invoice үүсгэж байна...</p>
                   </div>
+                )}
+                {qpayPaid && (
+                  <div className="flex flex-col items-center py-6 gap-2">
+                    <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
+                      <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p className="font-bold text-green-700">Төлбөр амжилттай!</p>
+                  </div>
+                )}
+                {!qpayLoading && !qpayPaid && qpayInvoice && (
+                  <>
+                    {/* QR image */}
+                    {qpayInvoice.qr_image && (
+                      <div className="bg-gray-50 rounded-xl p-4 text-center">
+                        <p className="text-xs text-gray-500 mb-3">QR уншуулж төлнө үү</p>
+                        <img
+                          src={`data:image/png;base64,${qpayInvoice.qr_image}`}
+                          alt="QPay QR"
+                          className="w-44 h-44 mx-auto rounded-xl"
+                        />
+                        <p className="text-xs text-gray-400 mt-2 animate-pulse">Төлбөр хүлээж байна...</p>
+                      </div>
+                    )}
+                    {/* Deep links */}
+                    {Array.isArray(qpayInvoice.urls) && qpayInvoice.urls.length > 0 && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-2">Эсвэл банкны аппаа нээнэ үү:</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {qpayInvoice.urls.map((u: any) => (
+                            <a
+                              key={u.name}
+                              href={u.link}
+                              className="flex items-center gap-2 p-2 rounded-xl border border-gray-200 hover:border-primary hover:bg-red-50 transition-all text-sm font-medium"
+                            >
+                              {u.logo && <img src={u.logo} alt={u.name} className="w-6 h-6 rounded" />}
+                              <span>{u.description ?? u.name}</span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+                {!qpayLoading && !qpayInvoice && !errorMessage && (
+                  <div className="text-center py-6 text-gray-400 text-sm">QPay бэлтгэж байна...</div>
                 )}
               </div>
             )}
@@ -512,13 +563,15 @@ export default function CheckoutClient() {
               </div>
             )}
 
-            <button
-              onClick={processPayment}
-              disabled={isProcessing || (selectedPayment === 'qpay' && !selectedBank)}
-              className="w-full mt-6 py-3 rounded-xl font-bold text-sm bg-primary hover:bg-primary-dark text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isProcessing ? 'Боловсруулж байна...' : 'Төлбөр баталгаажуулах'}
-            </button>
+            {selectedPayment !== 'qpay' && (
+              <button
+                onClick={processPayment}
+                disabled={isProcessing}
+                className="w-full mt-6 py-3 rounded-xl font-bold text-sm bg-primary hover:bg-primary-dark text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isProcessing ? 'Боловсруулж байна...' : 'Төлбөр баталгаажуулах'}
+              </button>
+            )}
           </div>
         </div>
       )}
