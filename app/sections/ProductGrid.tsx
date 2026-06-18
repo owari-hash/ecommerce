@@ -7,6 +7,9 @@ import Carousel from '../components/Carousel'
 import ProductCard from '../components/ProductCard'
 import { MOCK_PRODUCTS } from '../lib/mockCatalog'
 
+const FOOD_CATS = new Set(['fresh-fruits','vegetables','meat-poultry','dairy-eggs','seafood','bakery','beverages','snacks','grocery'])
+const TECH_CATS = new Set(['laptop','computer','smartphone-and-tablet','console','audio-equipment','home','accessories'])
+
 interface ProductGridProps {
   title?: string
   limit?: number
@@ -14,6 +17,7 @@ interface ProductGridProps {
   isSale?: boolean
   category?: string
   viewAllHref?: string
+  mockFilter?: 'food' | 'tech'
 }
 
 function chunk<T>(arr: T[], size: number): T[][] {
@@ -29,12 +33,20 @@ export default function ProductGrid({
   isSale,
   category,
   viewAllHref,
+  mockFilter,
 }: ProductGridProps) {
   const { tenantId } = useTenant()
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const getFallback = () => {
+      let base = MOCK_PRODUCTS as any[]
+      if (mockFilter === 'food') base = base.filter((p) => FOOD_CATS.has(p.category))
+      if (mockFilter === 'tech') base = base.filter((p) => TECH_CATS.has(p.category))
+      return base
+    }
+
     const apiUrl = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000')
     fetch(`${apiUrl}/api/products/public?tenantId=${tenantId}`)
       .then((res) => res.json())
@@ -55,12 +67,12 @@ export default function ProductGrid({
           }))
           setProducts(mapped)
         } else {
-          setProducts(MOCK_PRODUCTS as any[])
+          setProducts(getFallback())
         }
       })
-      .catch(() => setProducts(MOCK_PRODUCTS as any[]))
+      .catch(() => setProducts(getFallback()))
       .finally(() => setLoading(false))
-  }, [tenantId])
+  }, [tenantId, mockFilter])
 
   if (loading) {
     return (

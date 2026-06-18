@@ -46,12 +46,7 @@ export default async function PreviewStorePage({
 
   return (
     <>
-      <div className="bg-amber-50 border-b border-amber-200 px-4 py-2.5 text-center text-sm font-semibold text-amber-800 tracking-wide">
-        Static Preview — {storeLabels[store] ?? store}
-        <span className="ml-3 text-xs font-normal text-amber-600">
-          (mock data, no backend required)
-        </span>
-      </div>
+      
       <PageRenderer sections={config.theme.homepageSections} />
     </>
   )

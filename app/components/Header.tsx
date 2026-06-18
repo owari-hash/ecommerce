@@ -243,11 +243,12 @@ export default function Header() {
           {/* Logo */}
           <Link href={tenantHref('/')} className="shrink-0 flex items-center gap-2">
             {branding.logo ? (
-              <Image src={branding.logo} alt={branding.name || "Logo"} width={200} height={40} className="h-8 sm:h-10 w-auto object-contain max-w-[200px]" style={{ width: 'auto' }} />
+              <Image src={branding.logo} alt={branding.name || "Logo"} width={280} height={80} className="h-14 sm:h-20 w-auto object-contain max-w-[280px]" style={{ width: 'auto' }} />
+            ) : branding.name ? (
+              <span className="font-black text-xl text-primary tracking-tight leading-none">{branding.name}</span>
             ) : (
-              <Image src="/logo.png" alt={branding.name || "Logo"} width={200} height={40} className="h-8 sm:h-10 w-auto object-contain" style={{ width: 'auto' }} />
+              <Image src="/logo.png" alt="Logo" width={200} height={40} className="h-8 sm:h-10 w-auto object-contain" style={{ width: 'auto' }} />
             )}
-            {!branding.logo && branding.name && <span className="font-bold text-lg text-primary">{branding.name}</span>}
           </Link>
 
           {/* Mobile: search icon triggers full-screen modal */}
