@@ -6,14 +6,25 @@ export function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-tenant-host", host);
 
-  // Priority: env var > URL query param > /preview/[store] path segment
+  // Priority: env var > URL query param > /preview/[store] path segment > Host domain inference
   const envSlug = process.env.TENANT_SLUG ?? "";
   const querySlug = request.nextUrl.searchParams.get("tenant") ?? "";
   const pathname = request.nextUrl.pathname;
   const previewMatch = pathname.match(/^\/preview\/([^/]+)/);
   const pathSlug = previewMatch ? previewMatch[1] : "";
 
-  const tenantSlug = envSlug || querySlug || pathSlug;
+  // Automatically map Vercel preview hostnames to their respective static tenant configurations
+  let hostSlug = "";
+  const lowercaseHost = host.toLowerCase();
+  if (lowercaseHost.includes("commerce-ikhnayd") || lowercaseHost.includes("ikhnayd")) {
+    hostSlug = "ikhnayd";
+  } else if (lowercaseHost.includes("foodcity")) {
+    hostSlug = "foodcity";
+  } else if (lowercaseHost.includes("goto-market")) {
+    hostSlug = "goto-market";
+  }
+
+  const tenantSlug = envSlug || querySlug || pathSlug || hostSlug;
   if (tenantSlug) {
     requestHeaders.set("x-tenant-slug", tenantSlug);
   }
