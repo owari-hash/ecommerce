@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useTenant } from '../lib/TenantContext';
 import { useTenantHref } from '../lib/useTenantHref';
+import { getMockCategoriesByTenantId } from '../lib/mockCatalog';
 
 export type SubCategory = {
   label: string;
@@ -91,11 +92,37 @@ export default function MegaMenu() {
   const [megaCategories, setMegaCategories] = useState<MainCategory[]>([]);
 
   useEffect(() => {
+    const getFallback = () => {
+      const mockCats = getMockCategoriesByTenantId(tenantId);
+      const roots = mockCats.filter((c) => !c.parentId);
+      return roots.map((root) => {
+        const iconResolved = resolveCategoryIcon(root.image);
+        return {
+          imageUrl: iconResolved.imageUrl,
+          emoji: iconResolved.emoji,
+          label: root.name,
+          href: tenantHref(`/${root.slug}`),
+          subcategories: mockCats
+            .filter((c) => c.parentId === root.id)
+            .map((child) => ({
+              label: child.name,
+              href: tenantHref(`/${root.slug}/${child.slug}`),
+            })),
+          featured: root.image
+            ? { image: resolveImageUrl(root.image), title: root.name, href: tenantHref(`/${root.slug}`) }
+            : undefined,
+        };
+      });
+    };
+
     const apiUrl = getApiUrl();
     fetch(`${apiUrl}/api/categories/public?tenantId=${tenantId}`)
       .then((r) => r.json())
       .then((body) => {
-        if (!body?.data?.length) return;
+        if (!body?.data?.length) {
+          setMegaCategories(getFallback());
+          return;
+        }
         const all = body.data as {
           id: string;
           name: string;
@@ -125,7 +152,9 @@ export default function MegaMenu() {
           })
         );
       })
-      .catch(console.error);
+      .catch(() => {
+        setMegaCategories(getFallback());
+      });
   }, [tenantId]);
 
   useEffect(() => {

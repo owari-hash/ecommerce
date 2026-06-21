@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { getCartCount, addToCart } from '../lib/cartStore';
 import { readAuth, logout, type User } from '../lib/authStore';
-import { formatPrice } from '../lib/mockCatalog';
+import { formatPrice, getMockCategoriesByTenantId } from '../lib/mockCatalog';
 import MegaMenu from './MegaMenu';
 import { useTenant } from '../lib/TenantContext';
 import { useTenantHref } from '../lib/useTenantHref';
@@ -56,17 +56,29 @@ export default function Header() {
 
 
   useEffect(() => {
+    const getFallback = () => {
+      const mockCats = getMockCategoriesByTenantId(tenantId);
+      return mockCats
+        .filter((c) => !c.parentId)
+        .map((c) => ({ label: c.name, href: tenantHref(`/${c.slug}`) }));
+    };
+
     const apiUrl = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000');
     fetch(`${apiUrl}/api/categories/public?tenantId=${tenantId}`)
       .then((r) => r.json())
       .then((body) => {
-        if (!body?.data?.length) return;
+        if (!body?.data?.length) {
+          setCategories(getFallback());
+          return;
+        }
         const roots = (body.data as { name: string; slug: string; parentId: string | null }[])
           .filter((c) => !c.parentId)
           .map((c) => ({ label: c.name, href: tenantHref(`/${c.slug}`) }));
         setCategories(roots);
       })
-      .catch(console.error);
+      .catch(() => {
+        setCategories(getFallback());
+      });
   }, [tenantId, tenantHref]);
 
   useEffect(() => {
