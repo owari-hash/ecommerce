@@ -194,6 +194,7 @@ export default function CheckoutClient() {
       setSuccessOrderNumber(body.data.orderNumber);
       setSuccessOrder(body.data);
       setShowPaymentModal(false);
+      setShowEbarimtPicker(false);
       setShowSuccessModal(true);
       clearCart();
       setItems([]);
@@ -684,8 +685,8 @@ export default function CheckoutClient() {
                 setEbarimtLoading(true);
                 setErrorMessage('');
                 await processPaymentWithMethod('qpay', qpayOrderNum, ebarimtType, ebarimtTin || undefined);
-                setShowEbarimtPicker(false);
                 setEbarimtLoading(false);
+                // Only close if success (showSuccessModal will be true)
               }}
               disabled={ebarimtLoading}
               className="w-full py-3 rounded-2xl font-bold text-sm bg-primary hover:bg-primary-dark text-white transition-all disabled:opacity-50 shadow-md"
