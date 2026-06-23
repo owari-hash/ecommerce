@@ -57,6 +57,8 @@ export interface TenantConfig {
   contact?: TenantContact
   promo?: TenantPromo
   locations?: TenantLocation[]
+  shippingFee?: number
+  shippingFreeThreshold?: number
 }
 
 const DEFAULT_CONFIG: TenantConfig = {
@@ -85,7 +87,9 @@ const DEFAULT_CONFIG: TenantConfig = {
     email: 'info@ikhnayd.mn',
     phone: '7709 1155',
     address: 'Улаанбаатар',
-  }
+  },
+  shippingFee: 15000,
+  shippingFreeThreshold: 500000,
 }
 
 import fs from "fs";

@@ -31,7 +31,7 @@ function formatPrice(price: number): string {
 
 export default function CheckoutClient() {
   const tenantHref = useTenantHref();
-  const { tenantId } = useTenant();
+  const { tenantId, shippingFee, shippingFreeThreshold } = useTenant();
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
   const [items, setItems] = useState<CartItem[]>([]);
@@ -83,8 +83,10 @@ export default function CheckoutClient() {
     return () => window.removeEventListener('cart:changed', onCartChange);
   }, []);
 
+  const fee = typeof shippingFee === 'number' ? shippingFee : 15000;
+  const threshold = typeof shippingFreeThreshold === 'number' ? shippingFreeThreshold : 500000;
   const total = useMemo(() => getCartTotal(), [items]);
-  const shipping = total >= 500000 ? 0 : 15000;
+  const shipping = total >= threshold ? 0 : fee;
   const finalTotal = total + shipping;
 
   // Show spinner while session is being verified
