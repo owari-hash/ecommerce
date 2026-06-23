@@ -46,6 +46,10 @@ export default function CheckoutClient() {
   const [qpayLoading, setQpayLoading] = useState(false);
   const [qpayPaid, setQpayPaid] = useState(false);
   const [qpayOrderNum, setQpayOrderNum] = useState<string>('');
+  const [showEbarimtPicker, setShowEbarimtPicker] = useState(false);
+  const [ebarimtType, setEbarimtType] = useState<'person' | 'org'>('person');
+  const [ebarimtTin, setEbarimtTin] = useState<string>('');
+  const [ebarimtLoading, setEbarimtLoading] = useState(false);
 
   // Customer info
   const [customerInfo, setCustomerInfo] = useState({
@@ -151,7 +155,8 @@ export default function CheckoutClient() {
         if (b?.data?.paid) {
           clearInterval(interval);
           setQpayPaid(true);
-          await processPaymentWithMethod('qpay', orderNum);
+          setShowPaymentModal(false);
+          setShowEbarimtPicker(true);
         }
       }, 3000);
     } catch (err: any) {
@@ -161,11 +166,11 @@ export default function CheckoutClient() {
     }
   };
 
-  const processPaymentWithMethod = async (method: string, orderRef?: string) => {
+  const processPaymentWithMethod = async (method: string, orderRef?: string, ebType?: 'person' | 'org', ebTin?: string) => {
     setIsProcessing(true);
     setErrorMessage('');
     try {
-      const orderData = {
+      const orderData: any = {
         tenantId,
         customerInfo,
         items: items.map((item) => ({
@@ -176,6 +181,8 @@ export default function CheckoutClient() {
         })),
         paymentMethod: method,
         ...(orderRef && { qpayRef: orderRef }),
+        ...(ebType && { ebarimtType: ebType === 'org' ? 'B2B_RECEIPT' : 'B2C_RECEIPT' }),
+        ...(ebTin && { customerTin: ebTin }),
       };
       const res = await fetch('/api/orders/public', {
         method: 'POST',
@@ -622,6 +629,69 @@ export default function CheckoutClient() {
                 {isProcessing ? 'Боловсруулж байна...' : 'Төлбөр баталгаажуулах'}
               </button>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Ebarimt Picker Modal */}
+      {showEbarimtPicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
+            <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-2xl">✅</span>
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-1">Төлбөр амжилттай!</h3>
+            <p className="text-sm text-gray-500 mb-5">И-Баримтын төрлөө сонгоно уу</p>
+
+            <div className="flex gap-3 mb-4">
+              <button
+                onClick={() => setEbarimtType('person')}
+                className={`flex-1 py-3 rounded-xl font-bold text-sm border-2 transition-all ${ebarimtType === 'person' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600'}`}
+              >
+                👤 Хувь хүн
+              </button>
+              <button
+                onClick={() => setEbarimtType('org')}
+                className={`flex-1 py-3 rounded-xl font-bold text-sm border-2 transition-all ${ebarimtType === 'org' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600'}`}
+              >
+                🏢 Байгууллага
+              </button>
+            </div>
+
+            {ebarimtType === 'org' && (
+              <input
+                type="text"
+                placeholder="Байгууллагын регистр (ТТД)"
+                value={ebarimtTin}
+                onChange={(e) => setEbarimtTin(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium mb-4 focus:outline-none focus:border-blue-400"
+              />
+            )}
+
+            {errorMessage && (
+              <div className="mb-3 p-2 bg-red-50 border border-red-100 text-red-600 rounded-xl text-xs font-bold">
+                🚨 {errorMessage}
+              </div>
+            )}
+
+            <button
+              onClick={async () => {
+                if (ebarimtType === 'org' && !ebarimtTin.trim()) {
+                  setErrorMessage('Байгууллагын регистр оруулна уу');
+                  return;
+                }
+                setEbarimtLoading(true);
+                setErrorMessage('');
+                await processPaymentWithMethod('qpay', qpayOrderNum, ebarimtType, ebarimtTin || undefined);
+                setShowEbarimtPicker(false);
+                setEbarimtLoading(false);
+              }}
+              disabled={ebarimtLoading}
+              className="w-full py-3 rounded-2xl font-bold text-sm bg-primary hover:bg-primary-dark text-white transition-all disabled:opacity-50 shadow-md"
+            >
+              {ebarimtLoading ? 'Түр хүлээнэ үү...' : 'Баталгаажуулах'}
+            </button>
           </div>
         </div>
       )}
