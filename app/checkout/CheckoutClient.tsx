@@ -40,6 +40,7 @@ export default function CheckoutClient() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [successOrderNumber, setSuccessOrderNumber] = useState<string>('');
+  const [successOrder, setSuccessOrder] = useState<any>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [qpayInvoice, setQpayInvoice] = useState<any>(null);
   const [qpayLoading, setQpayLoading] = useState(false);
@@ -182,6 +183,7 @@ export default function CheckoutClient() {
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? 'Захиалга хийхэд алдаа гарлаа.');
       setSuccessOrderNumber(body.data.orderNumber);
+      setSuccessOrder(body.data);
       setShowPaymentModal(false);
       setShowSuccessModal(true);
       clearCart();
@@ -626,7 +628,7 @@ export default function CheckoutClient() {
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50" />
-          <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center">
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center max-h-[95vh] overflow-y-auto">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -636,14 +638,52 @@ export default function CheckoutClient() {
             <p className="text-sm text-gray-600 mb-6">
               Таны захиалгыг хүлээн авлаа. Бид удахгүй тантай холбогдох болно.
             </p>
-            <div className="bg-gray-50 rounded-xl p-4 mb-6">
+            <div className="bg-gray-50 rounded-xl p-4 mb-4">
               <p className="text-xs text-gray-500">Захиалгын дугаар</p>
               <p className="font-bold text-gray-900">#{successOrderNumber}</p>
             </div>
+
+            {/* Ebarimt Section */}
+            {successOrder?.items?.[0]?.ebarimtBillId && (
+              <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-5 mb-6 border border-emerald-100/50 text-left relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-100/20 rounded-full blur-xl -mr-6 -mt-6 pointer-events-none" />
+                
+                <div className="flex justify-between items-center text-xs font-bold text-emerald-800 mb-3 border-b border-emerald-100/40 pb-2">
+                  <span className="flex items-center gap-1">🎫 Цахим төлбөрийн баримт</span>
+                  <span className="text-[10px] bg-emerald-600 text-white font-extrabold px-2 py-0.5 rounded-full shadow-sm">E-BARIMT</span>
+                </div>
+                
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="text-emerald-700/80 font-medium">Сугалааны дугаар:</span>
+                    <span className="font-black text-emerald-950 tracking-wider text-sm bg-white px-2 py-0.5 rounded-md shadow-sm border border-emerald-100/20">{successOrder.items[0].ebarimtLottery}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-emerald-700/80 font-medium">Билл-ийн № (DDTD):</span>
+                    <span className="font-mono text-[11px] text-emerald-900 font-semibold select-all">{successOrder.items[0].ebarimtBillId}</span>
+                  </div>
+                </div>
+
+                {successOrder.items[0].ebarimtQrData && (
+                  <div className="mt-4 p-3 bg-white rounded-xl flex flex-col items-center justify-center border border-emerald-100/30 shadow-sm transition-all hover:shadow-md">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(successOrder.items[0].ebarimtQrData)}`}
+                      alt="Ebarimt QR"
+                      className="w-28 h-28 mix-blend-multiply"
+                    />
+                    <span className="text-[10px] text-emerald-600 font-semibold mt-2">QR код уншуулах боломжтой</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             <Link
               href="/"
-              onClick={() => setShowSuccessModal(false)}
-              className="inline-block w-full py-3 rounded-xl font-bold text-sm bg-primary hover:bg-primary-dark text-white transition-colors"
+              onClick={() => {
+                setShowSuccessModal(false);
+                setSuccessOrder(null);
+              }}
+              className="inline-block w-full py-3 rounded-xl font-bold text-sm bg-primary hover:bg-primary-dark text-white transition-colors animate-pulse"
             >
               Нүүр хуудас руу буцах
             </Link>
