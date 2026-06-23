@@ -153,7 +153,7 @@ export default function ProductDetailClient({ product }: Props) {
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-24 sm:pb-0">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* ── Images ── */}
         <section aria-label="images" className="flex flex-col gap-3">
           {/* Main image */}
@@ -521,8 +521,8 @@ export default function ProductDetailClient({ product }: Props) {
         </section>
       </div>
 
-      {/* Sticky bottom bar — mobile only */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 sm:hidden bg-white border-t border-gray-200 px-4 py-3 flex items-center gap-3">
+      {/* Sticky bottom bar — mobile only, sits above the MobileBottomNav */}
+      <div className="fixed bottom-14 left-0 right-0 z-50 sm:hidden bg-white border-t border-gray-200 px-4 py-3 flex items-center gap-3">
         <div className="min-w-0">
           <div className="text-[10px] text-gray-400 font-semibold leading-none mb-0.5">Үнэ</div>
           <div className="text-lg font-black text-gray-900 leading-none">{product.price}</div>

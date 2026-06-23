@@ -255,7 +255,7 @@ export default function Header() {
           {/* Logo */}
           <Link href={tenantHref('/')} className="shrink-0 flex items-center gap-2">
             {branding.logo ? (
-              <Image src={branding.logo} alt={branding.name || "Logo"} width={280} height={80} className="h-14 sm:h-20 w-auto object-contain max-w-[280px]" style={{ width: 'auto' }} />
+              <Image src={branding.logo} alt={branding.name || "Logo"} width={320} height={100} className="h-10 sm:h-16 lg:h-20 w-auto object-contain max-w-[140px] sm:max-w-[240px] lg:max-w-[320px]" style={{ width: 'auto' }} />
             ) : branding.name ? (
               <span className="font-black text-xl text-primary tracking-tight leading-none">{branding.name}</span>
             ) : (
@@ -446,7 +446,7 @@ export default function Header() {
       </div>
 
       {/* Mobile category nav strip */}
-      <div className="lg:hidden bg-primary text-white">
+      <div className="lg:hidden bg-primary text-white relative">
         <div className="flex overflow-x-auto scrollbar-hide px-2">
           {categories.map(cat => (
             <Link key={cat.href} href={cat.href}
@@ -455,6 +455,8 @@ export default function Header() {
             </Link>
           ))}
         </div>
+        {/* Right-edge fade hint for horizontal scroll */}
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-primary to-transparent pointer-events-none" />
       </div>
 
       {/* Mobile drawer menu */}

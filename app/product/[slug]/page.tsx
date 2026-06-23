@@ -4,14 +4,7 @@ import { headers } from 'next/headers';
 import { fetchTenantConfig } from '../../lib/tenantConfig';
 import { CATEGORY_ICONS, formatPrice, MOCK_PRODUCTS, ALL_MOCK_CATEGORIES } from '../../lib/mockCatalog';
 import ProductDetailClient from './productDetailClient';
-import Carousel from '../../components/Carousel';
 import ProductCard from '../../components/ProductCard';
-
-function chunk<T>(arr: T[], size: number) {
-  const out: T[][] = [];
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
-  return out;
-}
 
 function buildMockApiProduct(p: (typeof MOCK_PRODUCTS)[number]) {
   return {
@@ -124,7 +117,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   if (!p) return notFound;
 
-  const category = categories.find((c: any) => c.id === p.categoryId);
+  const category = categories.find((c: any) => c.id === p.categoryId || c.slug === p.categoryId);
   const categorySlug = category?.slug ?? '';
   const categoryLabel = category?.name ?? 'Ангилал';
   const icon = CATEGORY_ICONS[categorySlug as keyof typeof CATEGORY_ICONS] ?? '📦';
@@ -153,7 +146,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   }));
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
+    <div className="max-w-7xl mx-auto px-4 py-6 pb-36 sm:pb-6">
       <nav className="text-sm text-gray-500 mb-4 flex items-center gap-1 flex-wrap">
         <Link href="/" className="hover:text-primary">Нүүр</Link>
         <span>/</span>
