@@ -432,134 +432,180 @@ export default function CheckoutClient() {
 
       {/* Payment Modal */}
       {showPaymentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowPaymentModal(false)} />
-          <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md transition-all">
+          <div className="absolute inset-0 bg-black/40 transition-opacity" onClick={() => setShowPaymentModal(false)} />
+          <div className={`relative bg-white rounded-3xl shadow-2xl w-full p-6 border border-gray-50/50 transition-all duration-300 transform scale-100 ${
+            selectedPayment === 'qpay' && !qpayLoading && qpayInvoice ? 'max-w-2xl' : 'max-w-md'
+          }`}>
             <button
               onClick={() => setShowPaymentModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 p-1.5 rounded-full transition-all active:scale-90"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
 
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Төлбөр баталгаажуулах</h3>
+            <h3 className="text-xl font-black text-gray-900 mb-5 tracking-tight">Төлбөр баталгаажуулах</h3>
 
             {selectedPayment === 'qpay' && (
               <div className="space-y-4">
                 {qpayLoading && (
-                  <div className="flex flex-col items-center py-8 gap-3">
-                    <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                    <p className="text-sm text-gray-500">QPay invoice үүсгэж байна...</p>
+                  <div className="flex flex-col items-center py-12 gap-4">
+                    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                    <p className="text-sm font-bold text-gray-500 animate-pulse">QPay нэхэмжлэх үүсгэж байна...</p>
                   </div>
                 )}
                 {qpayPaid && (
-                  <div className="flex flex-col items-center py-6 gap-2">
-                    <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
-                      <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <div className="flex flex-col items-center py-10 gap-3 text-center">
+                    <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center shadow-inner">
+                      <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <p className="font-bold text-green-700">Төлбөр амжилттай!</p>
+                    <p className="font-black text-lg text-green-700">Төлбөр амжилттай!</p>
+                    <p className="text-xs text-gray-400 leading-relaxed">Түр хүлээнэ үү, захиалгыг баталгаажуулж байна...</p>
                   </div>
                 )}
                 {!qpayLoading && !qpayPaid && qpayInvoice && (
-                  <>
-                    {/* QR image */}
-                    {qpayInvoice.qr_image && (
-                      <div className="bg-gray-50 rounded-xl p-4 text-center">
-                        <p className="text-xs text-gray-500 mb-3">QR уншуулж төлнө үү</p>
-                        <img
-                          src={`data:image/png;base64,${qpayInvoice.qr_image}`}
-                          alt="QPay QR"
-                          className="w-44 h-44 mx-auto rounded-xl"
-                        />
-                        <p className="text-xs text-gray-400 mt-2 animate-pulse">Төлбөр хүлээж байна...</p>
-                      </div>
-                    )}
-                    {/* Deep links */}
-                    {Array.isArray(qpayInvoice.urls) && qpayInvoice.urls.length > 0 && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-2">Эсвэл банкны аппаа нээнэ үү:</p>
-                        <div className="grid grid-cols-2 gap-2">
-                          {qpayInvoice.urls.map((u: any) => (
-                            <a
-                              key={u.name}
-                              href={u.link}
-                              className="flex items-center gap-2 p-2 rounded-xl border border-gray-200 hover:border-primary hover:bg-red-50 transition-all text-sm font-medium"
-                            >
-                              {u.logo && <img src={u.logo} alt={u.name} className="w-6 h-6 rounded" />}
-                              <span>{u.description ?? u.name}</span>
-                            </a>
-                          ))}
+                  <div className="grid md:grid-cols-5 gap-6">
+                    {/* Left side: QR code */}
+                    <div className="md:col-span-2 flex flex-col items-center justify-center bg-gray-50 rounded-2xl p-5 border border-gray-100/80 shadow-inner">
+                      {qpayInvoice.qr_image && (
+                        <div className="relative group p-2.5 bg-white rounded-xl shadow-md border border-gray-100 flex items-center justify-center overflow-hidden">
+                          {/* Laser scanning line animation */}
+                          <div className="absolute top-2 left-2 right-2 h-0.5 bg-primary/75 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-[bounce_2s_infinite]" />
+                          <img
+                            src={`data:image/png;base64,${qpayInvoice.qr_image}`}
+                            alt="QPay QR"
+                            className="w-40 h-40 object-contain rounded-lg transition-transform duration-300 group-hover:scale-105"
+                          />
                         </div>
+                      )}
+                      <p className="text-xs font-bold text-gray-700 mt-4 flex items-center gap-1.5">
+                        <span className="inline-block w-1.5 h-1.5 bg-red-500 rounded-full animate-ping" />
+                        QR код уншуулах
+                      </p>
+                      <p className="text-[10px] text-gray-400 mt-1 text-center leading-relaxed">
+                        Дурын банкны аппликейшн ашиглан уншуулна уу
+                      </p>
+                    </div>
+
+                    {/* Right side: Bank links */}
+                    <div className="md:col-span-3 flex flex-col justify-between min-h-[220px]">
+                      <div>
+                        <p className="text-xs font-bold text-gray-400 mb-2.5 uppercase tracking-wider">Аппликейшнээр төлөх:</p>
+                        {Array.isArray(qpayInvoice.urls) && qpayInvoice.urls.length > 0 ? (
+                          <div className="grid grid-cols-2 gap-2 max-h-[180px] overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-gray-200">
+                            {qpayInvoice.urls.map((u: any) => (
+                              <a
+                                key={u.name}
+                                href={u.link}
+                                className="flex items-center gap-2 p-2.5 rounded-xl border border-gray-100 hover:border-primary hover:bg-red-50/20 active:scale-95 transition-all text-xs font-bold text-gray-700 shadow-sm bg-white"
+                              >
+                                {u.logo ? (
+                                  <img src={u.logo} alt={u.name} className="w-5 h-5 rounded object-cover shadow-sm flex-shrink-0" />
+                                ) : (
+                                  <div className="w-5 h-5 bg-gray-100 rounded flex items-center justify-center text-[10px] flex-shrink-0">🏦</div>
+                                )}
+                                <span className="truncate">{u.description ?? u.name}</span>
+                              </a>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-400 italic">Банкны холбоос олдсонгүй.</p>
+                        )}
                       </div>
-                    )}
-                  </>
+                      <div className="mt-4 pt-3.5 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-gray-800">
+                        <span className="text-gray-500">Төлөх нийт дүн:</span>
+                        <span className="text-primary text-base font-black tracking-tight">{formatPrice(finalTotal)}</span>
+                      </div>
+                    </div>
+                  </div>
                 )}
                 {!qpayLoading && !qpayInvoice && !errorMessage && (
-                  <div className="text-center py-6 text-gray-400 text-sm">QPay бэлтгэж байна...</div>
+                  <div className="text-center py-10 text-gray-400 text-sm animate-pulse">QPay бэлтгэж байна...</div>
                 )}
               </div>
             )}
 
             {selectedPayment === 'socialpay' && (
-              <div className="text-center py-4">
-                <div className="w-40 h-40 bg-green-100 rounded-xl mx-auto flex items-center justify-center mb-4">
-                  <span className="text-6xl">📱</span>
+              <div className="text-center py-6">
+                <div className="w-24 h-24 bg-gradient-to-br from-green-50 to-green-100 rounded-3xl mx-auto flex items-center justify-center mb-4 shadow-sm">
+                  <span className="text-5xl">📱</span>
                 </div>
-                <p className="text-sm text-gray-600">SocialPay апп-аар төлнө үү</p>
-                <p className="text-lg font-bold text-gray-900 mt-2">{formatPrice(finalTotal)}</p>
+                <h4 className="font-bold text-gray-800">SocialPay апп-аар төлөх</h4>
+                <p className="text-xs text-gray-400 mt-1 max-w-[200px] mx-auto leading-relaxed">Та өөрийн утсанд ирсэн нэхэмжлэхийг баталгаажуулна уу.</p>
+                <div className="mt-5 p-3 bg-gray-50 rounded-2xl flex justify-between items-center text-xs font-bold px-4 max-w-[260px] mx-auto">
+                  <span className="text-gray-500">Төлөх дүн:</span>
+                  <span className="text-primary text-sm font-black">{formatPrice(finalTotal)}</span>
+                </div>
               </div>
             )}
 
             {selectedPayment === 'monpay' && (
-              <div className="text-center py-4">
-                <div className="w-40 h-40 bg-emerald-100 rounded-xl mx-auto flex items-center justify-center mb-4">
-                  <span className="text-6xl">💚</span>
+              <div className="text-center py-6">
+                <div className="w-24 h-24 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-3xl mx-auto flex items-center justify-center mb-4 shadow-sm">
+                  <span className="text-5xl">💚</span>
                 </div>
-                <p className="text-sm text-gray-600">MonPay апп-аар төлнө үү</p>
-                <p className="text-lg font-bold text-gray-900 mt-2">{formatPrice(finalTotal)}</p>
+                <h4 className="font-bold text-gray-800">MonPay апп-аар төлөх</h4>
+                <p className="text-xs text-gray-400 mt-1 max-w-[200px] mx-auto leading-relaxed">Таны MonPay данснаас холбогдох дүн хасагдах болно.</p>
+                <div className="mt-5 p-3 bg-gray-50 rounded-2xl flex justify-between items-center text-xs font-bold px-4 max-w-[260px] mx-auto">
+                  <span className="text-gray-500">Төлөх дүн:</span>
+                  <span className="text-primary text-sm font-black">{formatPrice(finalTotal)}</span>
+                </div>
               </div>
             )}
 
             {selectedPayment === 'cash' && (
-              <div className="text-center py-4">
-                <div className="w-40 h-40 bg-gray-100 rounded-xl mx-auto flex items-center justify-center mb-4">
-                  <span className="text-6xl">💵</span>
+              <div className="text-center py-6">
+                <div className="w-24 h-24 bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl mx-auto flex items-center justify-center mb-4 shadow-sm">
+                  <span className="text-5xl">💵</span>
                 </div>
-                <p className="text-sm text-gray-600">Хүргэгч бэлэн мөнгө хүлээн авана</p>
-                <p className="text-lg font-bold text-gray-900 mt-2">{formatPrice(finalTotal)}</p>
+                <h4 className="font-bold text-gray-800">Бэлэн мөнгөөр төлөх</h4>
+                <p className="text-xs text-gray-400 mt-1 max-w-[200px] mx-auto leading-relaxed">Бараа хүргэгдэн очих үед бэлнээр төлнө үү.</p>
+                <div className="mt-5 p-3 bg-gray-50 rounded-2xl flex justify-between items-center text-xs font-bold px-4 max-w-[260px] mx-auto">
+                  <span className="text-gray-500">Төлөх дүн:</span>
+                  <span className="text-primary text-sm font-black">{formatPrice(finalTotal)}</span>
+                </div>
               </div>
             )}
 
             {selectedPayment === 'leasing' && (
-              <div className="space-y-3">
-                <p className="text-sm text-gray-600">Лизингийн хугацаа:</p>
+              <div className="space-y-4 py-2">
+                <div>
+                  <h4 className="font-bold text-gray-800">Лизинг сонгох</h4>
+                  <p className="text-xs text-gray-400 mt-0.5">Төлбөр төлөх хугацаагаа сонгоно уу:</p>
+                </div>
                 <div className="grid grid-cols-3 gap-2">
                   {['3 сар', '6 сар', '12 сар'].map((term) => (
-                    <button key={term} className="p-2 rounded-xl border border-gray-200 text-sm font-medium hover:border-primary">
+                    <button key={term} className="py-2.5 rounded-xl border border-gray-100 text-xs font-bold hover:border-primary hover:text-primary transition-all bg-white shadow-sm active:scale-95">
                       {term}
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-gray-500">Лизингийн дэлгэрэнгүй мэдээлэл авахыг хүсвэл 7709 1155 дугаарт холбогдоно уу</p>
+                <p className="text-[10px] text-gray-400 leading-normal bg-gray-50 p-2.5 rounded-xl">
+                  ⚠️ Лизингийн дэлгэрэнгүй мэдээлэл болон гэрээ байгуулах удирдамжийг авахыг хүсвэл <strong>7709 1155</strong> дугаарт холбогдоно уу.
+                </p>
               </div>
             )}
 
             {['lendmn', 'pocket'].includes(selectedPayment) && (
-              <div className="text-center py-4">
-                <p className="text-sm text-gray-600">{paymentMethods.find((p) => p.id === selectedPayment)?.name} холбогдож байна...</p>
-                <div className="w-40 h-40 bg-gray-100 rounded-xl mx-auto flex items-center justify-center mt-4">
-                  <span className="text-6xl">⏳</span>
+              <div className="text-center py-6">
+                <h4 className="font-bold text-gray-800 flex items-center justify-center gap-1.5">
+                  <span className="inline-block w-2 h-2 bg-amber-500 rounded-full animate-ping" />
+                  {paymentMethods.find((p) => p.id === selectedPayment)?.name} холбогдож байна
+                </h4>
+                <p className="text-xs text-gray-400 mt-1">Түр хүлээнэ үү...</p>
+                <div className="w-24 h-24 bg-gradient-to-br from-amber-50 to-amber-100 rounded-3xl mx-auto flex items-center justify-center mt-4 shadow-sm animate-pulse">
+                  <span className="text-5xl">⏳</span>
                 </div>
               </div>
             )}
 
             {errorMessage && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-xs font-semibold text-center leading-normal">
-                {errorMessage}
+              <div className="mt-4 p-3 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-xs font-bold text-center leading-normal">
+                🚨 {errorMessage}
               </div>
             )}
 
@@ -567,7 +613,7 @@ export default function CheckoutClient() {
               <button
                 onClick={processPayment}
                 disabled={isProcessing}
-                className="w-full mt-6 py-3 rounded-xl font-bold text-sm bg-primary hover:bg-primary-dark text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full mt-6 py-3 rounded-2xl font-bold text-sm bg-primary hover:bg-primary-dark text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg active:scale-98"
               >
                 {isProcessing ? 'Боловсруулж байна...' : 'Төлбөр баталгаажуулах'}
               </button>
