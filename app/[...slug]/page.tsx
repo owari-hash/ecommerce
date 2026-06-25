@@ -45,7 +45,7 @@ export async function generateMetadata({
     }
   }
 
-  return { title: `${label} | Их Наяд` };
+  return { title: `${label} | ${config?.branding?.name ?? 'Дэлгүүр'}` };
 }
 
 export default async function CatchAllShopPage({ params }: { params: Promise<{ slug: string[] }> }) {
