@@ -70,6 +70,43 @@ export async function logout(): Promise<void> {
   dispatchChange()
 }
 
+export async function sendOtp(phone: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch('/api/users/otp/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone }),
+    })
+    const data = await res.json()
+    if (!res.ok) return { success: false, error: data.error ?? 'OTP илгээхэд алдаа гарлаа' }
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Сервертэй холбогдох боломжгүй байна' }
+  }
+}
+
+export async function verifyOtp(
+  phone: string,
+  code: string,
+  firstName?: string,
+  lastName?: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch('/api/users/otp/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, code, firstName, lastName }),
+    })
+    const data = await res.json()
+    if (!res.ok) return { success: false, error: data.error ?? 'OTP баталгаажуулахад алдаа гарлаа' }
+    _currentUser = data.user
+    dispatchChange()
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Сервертэй холбогдох боломжгүй байна' }
+  }
+}
+
 // Call on app init to restore session from cookie (asks server to validate)
 export async function restoreSession(): Promise<void> {
   try {

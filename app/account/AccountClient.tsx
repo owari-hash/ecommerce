@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { readAuth, login, register, logout, type User } from '../lib/authStore';
+import { readAuth, login, register, logout, sendOtp, verifyOtp, type User } from '../lib/authStore';
 
 export default function AccountClient() {
   const router = useRouter();
@@ -13,11 +13,12 @@ export default function AccountClient() {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // Login form
-  const [loginPhone, setLoginPhone] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
+  // OTP login
+  const [otpPhone, setOtpPhone] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
 
   // Register form
   const [regFirstName, setRegFirstName] = useState('');
@@ -35,24 +36,39 @@ export default function AccountClient() {
     return () => window.removeEventListener('auth:changed', onAuthChange);
   }, []);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
-
-    if (!loginPhone || !loginPassword) {
-      setError('Утасны дугаар/И-мэйл болон нууц үгээ оруулна уу');
+    if (!otpPhone || otpPhone.length < 8) {
+      setError('Зөв утасны дугаар оруулна уу');
       return;
     }
+    setLoading(true);
+    const result = await sendOtp(otpPhone);
+    setLoading(false);
+    if (result.success) {
+      setOtpSent(true);
+    } else {
+      setError(result.error || 'OTP илгээхэд алдаа гарлаа');
+    }
+  };
 
-    const result = await login(loginPhone, loginPassword);
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (!otpCode || otpCode.length !== 6) {
+      setError('6 оронтой OTP код оруулна уу');
+      return;
+    }
+    setLoading(true);
+    const result = await verifyOtp(otpPhone, otpCode);
+    setLoading(false);
     if (result.success) {
       setUser(readAuth());
       setSuccess('Амжилттай нэвтэрлээ!');
-      // Redirect back to where the user came from (e.g. /checkout)
       setTimeout(() => router.replace(redirectTo), 300);
     } else {
-      setError(result.error || 'Утасны дугаар/И-мэйл эсвэл нууц үг буруу байна');
+      setError(result.error || 'OTP код буруу байна');
     }
   };
 
@@ -103,8 +119,9 @@ export default function AccountClient() {
     await logout();
     setUser(null);
     setActiveTab('login');
-    setLoginPhone('');
-    setLoginPassword('');
+    setOtpPhone('');
+    setOtpCode('');
+    setOtpSent(false);
   };
 
   // Logged in state
@@ -270,66 +287,74 @@ export default function AccountClient() {
           </button>
         </div>
 
-        {/* Login Form */}
+        {/* OTP Login Form */}
         {activeTab === 'login' && (
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Утасны дугаар / И-мэйл</label>
-              <input
-                type="text"
-                value={loginPhone}
-                onChange={(e) => setLoginPhone(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                placeholder="99xxxxxx эсвэл email@example.com"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Нууц үг</label>
-              <input
-                type="password"
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                placeholder="••••••••"
-              />
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <label className="flex items-center gap-1.5 text-gray-500 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                /> Намайг сана
-              </label>
-              <button type="button" className="text-primary hover:underline">Нууц үг мартсан?</button>
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-xl transition-colors"
-            >
-              Нэвтрэх
-            </button>
-
-            <div className="relative py-2">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="px-2 bg-white text-gray-500">эсвэл</span>
-              </div>
-            </div>
-
-            <div className="text-center text-sm text-gray-600">
-              Бүртгэлгүй юу?{' '}
-              <button
-                type="button"
-                onClick={() => setActiveTab('register')}
-                className="text-primary font-medium hover:underline"
-              >
-                Бүртгүүлэх
-              </button>
-            </div>
-          </form>
+          <div className="space-y-4">
+            {!otpSent ? (
+              <form onSubmit={handleSendOtp} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Утасны дугаар</label>
+                  <input
+                    type="tel"
+                    value={otpPhone}
+                    onChange={(e) => setOtpPhone(e.target.value)}
+                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    placeholder="99xxxxxx"
+                    maxLength={12}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
+                >
+                  {loading ? 'Илгээж байна...' : 'OTP код авах'}
+                </button>
+                <div className="text-center text-sm text-gray-600">
+                  Бүртгэлгүй юу?{' '}
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('register')}
+                    className="text-primary font-medium hover:underline"
+                  >
+                    Бүртгүүлэх
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <p className="text-sm text-gray-600 text-center">
+                  <span className="font-semibold">{otpPhone}</span> дугаарт OTP код илгээлээ
+                </p>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">OTP код</label>
+                  <input
+                    type="text"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-center tracking-widest text-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    placeholder="• • • • • •"
+                    maxLength={6}
+                    autoFocus
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
+                >
+                  {loading ? 'Шалгаж байна...' : 'Баталгаажуулах'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setOtpSent(false); setOtpCode(''); setError(''); }}
+                  className="w-full text-sm text-gray-500 hover:text-primary"
+                >
+                  ← Дугаар өөрчлөх
+                </button>
+              </form>
+            )}
+          </div>
         )}
 
         {/* Register Form */}
