@@ -784,14 +784,14 @@ export default function CategoryListingClient({
                         }
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[9px] font-black uppercase text-gray-400 leading-none">{p.brandId||'Дэлгүүр'}</div>
+                        <div className="text-[9px] font-black uppercase text-gray-400 leading-none">{p.brandId || branding?.name || ''}</div>
                         <div className="text-[11px] font-bold text-gray-800 truncate leading-tight mt-0.5">{p.name}</div>
                         <div className={`text-[11px] font-black leading-none mt-0.5 ${texts[idx%4]}`}>
                           {formatPrice(p.salePrice||p.price)}
                         </div>
                       </div>
                       <button type="button"
-                        onClick={() => toggleCompare({ id:p.id, title:p.name, slug:p.slug, brand:p.brandId||'Дэлгүүр', image:p.images?.[0], price:p.salePrice||p.price })}
+                        onClick={() => toggleCompare({ id:p.id, title:p.name, slug:p.slug, brand:p.brandId||(branding?.name||''), image:p.images?.[0], price:p.salePrice||p.price })}
                         className="w-5 h-5 rounded-full bg-gray-200 hover:bg-red-500 text-gray-500 hover:text-white flex items-center justify-center text-[11px] font-black shrink-0 transition-colors opacity-0 group-hover:opacity-100"
                       >×</button>
                     </div>
@@ -803,7 +803,7 @@ export default function CategoryListingClient({
               <div className="border-t border-gray-100 pt-3 space-y-3">
                 {[
                   { label: 'Үнэ', getValue: (p: any) => String(formatPrice(p.salePrice||p.price)) },
-                  { label: 'Брэнд', getValue: (p: any) => String(p.brandId||'Дэлгүүр') },
+                  { label: 'Брэнд', getValue: (p: any) => String(p.brandId || branding?.name || '') },
                   { label: 'Материал', getValue: (p: any) => String(p.specifications?.['Материал']||'—') },
                   { label: 'Баталгаа', getValue: (p: any) => String(p.specifications?.['Баталгаат хугацаа']||'—') },
                   { label: 'Улс', getValue: (p: any) => String(p.specifications?.['Үйлдвэрлэсэн улс']||'—') },

@@ -29,13 +29,13 @@ export default function ProductGrid({
   category,
   viewAllHref,
 }: ProductGridProps) {
-  const { tenantId } = useTenant()
+  const { tenantId, branding } = useTenant()
+  const tenantName = branding?.name ?? ''
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const apiUrl = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000')
-    fetch(`${apiUrl}/api/products/public?tenantId=${tenantId}`)
+    fetch(`/api/products/public?tenantId=${tenantId}`)
       .then((res) => res.json())
       .then((body) => {
         if (body && body.data) {
@@ -43,7 +43,7 @@ export default function ProductGrid({
             id: p.id,
             slug: p.slug,
             name: p.name,
-            brand: (p.brandId && p.brandId !== 'br1') ? p.brandId : 'Дэлгүүр',
+            brand: (p.brandId && p.brandId !== 'br1') ? p.brandId : tenantName,
             category: p.categoryId,
             price: p.salePrice ? p.salePrice : p.price,
             oldPrice: p.salePrice ? p.price : undefined,

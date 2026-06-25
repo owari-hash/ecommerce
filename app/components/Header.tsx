@@ -9,6 +9,7 @@ import { formatPrice } from '../lib/mockCatalog';
 import MegaMenu from './MegaMenu';
 import { useTenant } from '../lib/TenantContext';
 import { useTenantHref } from '../lib/useTenantHref';
+import { resolveUploadUrl } from '../lib/apiClient';
 
 type SearchProduct = {
   id: string;
@@ -56,8 +57,7 @@ export default function Header() {
 
 
   useEffect(() => {
-    const apiUrl = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000');
-    fetch(`${apiUrl}/api/categories/public?tenantId=${tenantId}`)
+    fetch(`/api/categories/public?tenantId=${tenantId}`)
       .then((r) => r.json())
       .then((body) => {
         if (!body?.data?.length) return;
@@ -70,34 +70,21 @@ export default function Header() {
   }, [tenantId, tenantHref]);
 
   useEffect(() => {
-    const apiUrl = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000');
-    fetch(`${apiUrl}/api/products/public?tenantId=${tenantId}`)
+    fetch(`/api/products/public?tenantId=${tenantId}`)
       .then((r) => r.json())
       .then((body) => {
         if (!body?.data) return;
         setApiProducts(
-          body.data.map((p: any): SearchProduct => {
-            const rawImg = p.images?.[0];
-            let image: string | undefined;
-            if (rawImg) {
-              const cleaned = rawImg.trim();
-              if (cleaned.startsWith('http://') || cleaned.startsWith('https://') || cleaned.startsWith('data:')) {
-                image = cleaned;
-              } else {
-                image = `${apiUrl}/upload/${cleaned.replace(/^\/?(upload\/)?/, '')}`;
-              }
-            }
-            return {
-              id: p.id,
-              slug: p.slug || p.id,
-              name: p.name,
-              brand: (p.brandId && p.brandId !== 'br1') ? p.brandId : 'Дэлгүүр',
-              price: p.salePrice || p.price,
-              oldPrice: p.salePrice ? p.price : undefined,
-              image,
-              stock: p.stock ?? 0,
-            };
-          })
+          body.data.map((p: any): SearchProduct => ({
+            id: p.id,
+            slug: p.slug || p.id,
+            name: p.name,
+            brand: (p.brandId && p.brandId !== 'br1') ? p.brandId : (branding?.name ?? ''),
+            price: p.salePrice || p.price,
+            oldPrice: p.salePrice ? p.price : undefined,
+            image: resolveUploadUrl(p.images?.[0]),
+            stock: p.stock ?? 0,
+          }))
         );
       })
       .catch(console.error);

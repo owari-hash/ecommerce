@@ -194,7 +194,7 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
               id: p.id,
               slug: p.slug || p.id,
               name: p.name,
-              brand: (p.brandId && p.brandId !== 'br1') ? p.brandId : 'Дэлгүүр',
+              brand: (p.brandId && p.brandId !== 'br1') ? p.brandId : (config.branding?.name ?? ''),
               price: formatPrice(p.salePrice ? p.salePrice : p.price),
               oldPrice: p.salePrice ? formatPrice(p.price) : undefined,
               badge: p.featured ? 'Шинэ' : p.salePrice ? 'Хямдрал' : null,

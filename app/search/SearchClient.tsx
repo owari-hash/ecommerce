@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useMemo, useState, useEffect } from 'react';
 import { formatPrice, CATEGORY_LABELS } from '../lib/mockCatalog';
 import { useTenant } from '../lib/TenantContext';
+import { resolveUploadUrl } from '../lib/apiClient';
 
 type SearchProduct = {
   id: string;
@@ -23,35 +24,25 @@ type SearchProduct = {
 export default function SearchClient() {
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
-  const { tenantId } = useTenant();
+  const { tenantId, branding } = useTenant();
+  const tenantName = branding?.name ?? '';
   const [apiProducts, setApiProducts] = useState<SearchProduct[]>([]);
 
   useEffect(() => {
-    const apiUrl = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000');
-    fetch(`${apiUrl}/api/products/public?tenantId=${tenantId}`)
+    fetch(`/api/products/public?tenantId=${tenantId}`)
       .then(r => r.json())
       .then(body => {
         if (!body?.data) return;
         setApiProducts(
           body.data.map((p: any): SearchProduct => {
-            const rawImg = p.images?.[0];
-            let image: string | undefined;
-            if (rawImg) {
-              const cleaned = rawImg.trim();
-              if (cleaned.startsWith('http://') || cleaned.startsWith('https://') || cleaned.startsWith('data:')) {
-                image = cleaned;
-              } else {
-                image = `${apiUrl}/upload/${cleaned.replace(/^\/?(upload\/)?/, '')}`;
-              }
-            }
             return {
               id: p.id,
               slug: p.slug || p.id,
               name: p.name,
-              brand: (p.brandId && p.brandId !== 'br1') ? p.brandId : 'Дэлгүүр',
+              brand: (p.brandId && p.brandId !== 'br1') ? p.brandId : tenantName,
+              image: resolveUploadUrl(p.images?.[0]),
               price: p.salePrice || p.price,
               oldPrice: p.salePrice ? p.price : undefined,
-              image,
               isSale: !!p.salePrice,
               isNew: !!p.featured,
               stock: p.stock ?? 0,
