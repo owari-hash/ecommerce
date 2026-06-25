@@ -79,6 +79,13 @@ export default function ProductGrid({
   if (isSale) filtered = filtered.filter((p) => p.isSale)
   if (category) filtered = filtered.filter((p) => p.category === category || p.slug === category)
 
+  // If a specific filter yields nothing, skip this grid entirely only when
+  // there's also a no-filter grid that will show all products.
+  // For the no-filter (all-products) grid, always show if there are any products.
+  if (filtered.length === 0 && (isNew || isSale || category)) {
+    return null
+  }
+
   const sliced = filtered.slice(0, limit)
   const pages = chunk(sliced, 6)
 
