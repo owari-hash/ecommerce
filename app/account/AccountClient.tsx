@@ -21,10 +21,7 @@ export default function AccountClient() {
   const [otpSent, setOtpSent] = useState(false);
 
   // Register form
-  const [regFirstName, setRegFirstName] = useState('');
-  const [regLastName, setRegLastName] = useState('');
   const [regPhone, setRegPhone] = useState('');
-  const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -77,8 +74,8 @@ export default function AccountClient() {
     setError('');
     setSuccess('');
 
-    if (!regFirstName || !regLastName || !regPhone || !regEmail || !regPassword) {
-      setError('Бүх талбарыг бөглөнө үү');
+    if (!regPhone || !regPassword) {
+      setError('Утасны дугаар болон нууц үгээ оруулна уу');
       return;
     }
 
@@ -99,10 +96,10 @@ export default function AccountClient() {
 
     const result = await register({
       phone: regPhone,
-      email: regEmail,
+      email: `${regPhone}@phone.local`,
       password: regPassword,
-      firstName: regFirstName,
-      lastName: regLastName,
+      firstName: regPhone,
+      lastName: '',
     });
 
     if (result.success) {
@@ -122,6 +119,9 @@ export default function AccountClient() {
     setOtpPhone('');
     setOtpCode('');
     setOtpSent(false);
+    setRegPhone('');
+    setRegPassword('');
+    setRegConfirmPassword('');
   };
 
   // Logged in state
@@ -239,48 +239,56 @@ export default function AccountClient() {
 
   // Not logged in - show login/register forms
   return (
-    <div className="max-w-md mx-auto px-4 py-12">
-      <h1 className="text-2xl font-black text-gray-800 mb-8 text-center">Нэвтрэх / Бүртгүүлэх</h1>
-
-      {/* Alert Messages */}
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-600">
-          {error}
+    <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-sm">
+        {/* Logo/Title */}
+        <div className="text-center mb-8">
+          <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/30">
+            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-black text-gray-900">
+            {activeTab === 'login' ? 'Нэвтрэх' : 'Бүртгүүлэх'}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            {activeTab === 'login' ? 'Утасны дугаараар нэвтэрнэ үү' : 'Шинэ бүртгэл үүсгэх'}
+          </p>
         </div>
-      )}
-      {success && (
-        <div className="mb-4 bg-green-50 border border-green-200 rounded-xl p-3 text-sm text-green-600">
-          {success}
-        </div>
-      )}
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
+        {/* Alert Messages */}
+        {error && (
+          <div className="mb-4 flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-600">
+            <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="mb-4 flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-600">
+            <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+            {success}
+          </div>
+        )}
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-xl shadow-gray-100 p-7">
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-1 mb-7 bg-gray-100 rounded-xl p-1">
           <button
-            onClick={() => {
-              setActiveTab('login');
-              setError('');
-              setSuccess('');
-            }}
-            className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-colors ${
+            onClick={() => { setActiveTab('login'); setError(''); setSuccess(''); setOtpSent(false); }}
+            className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
               activeTab === 'login'
-                ? 'bg-primary text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             Нэвтрэх
           </button>
           <button
-            onClick={() => {
-              setActiveTab('register');
-              setError('');
-              setSuccess('');
-            }}
-            className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-colors ${
+            onClick={() => { setActiveTab('register'); setError(''); setSuccess(''); }}
+            className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
               activeTab === 'register'
-                ? 'bg-primary text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             Бүртгүүлэх
@@ -289,68 +297,69 @@ export default function AccountClient() {
 
         {/* OTP Login Form */}
         {activeTab === 'login' && (
-          <div className="space-y-4">
+          <div>
             {!otpSent ? (
               <form onSubmit={handleSendOtp} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Утасны дугаар</label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                  </span>
                   <input
                     type="tel"
                     value={otpPhone}
                     onChange={(e) => setOtpPhone(e.target.value)}
-                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                    placeholder="99xxxxxx"
+                    className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-gray-50"
+                    placeholder="Утасны дугаар"
                     maxLength={12}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
-                >
-                  {loading ? 'Илгээж байна...' : 'OTP код авах'}
-                </button>
-                <div className="text-center text-sm text-gray-600">
-                  Бүртгэлгүй юу?{' '}
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('register')}
-                    className="text-primary font-medium hover:underline"
-                  >
-                    Бүртгүүлэх
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <form onSubmit={handleVerifyOtp} className="space-y-4">
-                <p className="text-sm text-gray-600 text-center">
-                  <span className="font-semibold">{otpPhone}</span> дугаарт OTP код илгээлээ
-                </p>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">OTP код</label>
-                  <input
-                    type="text"
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-center tracking-widest text-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                    placeholder="• • • • • •"
-                    maxLength={6}
                     autoFocus
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/25 disabled:opacity-60 disabled:shadow-none"
                 >
-                  {loading ? 'Шалгаж байна...' : 'Баталгаажуулах'}
+                  {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                      Илгээж байна...
+                    </span>
+                  ) : 'Код авах →'}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-700 text-center">
+                  📱 <span className="font-semibold">{otpPhone}</span>-д код илгээлээ
+                </div>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3.5 text-center text-2xl font-bold tracking-[0.5em] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-gray-50"
+                  placeholder="──────"
+                  maxLength={6}
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  disabled={loading || otpCode.length !== 6}
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/25 disabled:opacity-50 disabled:shadow-none"
+                >
+                  {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                      Шалгаж байна...
+                    </span>
+                  ) : 'Нэвтрэх'}
                 </button>
                 <button
                   type="button"
                   onClick={() => { setOtpSent(false); setOtpCode(''); setError(''); }}
-                  className="w-full text-sm text-gray-500 hover:text-primary"
+                  className="w-full text-sm text-gray-400 hover:text-gray-600 py-1"
                 >
-                  ← Дугаар өөрчлөх
+                  ← Буцах
                 </button>
               </form>
             )}
@@ -360,106 +369,68 @@ export default function AccountClient() {
         {/* Register Form */}
         {activeTab === 'register' && (
           <form onSubmit={handleRegister} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Овог *</label>
-                <input
-                  type="text"
-                  value={regLastName}
-                  onChange={(e) => setRegLastName(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                  placeholder="Овог"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Нэр *</label>
-                <input
-                  type="text"
-                  value={regFirstName}
-                  onChange={(e) => setRegFirstName(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                  placeholder="Нэр"
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Утасны дугаар *</label>
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+              </span>
               <input
                 type="tel"
                 value={regPhone}
                 onChange={(e) => setRegPhone(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                placeholder="99xxxxxx"
+                className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-gray-50"
+                placeholder="Утасны дугаар"
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">И-мэйл *</label>
-              <input
-                type="email"
-                value={regEmail}
-                onChange={(e) => setRegEmail(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                placeholder="email@example.com"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Нууц үг *</label>
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+              </span>
               <input
                 type="password"
                 value={regPassword}
                 onChange={(e) => setRegPassword(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                placeholder="Хамгийн багадаа 6 тэмдэгт"
+                className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-gray-50"
+                placeholder="Нууц үг (6+ тэмдэгт)"
                 minLength={6}
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Нууц үг баталгаажуулах *</label>
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+              </span>
               <input
                 type="password"
                 value={regConfirmPassword}
                 onChange={(e) => setRegConfirmPassword(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                placeholder="Нууц үгээ дахин оруулна уу"
+                className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-gray-50"
+                placeholder="Нууц үг давтах"
                 required
               />
             </div>
-            <label className="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
+            <label className="flex items-start gap-2.5 text-xs text-gray-500 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={agreeTerms}
                 onChange={(e) => setAgreeTerms(e.target.checked)}
-                className="mt-0.5"
+                className="mt-0.5 accent-primary"
               />
               <span>
-                Би <Link href="/terms" className="text-primary hover:underline">үйлчилгээний нөхцөл</Link> болон{' '}
+                <Link href="/terms" className="text-primary hover:underline">Үйлчилгээний нөхцөл</Link> болон{' '}
                 <Link href="/privacy" className="text-primary hover:underline">нууцлалын бодлогыг</Link> зөвшөөрч байна
               </span>
             </label>
             <button
               type="submit"
-              className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-xl transition-colors"
+              disabled={loading}
+              className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/25 disabled:opacity-60"
             >
-              Бүртгүүлэх
+              {loading ? 'Бүртгэж байна...' : 'Бүртгүүлэх →'}
             </button>
-
-            <div className="text-center text-sm text-gray-600">
-              Бүртгэлтэй юу?{' '}
-              <button
-                type="button"
-                onClick={() => setActiveTab('login')}
-                className="text-primary font-medium hover:underline"
-              >
-                Нэвтрэх
-              </button>
-            </div>
           </form>
         )}
+      </div>
       </div>
     </div>
   );
