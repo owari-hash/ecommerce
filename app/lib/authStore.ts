@@ -107,6 +107,17 @@ export async function verifyOtp(
   }
 }
 
+// Fetch wrapper that auto-refreshes access token on 401 then retries once
+export async function fetchWithAuth(input: string, init?: RequestInit): Promise<Response> {
+  const res = await fetch(input, { credentials: 'include', ...init })
+  if (res.status !== 401) return res
+  // Try refresh
+  const refreshRes = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' })
+  if (!refreshRes.ok) return res
+  // Retry original request
+  return fetch(input, { credentials: 'include', ...init })
+}
+
 // Call on app init to restore session from cookie (asks server to validate)
 export async function restoreSession(): Promise<void> {
   try {

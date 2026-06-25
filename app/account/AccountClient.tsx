@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { readAuth, logout, sendOtp, verifyOtp, register, restoreSession, type User } from '../lib/authStore';
+import { readAuth, logout, sendOtp, verifyOtp, register, restoreSession, fetchWithAuth, type User } from '../lib/authStore';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -60,7 +60,7 @@ function EbarimtBadge({ orderNumber }: { orderNumber: string }) {
     setLoading(true);
     setErr('');
     try {
-      const res = await fetch(`/api/users/ebarimt/${orderNumber}`, { credentials: 'include' });
+      const res = await fetchWithAuth(`/api/users/ebarimt/${orderNumber}`);
       const json = await res.json();
       if (res.ok) {
         setData(json);
@@ -244,7 +244,7 @@ export default function AccountClient() {
   async function fetchOrders() {
     setOrdersLoading(true); setOrdersError('');
     try {
-      const res = await fetch('/api/users/orders', { credentials: 'include' });
+      const res = await fetchWithAuth('/api/users/orders');
       if (res.status === 401) { router.replace('/account?redirect=/account'); return; }
       const data = await res.json();
       if (!res.ok) { setOrdersError(data.error ?? 'Захиалга татаж чадсангүй'); return; }
