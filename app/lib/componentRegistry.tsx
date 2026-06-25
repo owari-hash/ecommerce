@@ -7,6 +7,7 @@ export type SectionType =
   | 'GroceryBento'
   | 'BrandList'
   | 'ServiceBento'
+  | 'CategoryProductSection'
   | 'UnknownSection'
 
 type LazyComponent = React.LazyExoticComponent<React.ComponentType<Record<string, unknown>>>
@@ -17,7 +18,8 @@ const REGISTRY: Record<string, () => Promise<{ default: React.ComponentType<Reco
   ProductGrid:  () => import('../sections/ProductGrid'),
   GroceryBento: () => import('../sections/GroceryBento'),
   BrandList:    () => import('../sections/BrandList'),
-  ServiceBento: () => import('../sections/ServiceBentoSection'),
+  ServiceBento:            () => import('../sections/ServiceBentoSection'),
+  CategoryProductSection:   () => import('../sections/CategoryProductSection'),
 }
 
 export function getSection(type: string): LazyComponent {
