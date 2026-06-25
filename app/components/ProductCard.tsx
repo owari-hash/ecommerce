@@ -7,6 +7,7 @@ import { CATEGORY_ICONS, type CatalogCategoryKey, formatPrice } from '../lib/moc
 import { toggleCompare, readCompare } from '../lib/compareStore';
 import { useTenantHref } from '../lib/useTenantHref';
 import { useTenant } from '../lib/TenantContext';
+import { resolveUploadUrl } from '../lib/apiClient';
 
 type Props = {
   id: string;
@@ -22,27 +23,8 @@ type Props = {
   stock?: number;
 };
 
-function isUrl(s: string) {
-  return s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:')
-}
-
-function getApiUrl() {
-  if (typeof window !== 'undefined') {
-    return '';
-  }
-  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
-  return 'http://localhost:8000';
-}
-
 function resolveProductImageUrl(url: string | undefined) {
-  if (!url) return '';
-  const apiUrl = getApiUrl();
-  const uploadMatch = url.match(/\/upload\/(.+)$/);
-  if (uploadMatch) {
-    return `${apiUrl}/upload/${uploadMatch[1]}`;
-  }
-  if (isUrl(url)) return url;
-  return url.startsWith('/') ? `${apiUrl}${url}` : `${apiUrl}/upload/${url}`;
+  return resolveUploadUrl(url);
 }
 
 export default function ProductCard({ id, slug, name, brand, category, price, oldPrice, isNew, image, stock }: Props) {

@@ -7,6 +7,7 @@ import { toggleCompare, readCompare } from '../../lib/compareStore';
 import { addToCart } from '../../lib/cartStore';
 import { Lens } from '../../components/Lens';
 import { useTenant } from '../../lib/TenantContext';
+import { resolveUploadUrl } from '../../lib/apiClient';
 
 type Props = {
   product: {
@@ -41,27 +42,8 @@ function parsePrice(price: string): number {
   return parseInt(price.replace(/[^0-9]/g, ''), 10) || 0;
 }
 
-function isUrl(s: string) {
-  return s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:')
-}
-
-function getApiUrl() {
-  if (typeof window !== 'undefined') {
-    return '';
-  }
-  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
-  return 'http://localhost:8000';
-}
-
 function resolveProductImageUrl(url: string | undefined) {
-  if (!url) return '';
-  const apiUrl = getApiUrl();
-  const uploadMatch = url.match(/\/upload\/(.+)$/);
-  if (uploadMatch) {
-    return `${apiUrl}/upload/${uploadMatch[1]}`;
-  }
-  if (isUrl(url)) return url;
-  return url.startsWith('/') ? `${apiUrl}${url}` : `${apiUrl}/upload/${url}`;
+  return resolveUploadUrl(url);
 }
 
 export default function ProductDetailClient({ product }: Props) {

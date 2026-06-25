@@ -8,6 +8,7 @@ import { useTenantHref } from '../lib/useTenantHref';
 import { useTenant } from '../lib/TenantContext';
 import { readCompare, toggleCompare, writeCompare } from '../lib/compareStore';
 import { formatPrice } from '../lib/mockCatalog';
+import { resolveUploadUrl } from '../lib/apiClient';
 
 type ProductVM = {
   id: string;
@@ -36,39 +37,15 @@ function cleanImageUrl(url: string | undefined): string {
   return cleaned;
 }
 
-function getApiUrl() {
-  if (typeof window !== 'undefined') {
-    return '';
-  }
-  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
-  return 'http://localhost:8000';
-}
-
 function resolveCategoryIcon(image: string | undefined) {
-  if (!image) {
-    return { imageUrl: null, emoji: null };
-  }
-  
+  if (!image) return { imageUrl: null, emoji: null };
   const cleaned = cleanImageUrl(image);
-  if (!cleaned) {
-    return { imageUrl: null, emoji: null };
-  }
-  
+  if (!cleaned) return { imageUrl: null, emoji: null };
   if (cleaned.length <= 4 && !cleaned.includes('/') && !cleaned.includes('.')) {
     return { imageUrl: null, emoji: cleaned };
   }
-  
-  const apiUrl = getApiUrl();
-  const uploadMatch = cleaned.match(/\/upload\/(.+)$/);
-  let imageUrl = '';
-  if (uploadMatch) {
-    imageUrl = `${apiUrl}/upload/${uploadMatch[1]}`;
-  } else if (cleaned.startsWith('http://') || cleaned.startsWith('https://') || cleaned.startsWith('data:')) {
-    imageUrl = cleaned;
-  } else {
-    imageUrl = cleaned.startsWith('/') ? `${apiUrl}${cleaned}` : `${apiUrl}/upload/${cleaned}`;
-  }
-  return { imageUrl, emoji: null };
+  const imageUrl = resolveUploadUrl(cleaned);
+  return { imageUrl: imageUrl || null, emoji: null };
 }
 
 function FiltersPanel({
@@ -331,12 +308,7 @@ function parsePrice(price: string): number {
 }
 
 function resolveLogoUrl(logo: string | undefined): string {
-  if (!logo) return '';
-  const apiUrl = getApiUrl();
-  const uploadMatch = logo.match(/\/upload\/(.+)$/);
-  if (uploadMatch) return `${apiUrl}/upload/${uploadMatch[1]}`;
-  if (logo.startsWith('http://') || logo.startsWith('https://') || logo.startsWith('data:')) return logo;
-  return logo.startsWith('/') ? `${apiUrl}${logo}` : `${apiUrl}/upload/${logo}`;
+  return resolveUploadUrl(logo);
 }
 
 export default function CategoryListingClient({

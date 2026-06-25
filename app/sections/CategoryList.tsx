@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { useTenant } from '../lib/TenantContext'
 import { useTenantHref } from '../lib/useTenantHref'
 import { CATEGORY_ICONS } from '../lib/mockCatalog'
+import { resolveUploadUrl } from '../lib/apiClient'
 
 interface Category {
   id: string
@@ -16,17 +17,6 @@ interface Category {
   status: string
 }
 
-function isUrl(s: string) {
-  return s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:')
-}
-
-function getApiUrl() {
-  if (typeof window !== 'undefined') {
-    return '';
-  }
-  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
-  return 'http://localhost:8000';
-}
 
 function getCategoryEmoji(slug: string, name?: string): string {
   const s = (slug || '').toLowerCase();
@@ -69,26 +59,12 @@ function getCategoryEmoji(slug: string, name?: string): string {
 
 function resolveImageUrl(url: string | undefined, defaultEmoji: string = 'SVG_FALLBACK') {
   if (!url) return { imageUrl: null, emoji: defaultEmoji }
-  
-  let cleaned = url.trim();
-  // Strip common translation prefixes from Mongolian admin panel ("Оруулах", "оруулах", "Oruulah", "oruulah", "Upload", "upload")
-  cleaned = cleaned.replace(/^(Оруулах|оруулах|[Oo]ruulah|[Uu]pload)/g, '').trim();
-  
+  let cleaned = url.trim().replace(/^(Оруулах|оруулах|[Oo]ruulah|[Uu]pload)/g, '').trim();
   if (!cleaned) return { imageUrl: null, emoji: defaultEmoji }
-  
-  // Custom Emoji Support: if it's a short text string without common URL path structures, render it as emoji directly
   if (cleaned.length <= 4 && !cleaned.includes('/') && !cleaned.includes('.')) {
     return { imageUrl: null, emoji: cleaned };
   }
-  
-  const apiUrl = getApiUrl()
-  const uploadMatch = cleaned.match(/\/upload\/(.+)$/);
-  if (uploadMatch) {
-    return { imageUrl: `${apiUrl}/upload/${uploadMatch[1]}`, emoji: null };
-  }
-  if (isUrl(cleaned)) return { imageUrl: cleaned, emoji: null }
-  const imageUrl = cleaned.startsWith('/') ? `${apiUrl}${cleaned}` : `${apiUrl}/upload/${cleaned}`
-  return { imageUrl, emoji: null }
+  return { imageUrl: resolveUploadUrl(cleaned) || null, emoji: null }
 }
 
 export default function CategoryList({ showBrands = true }: { showBrands?: boolean }) {
@@ -98,8 +74,7 @@ export default function CategoryList({ showBrands = true }: { showBrands?: boole
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const apiUrl = getApiUrl()
-    fetch(`${apiUrl}/api/categories/public?tenantId=${tenantId}`)
+    fetch(`/api/categories/public?tenantId=${tenantId}`)
       .then((res) => res.json())
       .then((body) => {
         if (body?.data) {

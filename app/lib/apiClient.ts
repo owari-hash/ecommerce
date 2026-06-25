@@ -1,3 +1,21 @@
+/**
+ * Convert any backend upload URL to a relative /upload/... path so the
+ * Next.js rewrite proxy serves it over HTTPS, preventing mixed-content errors.
+ */
+export function resolveUploadUrl(url: string | undefined | null): string {
+  if (!url) return '';
+  if (url.startsWith('data:') || url.startsWith('blob:')) return url;
+  // Already relative
+  if (url.startsWith('/upload/')) return url;
+  // Extract the /upload/... suffix from an absolute URL
+  const match = url.match(/\/upload\/(.+)$/);
+  if (match) return `/upload/${match[1]}`;
+  // External CDN / Unsplash etc — keep as-is
+  if (url.startsWith('https://')) return url;
+  // http:// backend URL without /upload/ path — just keep it (will still fail, but at least explicit)
+  return url;
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,

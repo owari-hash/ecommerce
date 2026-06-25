@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { fetchTenantConfig } from '../lib/tenantConfig';
 import { formatPrice } from '../lib/mockCatalog';
+import { resolveUploadUrl } from '../lib/apiClient';
 import CategoryListingClient from './listingClient';
 import React from 'react';
 
@@ -135,15 +136,7 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
     }
 
     if (catBanner) {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
-      const uploadMatch = catBanner.match(/\/upload\/(.+)$/);
-      if (uploadMatch) {
-        bannerImage = `${apiUrl}/upload/${uploadMatch[1]}`;
-      } else {
-        bannerImage = catBanner.startsWith('http') || catBanner.startsWith('data:')
-          ? catBanner
-          : (catBanner.startsWith('/') ? `${apiUrl}${catBanner}` : `${apiUrl}/upload/${catBanner}`);
-      }
+      bannerImage = resolveUploadUrl(catBanner) || bannerImage;
     }
   }
 

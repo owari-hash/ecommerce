@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useTenant } from '../lib/TenantContext';
 import { useTenantHref } from '../lib/useTenantHref';
+import { resolveUploadUrl } from '../lib/apiClient';
 
 export type SubCategory = {
   label: string;
@@ -24,14 +25,6 @@ export type MainCategory = {
   };
 };
 
-function getApiUrl() {
-  if (typeof window !== 'undefined') {
-    return '';
-  }
-  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
-  return 'http://localhost:8000';
-}
-
 function cleanImageUrl(url: string | undefined): string {
   if (!url) return '';
   let cleaned = url.trim();
@@ -39,45 +32,14 @@ function cleanImageUrl(url: string | undefined): string {
   return cleaned;
 }
 
-function resolveImageUrl(url: string | undefined) {
-  if (!url) return '';
-  const cleaned = cleanImageUrl(url);
-  if (!cleaned) return '';
-  const apiUrl = getApiUrl();
-  const uploadMatch = cleaned.match(/\/upload\/(.+)$/);
-  if (uploadMatch) {
-    return `${apiUrl}/upload/${uploadMatch[1]}`;
-  }
-  if (cleaned.startsWith('http://') || cleaned.startsWith('https://') || cleaned.startsWith('data:')) return cleaned;
-  return cleaned.startsWith('/') ? `${apiUrl}${cleaned}` : `${apiUrl}/upload/${cleaned}`;
-}
-
 function resolveCategoryIcon(image: string | undefined) {
-  if (!image) {
-    return { imageUrl: null, emoji: null };
-  }
-  
+  if (!image) return { imageUrl: null, emoji: null };
   const cleaned = cleanImageUrl(image);
-  if (!cleaned) {
-    return { imageUrl: null, emoji: null };
-  }
-  
-  // Custom Emoji Support: if it's a short text string without common URL path structures, render it as emoji directly
+  if (!cleaned) return { imageUrl: null, emoji: null };
   if (cleaned.length <= 4 && !cleaned.includes('/') && !cleaned.includes('.')) {
     return { imageUrl: null, emoji: cleaned };
   }
-  
-  const apiUrl = getApiUrl();
-  const uploadMatch = cleaned.match(/\/upload\/(.+)$/);
-  let imageUrl = '';
-  if (uploadMatch) {
-    imageUrl = `${apiUrl}/upload/${uploadMatch[1]}`;
-  } else if (cleaned.startsWith('http://') || cleaned.startsWith('https://') || cleaned.startsWith('data:')) {
-    imageUrl = cleaned;
-  } else {
-    imageUrl = cleaned.startsWith('/') ? `${apiUrl}${cleaned}` : `${apiUrl}/upload/${cleaned}`;
-  }
-  return { imageUrl, emoji: null };
+  return { imageUrl: resolveUploadUrl(cleaned) || null, emoji: null };
 }
 
 export default function MegaMenu() {
@@ -91,8 +53,7 @@ export default function MegaMenu() {
   const [megaCategories, setMegaCategories] = useState<MainCategory[]>([]);
 
   useEffect(() => {
-    const apiUrl = getApiUrl();
-    fetch(`${apiUrl}/api/categories/public?tenantId=${tenantId}`)
+    fetch(`/api/categories/public?tenantId=${tenantId}`)
       .then((r) => r.json())
       .then((body) => {
         if (!body?.data?.length) return;
@@ -119,7 +80,7 @@ export default function MegaMenu() {
                   href: tenantHref(`/${root.slug}/${child.slug}`),
                 })),
               featured: root.image
-                ? { image: resolveImageUrl(root.image), title: root.name, href: tenantHref(`/${root.slug}`) }
+                ? { image: resolveUploadUrl(root.image), title: root.name, href: tenantHref(`/${root.slug}`) }
                 : undefined,
             };
           })
