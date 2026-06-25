@@ -52,13 +52,23 @@ function EbarimtBadge({ orderNumber }: { orderNumber: string }) {
   const [data, setData] = useState<EbarimtDoc | null>(null);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [err, setErr] = useState('');
 
   async function load() {
-    if (data) { setOpen(o => !o); return; }
+    if (open) { setOpen(false); return; }
+    if (data || err) { setOpen(true); return; }
     setLoading(true);
+    setErr('');
     try {
       const res = await fetch(`/api/users/ebarimt/${orderNumber}`, { credentials: 'include' });
-      if (res.ok) setData(await res.json());
+      const json = await res.json();
+      if (res.ok) {
+        setData(json);
+      } else {
+        setErr(json.error ?? 'И-баримт олдсонгүй');
+      }
+    } catch {
+      setErr('Холбогдох боломжгүй байна');
     } finally {
       setLoading(false);
       setOpen(true);
@@ -72,12 +82,15 @@ function EbarimtBadge({ orderNumber }: { orderNumber: string }) {
         className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
       >
         {loading ? <Spinner /> : <span>🧾</span>}
-        Эбаримт харах
+        {open ? 'Хаах' : 'И-Баримт харах'}
       </button>
+      {open && err && (
+        <div className="mt-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-500">{err}</div>
+      )}
       {open && data && (
         <div className="mt-2 bg-emerald-50 border border-emerald-200 rounded-xl p-4 space-y-2 text-sm">
           <div className="flex items-center justify-between">
-            <span className="font-bold text-emerald-800">Эбаримт</span>
+            <span className="font-bold text-emerald-800">И-Баримт</span>
             <span className="text-xs text-emerald-600">{data.type === 'B2B_RECEIPT' ? 'Байгууллага' : 'Хувь хүн'}</span>
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs">
