@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
 
 export async function POST(request: NextRequest) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
@@ -18,21 +17,21 @@ export async function POST(request: NextRequest) {
   const data = await res.json()
   if (!res.ok) return NextResponse.json(data, { status: res.status })
 
-  const cookieStore = await cookies()
-  cookieStore.set('access_token', data.accessToken, {
+  const response = NextResponse.json({ user: data.user })
+  const isProd = process.env.NODE_ENV === 'production'
+  response.cookies.set('access_token', data.accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProd,
     sameSite: 'lax',
     maxAge: 15 * 60,
     path: '/',
   })
-  cookieStore.set('refresh_token', data.refreshToken, {
+  response.cookies.set('refresh_token', data.refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProd,
     sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60,
     path: '/',
   })
-
-  return NextResponse.json({ user: data.user })
+  return response
 }

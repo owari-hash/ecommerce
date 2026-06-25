@@ -110,7 +110,15 @@ export async function verifyOtp(
 // Call on app init to restore session from cookie (asks server to validate)
 export async function restoreSession(): Promise<void> {
   try {
-    const res = await fetch('/api/users/me', { credentials: 'include' })
+    let res = await fetch('/api/users/me', { credentials: 'include' })
+
+    // Access token expired — try refresh
+    if (res.status === 401) {
+      const refreshRes = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' })
+      if (!refreshRes.ok) return
+      res = await fetch('/api/users/me', { credentials: 'include' })
+    }
+
     if (res.ok) {
       const user = await res.json()
       _currentUser = { email: user.email, firstName: user.firstName, lastName: user.lastName, phone: user.phone }
