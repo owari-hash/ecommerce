@@ -434,6 +434,10 @@ export default function CategoryListingClient({
     } else if (sort === 'price_desc') {
       list = [...list].sort((a, b) => parseInt(b.price.replace(/\D/g, '')) - parseInt(a.price.replace(/\D/g, '')));
     }
+
+    // Always push out-of-stock to the bottom
+    list = [...list.filter((p) => (p.stock ?? 1) > 0), ...list.filter((p) => (p.stock ?? 1) === 0)];
+
     return list;
   }, [products, selectedStatuses, selectedBrands, sort]);
 

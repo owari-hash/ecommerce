@@ -74,7 +74,7 @@ export default function CategoryProductSection() {
   const categoriesWithProducts = categories
     .map((cat) => ({
       cat,
-      items: products.filter((p) => p.categoryId === cat.id).slice(0, 10),
+      items: products.filter((p) => p.categoryId === cat.id && (p.stock ?? 1) > 0).slice(0, 10),
     }))
     .filter(({ items }) => items.length > 0)
 
