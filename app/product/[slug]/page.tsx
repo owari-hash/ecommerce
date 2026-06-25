@@ -6,6 +6,7 @@ import { CATEGORY_ICONS, formatPrice } from '../../lib/mockCatalog';
 import ProductDetailClient from './productDetailClient';
 import Carousel from '../../components/Carousel';
 import ProductCard from '../../components/ProductCard';
+import { resolveUploadUrl } from '../../lib/apiClient';
 
 function chunk<T>(arr: T[], size: number) {
   const out: T[][] = [];
@@ -114,7 +115,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     oldPrice: x.salePrice ? x.price : undefined,
     isNew: !!x.featured,
     isSale: !!x.salePrice,
-    image: x.images?.[0],
+    image: resolveUploadUrl(x.images?.[0]),
     category: (categorySlug || 'accessories') as any,
     stock: x.stock ?? 0,
   }));
@@ -146,8 +147,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             category: categorySlug,
             categoryLabel,
             icon,
-            image: p.images?.[0],
-            images: p.images || [],
+            image: resolveUploadUrl(p.images?.[0]),
+            images: (p.images || []).map(resolveUploadUrl),
             price: formatPrice(p.salePrice ?? p.price),
             oldPrice: p.salePrice ? formatPrice(p.price) : undefined,
             props: specs,

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { useTenant } from '../lib/TenantContext'
 import Carousel from '../components/Carousel'
 import ProductCard from '../components/ProductCard'
+import { resolveUploadUrl } from '../lib/apiClient'
 
 interface ProductGridProps {
   title?: string
@@ -49,7 +50,7 @@ export default function ProductGrid({
             oldPrice: p.salePrice ? p.price : undefined,
             isNew: p.featured || false,
             isSale: p.salePrice ? true : false,
-            image: p.images?.[0] || '',
+            image: resolveUploadUrl(p.images?.[0]) || '',
             stock: p.stock,
           }))
           setProducts(mapped)

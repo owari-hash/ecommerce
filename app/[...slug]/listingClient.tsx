@@ -779,7 +779,7 @@ export default function CategoryListingClient({
                     <div key={p.id} className="flex items-center gap-2.5 p-2 rounded-xl bg-gray-50/80 border border-gray-100 group">
                       <div className={`relative w-9 h-9 rounded-lg ring-2 ${rings[idx%4]} bg-white shrink-0 overflow-hidden flex items-center justify-center`}>
                         {p.images?.[0]
-                          ? <Image src={p.images[0]} alt={p.name} fill className="object-cover" sizes="36px" unoptimized />
+                          ? <Image src={resolveUploadUrl(p.images[0])} alt={p.name} fill className="object-cover" sizes="36px" unoptimized />
                           : <span className="text-sm">📦</span>
                         }
                       </div>
@@ -791,7 +791,7 @@ export default function CategoryListingClient({
                         </div>
                       </div>
                       <button type="button"
-                        onClick={() => toggleCompare({ id:p.id, title:p.name, slug:p.slug, brand:p.brandId||(branding?.name||''), image:p.images?.[0], price:p.salePrice||p.price })}
+                        onClick={() => toggleCompare({ id:p.id, title:p.name, slug:p.slug, brand:p.brandId||(branding?.name||''), image:resolveUploadUrl(p.images?.[0]), price:p.salePrice||p.price })}
                         className="w-5 h-5 rounded-full bg-gray-200 hover:bg-red-500 text-gray-500 hover:text-white flex items-center justify-center text-[11px] font-black shrink-0 transition-colors opacity-0 group-hover:opacity-100"
                       >×</button>
                     </div>

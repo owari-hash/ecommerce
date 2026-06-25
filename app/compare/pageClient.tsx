@@ -7,6 +7,7 @@ import { readCompare, writeCompare, type CompareItem } from '../lib/compareStore
 import { formatPrice } from '../lib/mockCatalog';
 import { addToCart } from '../lib/cartStore';
 import { useTenantHref } from '../lib/useTenantHref';
+import { resolveUploadUrl } from '../lib/apiClient';
 
 type FullProduct = {
   id: string;
@@ -147,7 +148,7 @@ export default function ComparePageClient({ tenantId }: { tenantId: string }) {
                 // Prefer fetched data, fall back to stored data
                 const price = p.full?.salePrice ?? p.full?.price ?? p.price;
                 const oldPrice = p.full?.salePrice ? p.full.price : p.oldPrice;
-                const image = p.full?.images?.[0] ?? p.image;
+                const image = resolveUploadUrl(p.full?.images?.[0] ?? p.image);
                 const title = p.full?.name ?? p.title;
                 const brand = p.full?.brandId ?? p.brand;
                 const slug = p.full?.slug || p.slug || p.id;
