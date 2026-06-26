@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { fetchTenantConfig } from '../lib/tenantConfig';
+import { resolveUploadUrl } from '../lib/apiClient';
 
 export const metadata: Metadata = { title: 'Брэндүүд' };
 
@@ -58,7 +59,7 @@ export default async function BrandsPage() {
             >
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center overflow-hidden group-hover:scale-110 transition-transform">
                 {brand.logo ? (
-                  <img src={brand.logo} alt={brand.name} className="w-full h-full object-contain p-1" />
+                  <img src={resolveUploadUrl(brand.logo)} alt={brand.name} className="w-full h-full object-contain p-1" />
                 ) : (
                   <span className="text-xl font-black text-primary">{brand.name.charAt(0).toUpperCase()}</span>
                 )}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { resolveUploadUrl } from '../lib/apiClient'
 
 interface Brand {
   id: string
@@ -21,8 +22,7 @@ export default function BrandList({ title = 'Брэндүүд', limit = 12, tena
 
   useEffect(() => {
     if (!tenantId || tenantId === 'default') return
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
-    fetch(`${apiUrl}/api/brands/public?tenantId=${encodeURIComponent(tenantId)}`)
+    fetch(`/api/brands/public?tenantId=${encodeURIComponent(tenantId)}`)
       .then((r) => r.ok ? r.json() : { data: [] })
       .then((data) => {
         const list: Brand[] = Array.isArray(data) ? data : (data.data ?? data.brands ?? [])
@@ -49,7 +49,7 @@ export default function BrandList({ title = 'Брэндүүд', limit = 12, tena
             className="flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-gray-200 hover:border-primary text-sm font-bold text-gray-700 hover:text-primary transition-all"
           >
             {brand.logo && (
-              <img src={brand.logo} alt={brand.name} className="w-5 h-5 object-contain rounded" />
+              <img src={resolveUploadUrl(brand.logo)} alt={brand.name} className="w-5 h-5 object-contain rounded" />
             )}
             {brand.name}
           </Link>
