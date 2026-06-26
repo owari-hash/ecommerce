@@ -21,16 +21,17 @@ function SectionSkeleton() {
 
 interface PageRendererProps {
   sections: SectionConfig[]
+  tenantId?: string
 }
 
-export function PageRenderer({ sections }: PageRendererProps) {
+export function PageRenderer({ sections, tenantId }: PageRendererProps) {
   return (
     <>
       {sections.map((section, i) => {
         const Section = getSection(section.type)
         return (
           <Suspense key={`${section.type}_${i}`} fallback={<SectionSkeleton />}>
-            <Section {...((section.props ?? {}) as Record<string, unknown>)} />
+            <Section {...((section.props ?? {}) as Record<string, unknown>)} tenantId={tenantId} />
           </Suspense>
         )
       })}

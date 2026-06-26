@@ -1,6 +1,7 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { headers } from 'next/headers'
-import { fetchTenantConfig } from '../lib/tenantConfig'
 
 interface Brand {
   id: string
@@ -12,32 +13,23 @@ interface Brand {
 interface BrandListProps {
   title?: string
   limit?: number
+  tenantId?: string
 }
 
-async function fetchBrands(tenantId: string): Promise<Brand[]> {
-  try {
+export default function BrandList({ title = 'Брэндүүд', limit = 12, tenantId }: BrandListProps) {
+  const [brands, setBrands] = useState<Brand[]>([])
+
+  useEffect(() => {
+    if (!tenantId || tenantId === 'default') return
     const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
-    const res = await fetch(
-      `${apiUrl}/api/brands/public?tenantId=${encodeURIComponent(tenantId)}`,
-      { cache: 'no-store' }
-    )
-    if (!res.ok) return []
-    const data = await res.json()
-    return Array.isArray(data) ? data : (data.data ?? data.brands ?? [])
-  } catch {
-    return []
-  }
-}
-
-export default async function BrandList({ title = 'Брэндүүд', limit = 12 }: BrandListProps) {
-  const headersList = await headers()
-  const host = headersList.get('x-tenant-host') ?? headersList.get('host') ?? 'localhost'
-  const tenantSlug = headersList.get('x-tenant-slug')
-  const config = await fetchTenantConfig(host, tenantSlug)
-  const tenantId = config?.tenantId
-  if (!tenantId || tenantId === 'default') return null
-  const all = await fetchBrands(tenantId)
-  const brands = all.slice(0, limit)
+    fetch(`${apiUrl}/api/brands/public?tenantId=${encodeURIComponent(tenantId)}`)
+      .then((r) => r.ok ? r.json() : { data: [] })
+      .then((data) => {
+        const list: Brand[] = Array.isArray(data) ? data : (data.data ?? data.brands ?? [])
+        setBrands(list.slice(0, limit))
+      })
+      .catch(() => {})
+  }, [tenantId, limit])
 
   if (brands.length === 0) return null
 

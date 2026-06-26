@@ -14,5 +14,5 @@ export default async function HomePage() {
     notFound()
   }
 
-  return <PageRenderer sections={config.theme.homepageSections} />
+  return <PageRenderer sections={config.theme.homepageSections} tenantId={config.tenantId} />
 }
