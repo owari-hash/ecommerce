@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { resolveUploadUrl } from '../lib/apiClient'
+import { useTenantHref } from '../lib/useTenantHref'
 
 interface Brand {
   id: string
@@ -18,6 +19,7 @@ interface BrandListProps {
 }
 
 export default function BrandList({ title = 'Брэндүүд', limit = 12, tenantId }: BrandListProps) {
+  const tenantHref = useTenantHref()
   const [brands, setBrands] = useState<Brand[]>([])
 
   useEffect(() => {
@@ -37,7 +39,7 @@ export default function BrandList({ title = 'Брэндүүд', limit = 12, tena
     <section className="max-w-7xl mx-auto px-4 mt-10 mb-4">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-black text-gray-900">{title}</h2>
-        <Link href="/brands" className="text-sm font-bold text-primary hover:underline">
+        <Link href={tenantHref('/brands')} className="text-sm font-bold text-primary hover:underline">
           Бүгдийг харах
         </Link>
       </div>
@@ -45,7 +47,7 @@ export default function BrandList({ title = 'Брэндүүд', limit = 12, tena
         {brands.map((brand) => (
           <Link
             key={brand.id}
-            href={`/brands/${brand.slug}`}
+            href={tenantHref(`/brands/${brand.slug}`)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-gray-200 hover:border-primary text-sm font-bold text-gray-700 hover:text-primary transition-all"
           >
             {brand.logo && (

@@ -35,6 +35,7 @@ export default async function BrandsPage() {
   const config = await fetchTenantConfig(host, tenantSlug)
   const tenantId = config?.tenantId ?? ''
   const brands = tenantId && tenantId !== 'default' ? await fetchBrands(tenantId) : []
+  const tenantQs = tenantSlug ? `?tenant=${encodeURIComponent(tenantSlug)}` : ''
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 pb-28 md:pb-8">
@@ -54,7 +55,7 @@ export default async function BrandsPage() {
           {brands.map((brand) => (
             <Link
               key={brand.id}
-              href={`/brands/${brand.slug}`}
+              href={`/brands/${brand.slug}${tenantQs}`}
               className="bg-white rounded-xl border border-gray-200 hover:border-primary hover:shadow-md transition-all p-5 flex flex-col items-center justify-center gap-3 group min-h-[100px]"
             >
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center overflow-hidden group-hover:scale-110 transition-transform">

@@ -75,6 +75,7 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
   const tenantSlug = headersList.get('x-tenant-slug');
   const config = await fetchTenantConfig(host, tenantSlug);
   const tenantId = config?.tenantId ?? '';
+  const tenantQs = tenantSlug ? `?tenant=${encodeURIComponent(tenantSlug)}` : '';
 
   if (!tenantId || tenantId === 'default') {
     return (
@@ -87,32 +88,36 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
   const { slug } = await params;
   const decodedSlug = decodeURIComponent(slug);
   const [brands, products] = await Promise.all([fetchBrands(tenantId), fetchProducts(tenantId)]);
-  const brand = brands.find((b) => b.slug === decodedSlug);
+  console.log('[brand/[slug]] slug=', decodedSlug, 'brands=', brands.length, 'products=', products.length, 'tenantId=', tenantId);
+  const normalizedSlug = decodedSlug.toLowerCase().trim();
+  const brand = brands.find((b) => b.slug.toLowerCase().trim() === normalizedSlug);
 
-  if (!brand) {
+  const brandProducts = products.filter((p) => {
+    if (!p.brandId) return false;
+    const bid = p.brandId.toLowerCase().trim();
+    return bid === normalizedSlug || bid === brand?.slug.toLowerCase().trim() || bid === brand?.id.toLowerCase().trim();
+  });
+
+  if (!brand && brandProducts.length === 0) {
     notFound();
   }
 
-  const brandProducts = products.filter((p) =>
-    p.brandId && (p.brandId === brand.id || p.brandId === brand.slug)
-  );
-
   const primaryColor = config?.branding?.primaryColor ?? '#1565C0';
-  const brandName = brand.name;
+  const brandName = brand?.name ?? decodedSlug.replace(/-/g, ' ');
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <nav className="text-sm text-gray-500 mb-6 flex items-center gap-1">
-        <Link href="/" className="hover:text-primary">Нүүр</Link>
+        <Link href={`/${tenantQs}`} className="hover:text-primary">Нүүр</Link>
         <span>/</span>
-        <Link href="/brands" className="hover:text-primary">Брэндүүд</Link>
+        <Link href={`/brands${tenantQs}`} className="hover:text-primary">Брэндүүд</Link>
         <span>/</span>
         <span className="text-gray-800 font-medium">{brandName}</span>
       </nav>
 
       {/* Brand header */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8 flex items-center gap-6">
-        {brand.logo ? (
+        {brand?.logo ? (
           <div className="w-20 h-20 rounded-2xl bg-gray-50 flex items-center justify-center p-3 flex-shrink-0">
             <img src={resolveUploadUrl(brand.logo)} alt={brandName} className="w-full h-full object-contain" />
           </div>
@@ -136,7 +141,7 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
           <div className="text-7xl mb-4 opacity-40">📦</div>
           <h2 className="text-xl font-bold text-gray-700 mb-2">{brandName} брэндийн бараанууд</h2>
           <p className="text-gray-400 mb-6 text-sm">Одоогоар бараа байхгүй байна.</p>
-          <Link href="/brands" className="inline-block font-bold px-8 py-3 rounded-xl transition-colors text-white" style={{ backgroundColor: primaryColor }}>
+          <Link href={`/brands${tenantQs}`} className="inline-block font-bold px-8 py-3 rounded-xl transition-colors text-white" style={{ backgroundColor: primaryColor }}>
             Бүх брэнд харах
           </Link>
         </div>
@@ -150,7 +155,7 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
             return (
               <Link
                 key={product.id}
-                href={`/product/${product.slug || product.id}`}
+                href={`/product/${product.slug || product.id}${tenantQs}`}
                 className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col"
               >
                 <div className="relative h-40 bg-gray-50 overflow-hidden flex items-center justify-center">
