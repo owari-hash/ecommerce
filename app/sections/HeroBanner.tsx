@@ -67,8 +67,9 @@ export default function HeroBanner({ bigSlides, smallSlides }: HeroBannerProps) 
   const resolvedBig   = bigSlides   && bigSlides.length   > 0 ? bigSlides   : DEFAULT_BIG
   const resolvedSmall = smallSlides && smallSlides.length > 0 ? smallSlides : DEFAULT_SMALL
   return (
-    <div className="max-w-7xl mx-auto px-4 pt-4 sm:pt-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div className="max-w-7xl mx-auto px-3 sm:px-4 pt-3 sm:pt-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+        {/* Main carousel — 2/3 width on desktop */}
         <div className="lg:col-span-2">
           <Carousel
             ariaLabel="Үндсэн баннер"
@@ -77,42 +78,52 @@ export default function HeroBanner({ bigSlides, smallSlides }: HeroBannerProps) 
               <Link
                 key={s.title}
                 href={s.href}
-                className="block rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all relative"
+                className="block rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 relative"
               >
-                <Image src={s.image} alt={s.subtitle} fill className="object-cover" sizes="(max-width:1024px) 100vw, 66vw" />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/50 to-black/20" />
-                <div className="relative h-48 sm:h-56 md:h-72 text-white p-4 sm:p-6 md:p-8 flex items-end justify-between">
+                <Image src={s.image} alt={s.subtitle} fill className="object-cover scale-100 hover:scale-[1.02] transition-transform duration-700" sizes="(max-width:1024px) 100vw, 66vw" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+                <div className="relative h-44 sm:h-56 md:h-72 text-white p-4 sm:p-6 md:p-10 flex flex-col justify-end gap-3">
                   <div>
-                    <div className="text-[10px] sm:text-xs font-black tracking-widest text-red-300 uppercase">{s.title}</div>
-                    <div className="mt-1.5 sm:mt-2 text-xl sm:text-2xl md:text-3xl font-black leading-tight">{s.subtitle}</div>
+                    <span className="inline-block text-[10px] sm:text-[11px] font-black tracking-[3px] text-red-300 uppercase bg-white/10 backdrop-blur-sm px-2.5 py-1 rounded-full mb-2">{s.title}</span>
+                    <div className="text-xl sm:text-2xl md:text-4xl font-black leading-tight drop-shadow-md">{s.subtitle}</div>
                   </div>
-                  <div className="text-4xl sm:text-5xl md:text-7xl opacity-25">{s.emoji}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 bg-white text-gray-900 text-xs font-black px-4 py-2 rounded-full hover:bg-gray-100 transition-colors">
+                      Дэлгэрэнгүй харах
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7"/></svg>
+                    </span>
+                  </div>
                 </div>
               </Link>
             ))}
           />
         </div>
-        <Carousel
-          ariaLabel="Онцлох баннер"
-          autoplayMs={5500}
-          slides={resolvedSmall.map((s) => (
-            <Link
-              key={s.title}
-              href={s.href}
-              className="block rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all relative"
-            >
-              <Image src={s.image} alt={s.subtitle} fill className="object-cover" sizes="(max-width:1024px) 100vw, 66vw" />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/40" />
-              <div className="relative h-48 sm:h-56 lg:h-72 text-white p-5 flex flex-col justify-between">
-                <div>
-                  <div className="text-xs font-black tracking-widest text-red-300 uppercase">{s.title}</div>
-                  <div className="mt-2 text-lg sm:text-xl font-black">{s.subtitle}</div>
+
+        {/* Side carousel — 1/3 width on desktop, hidden on mobile (hero is enough) */}
+        <div className="hidden lg:block">
+          <Carousel
+            ariaLabel="Онцлох баннер"
+            autoplayMs={5500}
+            slides={resolvedSmall.map((s) => (
+              <Link
+                key={s.title}
+                href={s.href}
+                className="block rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 relative"
+              >
+                <Image src={s.image} alt={s.subtitle} fill className="object-cover" sizes="33vw" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                <div className="relative h-72 text-white p-5 flex flex-col justify-end">
+                  <span className="text-[10px] font-black tracking-[3px] text-red-300 uppercase mb-1">{s.title}</span>
+                  <div className="text-lg font-black leading-snug">{s.subtitle}</div>
+                  <span className="mt-3 inline-flex items-center gap-1 text-[11px] font-black text-primary-light">
+                    Харах
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7"/></svg>
+                  </span>
                 </div>
-                <div className="text-6xl opacity-25 self-end">{s.emoji}</div>
-              </div>
-            </Link>
-          ))}
-        />
+              </Link>
+            ))}
+          />
+        </div>
       </div>
     </div>
   )

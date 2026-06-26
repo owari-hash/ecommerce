@@ -17,24 +17,24 @@ function Item({
   badge?: number;
 }) {
   const pathname = usePathname();
-  const active = pathname === href;
+  const active = pathname === href || (href !== '/' && pathname.startsWith(href));
 
   return (
     <Link
       href={href}
-      className={`flex flex-col items-center justify-center gap-0.5 py-2 flex-1 ${
-        active ? 'text-primary' : 'text-gray-500'
+      className={`flex flex-col items-center justify-center gap-0.5 py-1.5 flex-1 transition-colors ${
+        active ? 'text-primary' : 'text-gray-400'
       }`}
     >
-      <span className="h-6 w-6 relative">
-        {icon}
+      <span className={`relative flex items-center justify-center w-10 h-7 rounded-xl transition-all duration-200 ${active ? 'bg-primary/10' : ''}`}>
+        <span className="w-5 h-5">{icon}</span>
         {badge !== undefined && badge > 0 ? (
-          <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] bg-primary text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1">
+          <span className="absolute -top-1 -right-0.5 min-w-[16px] h-[16px] bg-primary text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1">
             {badge > 99 ? '99+' : badge}
           </span>
         ) : null}
       </span>
-      <span className="text-[10px] font-medium">{label}</span>
+      <span className={`text-[10px] font-semibold transition-colors ${active ? 'text-primary' : 'text-gray-400'}`}>{label}</span>
     </Link>
   );
 }

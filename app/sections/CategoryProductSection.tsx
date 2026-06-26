@@ -73,13 +73,24 @@ export default function CategoryProductSection() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 mt-10 space-y-10 animate-pulse">
-        {[1, 2, 3].map((i) => (
-          <div key={i}>
-            <div className="h-6 bg-gray-200 rounded w-1/4 mb-4" />
-            <div className="flex gap-3 overflow-x-auto">
-              {Array.from({ length: 5 }).map((_, j) => (
-                <div key={j} className="w-36 h-48 bg-gray-200 rounded-2xl shrink-0" />
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 mt-6 sm:mt-10 space-y-8 sm:space-y-12">
+        {[1, 2].map((i) => (
+          <div key={i} className="animate-pulse">
+            <div className="flex items-center justify-between mb-4">
+              <div className="h-5 bg-gray-200 rounded-full w-32" />
+              <div className="h-4 bg-gray-100 rounded-full w-20" />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+              {Array.from({ length: 6 }).map((_, j) => (
+                <div key={j} className="rounded-2xl overflow-hidden bg-white border border-gray-100">
+                  <div className="aspect-square bg-gray-100" />
+                  <div className="p-2.5 space-y-2">
+                    <div className="h-2.5 bg-gray-100 rounded w-3/4" />
+                    <div className="h-3 bg-gray-200 rounded w-full" />
+                    <div className="h-3 bg-gray-200 rounded w-2/3" />
+                    <div className="h-7 bg-gray-100 rounded-xl mt-2" />
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -102,13 +113,17 @@ export default function CategoryProductSection() {
       {categoriesWithProducts.map(({ cat, items }) => (
         <section key={cat.id}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base sm:text-lg font-black text-gray-900">{cat.name}</h2>
+            <div className="flex items-center gap-2.5">
+              <span className="w-1 h-5 rounded-full" style={{ backgroundColor: primaryColor }} />
+              <h2 className="text-base sm:text-lg font-black text-gray-900">{cat.name}</h2>
+            </div>
             <Link
               href={tenantHref(`/${cat.slug}`)}
-              className="text-sm font-bold hover:underline"
+              className="text-xs sm:text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all"
               style={{ color: primaryColor }}
             >
-              Бүгдийг харах →
+              Бүгдийг харах
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7"/></svg>
             </Link>
           </div>
 
@@ -123,7 +138,7 @@ export default function CategoryProductSection() {
                 <Link
                   key={p.id}
                   href={tenantHref(`/product/${p.slug || p.id}`)}
-                  className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col"
+                  className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-gray-200 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden flex flex-col"
                 >
                   <div className="relative aspect-square bg-gray-50 overflow-hidden flex items-center justify-center">
                     {img ? (
@@ -161,8 +176,9 @@ export default function CategoryProductSection() {
                     </div>
                     <button
                       onClick={(e) => handleAddToCart(e, p, brand)}
-                      className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold text-white transition-all active:scale-95"
-                      style={{ backgroundColor: primaryColor }}
+                      disabled={p.stock === 0}
+                      className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ backgroundColor: p.stock === 0 ? '#9ca3af' : primaryColor }}
                     >
                       <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
