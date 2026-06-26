@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { readAuth, logout, sendOtp, verifyOtp, restoreSession, fetchWithAuth, type User } from '../lib/authStore';
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// ── Types ────────────────────────────────────────────────────────────────────-
 
 type OrderItem = { productId: string; name: string; quantity: number; price: number };
 type Order = {
