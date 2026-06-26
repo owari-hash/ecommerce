@@ -95,7 +95,7 @@ export default function CategoryProductSection() {
             </Link>
           </div>
 
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {items.map((p) => {
               const img = resolveUploadUrl(p.images?.[0])
               const brand = (p.brandId && p.brandId !== 'br1') ? p.brandId : tenantName
@@ -106,16 +106,16 @@ export default function CategoryProductSection() {
                 <Link
                   key={p.id}
                   href={tenantHref(`/product/${p.slug || p.id}`)}
-                  className="group shrink-0 w-36 sm:w-auto bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col"
+                  className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col"
                 >
-                  <div className="relative h-36 bg-gray-50 overflow-hidden flex items-center justify-center">
+                  <div className="relative aspect-square bg-gray-50 overflow-hidden flex items-center justify-center">
                     {img ? (
                       <Image
                         src={img}
                         alt={p.name}
                         fill
                         className={`object-cover group-hover:scale-105 transition-transform duration-300 ${p.stock === 0 ? 'grayscale opacity-60' : ''}`}
-                        sizes="(max-width:640px) 144px, 200px"
+                        sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 20vw"
                       />
                     ) : (
                       <span className="text-4xl">📦</span>

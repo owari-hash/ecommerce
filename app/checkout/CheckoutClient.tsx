@@ -61,13 +61,8 @@ export default function CheckoutClient() {
   });
 
   useEffect(() => {
-    // Restore session from httpOnly cookie, then enforce login
+    // Restore session but do NOT redirect — guests can view cart
     restoreSession().then(() => {
-      if (!isLoggedIn()) {
-        router.replace('/account?redirect=/checkout');
-        return;
-      }
-      // Pre-fill form with logged-in user's info
       const user = readAuth();
       if (user) {
         setCustomerInfo((prev) => ({
@@ -427,17 +422,27 @@ export default function CheckoutClient() {
               </div>
             </div>
 
-            <button
-              onClick={handlePayment}
-              disabled={!isFormValid}
-              className={`w-full mt-4 py-3 rounded-xl font-bold text-sm transition-all ${
-                isFormValid
-                  ? 'bg-primary hover:bg-primary-dark text-white'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              Төлбөр төлөх
-            </button>
+            {!isLoggedIn() ? (
+              <Link
+                href="/account?redirect=/checkout"
+                className="w-full mt-4 py-3 rounded-xl font-bold text-sm bg-primary hover:bg-primary-dark text-white flex items-center justify-center gap-2 transition-all"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                Нэвтэрч захиалах
+              </Link>
+            ) : (
+              <button
+                onClick={handlePayment}
+                disabled={!isFormValid}
+                className={`w-full mt-4 py-3 rounded-xl font-bold text-sm transition-all ${
+                  isFormValid
+                    ? 'bg-primary hover:bg-primary-dark text-white'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                Төлбөр төлөх
+              </button>
+            )}
           </div>
         </div>
       </div>
