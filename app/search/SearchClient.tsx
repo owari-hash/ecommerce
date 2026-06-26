@@ -104,7 +104,7 @@ export default function SearchClient() {
 
       {/* Results */}
       {results.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
           {results.map((product) => (
             <Link
               key={product.id}
@@ -112,7 +112,7 @@ export default function SearchClient() {
               className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden group"
             >
               {/* Product Image */}
-              <div className="h-32 bg-gray-50 relative overflow-hidden">
+              <div className="aspect-square bg-gray-50 relative overflow-hidden">
                 {product.image ? (
                   <Image
                     src={product.image}

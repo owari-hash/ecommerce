@@ -335,13 +335,13 @@ export default function AccountClient() {
   // ── Logged in ──────────────────────────────────────────────────────────────
   if (user) {
     return (
-      <div className="max-w-5xl mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-[260px_1fr] gap-6">
+      <div className="max-w-5xl mx-auto px-4 py-4 sm:py-8">
+        <div className="grid md:grid-cols-[260px_1fr] gap-4 sm:gap-6">
 
           {/* Sidebar */}
           <aside className="space-y-3">
             {/* Avatar card */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col items-center text-center gap-3">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 flex sm:flex-col items-center sm:text-center gap-3">
               <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-primary/30">
                 {initials}
               </div>

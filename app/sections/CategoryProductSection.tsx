@@ -81,11 +81,11 @@ export default function CategoryProductSection() {
   if (categoriesWithProducts.length === 0) return null
 
   return (
-    <div className="max-w-7xl mx-auto px-4 mt-10 space-y-12">
+    <div className="max-w-7xl mx-auto px-3 sm:px-4 mt-6 sm:mt-10 space-y-8 sm:space-y-12">
       {categoriesWithProducts.map(({ cat, items }) => (
         <section key={cat.id}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-black text-gray-900">{cat.name}</h2>
+            <h2 className="text-base sm:text-lg font-black text-gray-900">{cat.name}</h2>
             <Link
               href={tenantHref(`/${cat.slug}`)}
               className="text-sm font-bold hover:underline"
@@ -133,9 +133,9 @@ export default function CategoryProductSection() {
                   </div>
                   <div className="p-2.5 flex flex-col flex-1">
                     <p className="text-[10px] text-gray-400 font-medium truncate">{brand}</p>
-                    <p className="text-xs font-bold text-gray-800 leading-tight mt-0.5 line-clamp-2 flex-1">{p.name}</p>
+                    <p className="text-[11px] sm:text-xs font-bold text-gray-800 leading-tight mt-0.5 line-clamp-2 flex-1">{p.name}</p>
                     <div className="mt-1.5 flex items-baseline gap-1.5">
-                      <span className="text-sm font-black" style={{ color: primaryColor }}>
+                      <span className="text-xs sm:text-sm font-black" style={{ color: primaryColor }}>
                         {formatPrice(displayPrice)}
                       </span>
                       {isOnSale && (

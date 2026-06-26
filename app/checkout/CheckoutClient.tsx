@@ -226,7 +226,7 @@ export default function CheckoutClient() {
             href="/s"
             className="inline-block bg-primary hover:bg-primary-dark text-white font-bold px-8 py-3 rounded-xl transition-colors"
           >
-            Дэлгүүрлэх
+            Нүүр хуудас
           </Link>
         </div>
       </div>
@@ -234,17 +234,17 @@ export default function CheckoutClient() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-4 sm:py-8 pb-28 sm:pb-8">
       <nav className="text-sm text-gray-500 mb-6 flex items-center gap-1">
         <Link href="/" className="hover:text-primary">Нүүр</Link>
         <span>/</span>
         <span className="text-gray-800 font-medium">Сагс</span>
       </nav>
-      <h1 className="text-2xl font-black text-gray-800 mb-8">Худалдан авалтын сагс</h1>
+      <h1 className="text-xl sm:text-2xl font-black text-gray-800 mb-4 sm:mb-8">Худалдан авалтын сагс</h1>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Cart Items */}
-        <div className="lg:col-span-2 space-y-4">
+      <div className="grid lg:grid-cols-3 gap-4 sm:gap-8">
+        {/* Cart items — shown second on mobile, first on desktop */}
+        <div className="lg:col-span-2 space-y-4 order-last lg:order-first">
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
               <h2 className="font-bold text-gray-900">Бараа ({items.length})</h2>
@@ -330,8 +330,8 @@ export default function CheckoutClient() {
           </Link>
         </div>
 
-        {/* Order Summary */}
-        <div className="space-y-4">
+        {/* Order summary — shown first on mobile so CTA is visible */}
+        <div className="space-y-4 order-first lg:order-last">
           {/* Customer Info */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
             <h2 className="font-bold text-gray-900 mb-4">Хүргэлтын мэдээлэл</h2>

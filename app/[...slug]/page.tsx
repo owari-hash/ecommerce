@@ -147,7 +147,7 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
       <h1 className="sr-only">Бүтээгдэхүүний хайлтын үр дүн</h1>
 
       {/* Top banner with image background - full width */}
-      <div className="relative w-full h-64 sm:h-80 md:h-[380px] mb-6 overflow-hidden">
+      <div className="relative w-full h-40 sm:h-56 md:h-[280px] mb-4 sm:mb-6 overflow-hidden">
         <Image
           src={bannerImage}
           alt={label}

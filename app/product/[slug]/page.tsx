@@ -121,7 +121,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   }));
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
+    <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-6">
       <nav className="text-sm text-gray-500 mb-4 flex items-center gap-1 flex-wrap">
         <Link href="/" className="hover:text-primary">Нүүр</Link>
         <span>/</span>
