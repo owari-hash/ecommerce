@@ -105,12 +105,17 @@ export default function Footer() {
         </div>
 
         {/* Divider + bottom bar */}
-        <div className="mt-10 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
-          <span>© 2026 {branding.name || 'Дэлгүүр'}. Бүх эрх хуулиар хамгаалагдсан.</span>
-          <div className="flex items-center gap-4">
-            <Link href={tenantHref('/privacy')} className="hover:text-gray-400 transition-colors">Нууцлал</Link>
-            <Link href={tenantHref('/terms')} className="hover:text-gray-400 transition-colors">Нөхцөл</Link>
-            <span className="text-gray-700">Powered by <span className="text-gray-400 font-semibold">Zevtabs</span></span>
+        <div className="mt-10 pt-6 border-t border-white/5 text-xs text-gray-600">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>© {new Date().getFullYear()} <span className="text-gray-400 font-semibold">{branding.name || 'Дэлгүүр'}</span>. Бүх эрх хуулиар хамгаалагдсан.</span>
+            <div className="flex items-center gap-4">
+              <Link href={tenantHref('/privacy')} className="hover:text-gray-400 transition-colors">Нууцлал</Link>
+              <Link href={tenantHref('/terms')} className="hover:text-gray-400 transition-colors">Нөхцөл</Link>
+            </div>
+          </div>
+          <div className="mt-2 flex items-center justify-center sm:justify-end gap-1.5 text-gray-700">
+            <span>Powered by</span>
+            <span className="font-black text-white tracking-tight">Zevtabs</span>
           </div>
         </div>
       </div>
