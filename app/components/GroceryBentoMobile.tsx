@@ -23,7 +23,7 @@ function Card({ tile, className, style }: { tile: GroceryTile; className?: strin
       <div className="relative h-full p-3 flex flex-col justify-end">
         <p className="text-[9px] font-black uppercase tracking-[2px] text-primary mb-0.5">{tile.sub}</p>
         <h3 className="text-xs font-black uppercase tracking-wide text-white leading-tight">{tile.label}</h3>
-        <span className="mt-1 text-[10px] font-black uppercase tracking-widest text-primary">Дэлгэрэнгүй →</span>
+        <span className="mt-1 text-[10px] font-black uppercase tracking-widest text-primary">Дэлгэрэнгүй </span>
       </div>
     </Link>
   );

@@ -331,7 +331,7 @@ export default function Header() {
                         <p className="text-sm text-gray-500">&ldquo;{search}&rdquo; олдсонгүй</p>
                         <button onClick={() => { setShowSuggestions(false); router.push(`/search?q=${encodeURIComponent(search)}`); }}
                           className="mt-2 text-sm text-primary font-medium hover:underline">
-                          Дэлгэрэнгүй хайх →
+                          Дэлгэрэнгүй хайх 
                         </button>
                       </div>
                     )}

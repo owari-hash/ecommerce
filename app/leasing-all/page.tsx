@@ -72,7 +72,7 @@ export default function LeasingAllPage() {
           ))}
         </ul>
         <Link href="/leasing-form" className="mt-6 inline-block bg-[#1565C0] hover:bg-[#0D47A1] text-white font-bold px-8 py-3 rounded-xl transition-colors">
-          Лизинг хүсэлт гаргах →
+          Лизинг хүсэлт гаргах 
         </Link>
       </div>
     </div>

@@ -34,7 +34,7 @@ export default function NewsPage() {
               </div>
               <h2 className="font-bold text-gray-800 mb-2 group-hover:text-primary transition-colors">{item.title}</h2>
               <p className="text-sm text-gray-500 line-clamp-2">{item.excerpt}</p>
-              <button className="mt-4 text-sm text-primary font-semibold hover:underline">Дэлгэрэнгүй →</button>
+              <button className="mt-4 text-sm text-primary font-semibold hover:underline">Дэлгэрэнгүй </button>
             </div>
           </div>
         ))}

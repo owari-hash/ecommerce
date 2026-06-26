@@ -120,7 +120,7 @@ export default function CategoryList({ showBrands = true }: { showBrands?: boole
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-black text-gray-900 tracking-tight">Ангилал</h2>
         <Link href={tenantHref('/categories')} className="text-sm font-bold text-primary hover:underline">
-          Бүгдийг харах →
+          Бүгдийг харах 
         </Link>
       </div>
       <div className="flex overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2 gap-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-9 sm:gap-4">

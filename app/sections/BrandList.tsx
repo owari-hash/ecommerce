@@ -17,7 +17,7 @@ export default function BrandList({ title = 'Брэндүүд', limit = 12 }: Br
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-black text-gray-900">{title}</h2>
         <Link href="/brands" className="text-sm font-bold text-primary hover:underline">
-          Бүгдийг харах →
+          Бүгдийг харах 
         </Link>
       </div>
       <div className="flex flex-wrap gap-3">

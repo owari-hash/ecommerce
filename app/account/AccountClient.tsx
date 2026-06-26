@@ -571,7 +571,7 @@ export default function AccountClient() {
                   </div>
                   <button type="submit" disabled={loading}
                     className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/25 disabled:opacity-60">
-                    {loading ? <span className="flex items-center justify-center gap-2"><Spinner />Илгээж байна...</span> : 'Код авах →'}
+                    {loading ? <span className="flex items-center justify-center gap-2"><Spinner />Илгээж байна...</span> : 'Код авах '}
                   </button>
                 </form>
               ) : (
@@ -629,7 +629,7 @@ export default function AccountClient() {
               </label>
               <button type="submit" disabled={loading}
                 className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/25 disabled:opacity-60">
-                {loading ? 'Бүртгэж байна...' : 'Бүртгүүлэх →'}
+                {loading ? 'Бүртгэж байна...' : 'Бүртгүүлэх '}
               </button>
             </form>
           )}

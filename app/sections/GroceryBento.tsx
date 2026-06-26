@@ -67,7 +67,7 @@ export default function GroceryBento({ tiles, sectionTitle }: GroceryBentoProps)
             {sectionTitle && sectionTitle.trim() ? sectionTitle : '🛒 Хүнсний ангилал'}
           </h2>
           <Link href={t[0]?.href ?? '/grocery'} className="text-sm font-bold text-primary hover:text-primary-light transition-colors">
-            Бүгдийг харах →
+            Бүгдийг харах 
           </Link>
         </div>
 

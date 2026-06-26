@@ -6,7 +6,7 @@ import { useTenant } from '../lib/TenantContext'
 import { useTenantHref } from '../lib/useTenantHref'
 import { resolveUploadUrl } from '../lib/apiClient'
 import { formatPrice } from '../lib/mockCatalog'
-import { addToCart } from '../lib/cartStore'
+import { addToCart, readCart, updateQuantity, removeFromCart } from '../lib/cartStore'
 
 interface Category {
   id: string
@@ -46,6 +46,20 @@ export default function CategoryProductSection() {
   const toastTimer = useRef<NodeJS.Timeout | null>(null)
   // per-product add animation: productId -> count shown
   const [addingId, setAddingId] = useState<string | null>(null)
+  const [cartMap, setCartMap] = useState<Record<string, number>>({}) // id -> quantity
+
+  function syncCart() {
+    const items = readCart()
+    const map: Record<string, number> = {}
+    items.forEach(i => { map[i.id] = i.quantity })
+    setCartMap(map)
+  }
+
+  useEffect(() => {
+    syncCart()
+    window.addEventListener('cart:changed', syncCart)
+    return () => window.removeEventListener('cart:changed', syncCart)
+  }, [])
 
   function handleAddToCart(e: React.MouseEvent, p: Product, brand: string) {
     e.preventDefault()
@@ -56,6 +70,18 @@ export default function CategoryProductSection() {
     if (toastTimer.current) clearTimeout(toastTimer.current)
     setToast({ name: p.name })
     toastTimer.current = setTimeout(() => setToast(null), 2500)
+  }
+
+  function handleIncrease(e: React.MouseEvent, id: string) {
+    e.preventDefault(); e.stopPropagation()
+    updateQuantity(id, (cartMap[id] ?? 0) + 1)
+  }
+
+  function handleDecrease(e: React.MouseEvent, id: string) {
+    e.preventDefault(); e.stopPropagation()
+    const next = (cartMap[id] ?? 1) - 1
+    if (next <= 0) removeFromCart(id)
+    else updateQuantity(id, next)
   }
 
   useEffect(() => {
@@ -174,22 +200,47 @@ export default function CategoryProductSection() {
                         <span className="text-[10px] text-gray-400 line-through">{formatPrice(p.price)}</span>
                       )}
                     </div>
-                    <button
-                      onClick={(e) => handleAddToCart(e, p, brand)}
-                      disabled={p.stock === 0}
-                      className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                      style={{ backgroundColor: p.stock === 0 ? '#9ca3af' : primaryColor }}
-                    >
-                      <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      <span
-                        key={addingId === p.id ? 'anim' : 'idle'}
-                        className={addingId === p.id ? 'animate-bounce' : ''}
+                    {cartMap[p.id] ? (
+                      <div
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation() }}
+                        className="mt-2 flex items-center justify-between rounded-xl overflow-hidden border-2 text-sm font-black"
+                        style={{ borderColor: primaryColor }}
                       >
-                        {addingId === p.id ? '+1' : 'Сагслах'}
-                      </span>
-                    </button>
+                        <button
+                          onClick={(e) => handleDecrease(e, p.id)}
+                          className="px-3 py-1.5 transition-colors hover:bg-gray-50 text-gray-700 text-base leading-none"
+                        >
+                          −
+                        </button>
+                        <span className="flex-1 text-center text-xs font-black" style={{ color: primaryColor }}>
+                          {cartMap[p.id]}
+                        </span>
+                        <button
+                          onClick={(e) => handleIncrease(e, p.id)}
+                          className="px-3 py-1.5 text-white transition-colors text-base leading-none"
+                          style={{ backgroundColor: primaryColor }}
+                        >
+                          +
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={(e) => handleAddToCart(e, p, brand)}
+                        disabled={p.stock === 0}
+                        className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ backgroundColor: p.stock === 0 ? '#9ca3af' : primaryColor }}
+                      >
+                        <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span
+                          key={addingId === p.id ? 'anim' : 'idle'}
+                          className={addingId === p.id ? 'animate-bounce' : ''}
+                        >
+                          {addingId === p.id ? '+1' : 'Сагслах'}
+                        </span>
+                      </button>
+                    )}
                   </div>
                 </Link>
               )
