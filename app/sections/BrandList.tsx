@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { headers } from 'next/headers'
+import { fetchTenantConfig } from '../lib/tenantConfig'
 
 interface Brand {
   id: string
@@ -12,22 +14,29 @@ interface BrandListProps {
   limit?: number
 }
 
-async function fetchBrands(): Promise<Brand[]> {
+async function fetchBrands(tenantId: string): Promise<Brand[]> {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
-    const res = await fetch(`${apiUrl}/api/brands?status=active&limit=100`, {
-      cache: 'no-store',
-    })
+    const res = await fetch(
+      `${apiUrl}/api/brands/public?tenantId=${encodeURIComponent(tenantId)}`,
+      { cache: 'no-store' }
+    )
     if (!res.ok) return []
     const data = await res.json()
-    return Array.isArray(data) ? data : (data.brands ?? data.data ?? [])
+    return Array.isArray(data) ? data : (data.data ?? data.brands ?? [])
   } catch {
     return []
   }
 }
 
 export default async function BrandList({ title = 'Брэндүүд', limit = 12 }: BrandListProps) {
-  const all = await fetchBrands()
+  const headersList = await headers()
+  const host = headersList.get('x-tenant-host') ?? headersList.get('host') ?? 'localhost'
+  const tenantSlug = headersList.get('x-tenant-slug')
+  const config = await fetchTenantConfig(host, tenantSlug)
+  const tenantId = config?.tenantId
+  if (!tenantId || tenantId === 'default') return null
+  const all = await fetchBrands(tenantId)
   const brands = all.slice(0, limit)
 
   if (brands.length === 0) return null
@@ -45,8 +54,11 @@ export default async function BrandList({ title = 'Брэндүүд', limit = 12
           <Link
             key={brand.id}
             href={`/brands/${brand.slug}`}
-            className="px-4 py-2 rounded-xl border-2 border-gray-200 hover:border-primary text-sm font-bold text-gray-700 hover:text-primary transition-all"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-gray-200 hover:border-primary text-sm font-bold text-gray-700 hover:text-primary transition-all"
           >
+            {brand.logo && (
+              <img src={brand.logo} alt={brand.name} className="w-5 h-5 object-contain rounded" />
+            )}
             {brand.name}
           </Link>
         ))}

@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
+import { fetchTenantConfig } from '../lib/tenantConfig';
 
 export const metadata: Metadata = { title: 'Брэндүүд' };
 
@@ -10,22 +12,28 @@ interface Brand {
   logo?: string
 }
 
-async function fetchBrands(): Promise<Brand[]> {
+async function fetchBrands(tenantId: string): Promise<Brand[]> {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
-    const res = await fetch(`${apiUrl}/api/brands?status=active&limit=200`, {
-      cache: 'no-store',
-    })
+    const res = await fetch(
+      `${apiUrl}/api/brands/public?tenantId=${encodeURIComponent(tenantId)}`,
+      { cache: 'no-store' }
+    )
     if (!res.ok) return []
     const data = await res.json()
-    return Array.isArray(data) ? data : (data.brands ?? data.data ?? [])
+    return Array.isArray(data) ? data : (data.data ?? data.brands ?? [])
   } catch {
     return []
   }
 }
 
 export default async function BrandsPage() {
-  const brands = await fetchBrands()
+  const headersList = await headers()
+  const host = headersList.get('x-tenant-host') ?? headersList.get('host') ?? 'localhost'
+  const tenantSlug = headersList.get('x-tenant-slug')
+  const config = await fetchTenantConfig(host, tenantSlug)
+  const tenantId = config?.tenantId ?? ''
+  const brands = tenantId && tenantId !== 'default' ? await fetchBrands(tenantId) : []
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 pb-28 md:pb-8">
@@ -48,8 +56,12 @@ export default async function BrandsPage() {
               href={`/brands/${brand.slug}`}
               className="bg-white rounded-xl border border-gray-200 hover:border-primary hover:shadow-md transition-all p-5 flex flex-col items-center justify-center gap-3 group min-h-[100px]"
             >
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center text-xl font-black text-primary group-hover:scale-110 transition-transform">
-                {brand.name.charAt(0).toUpperCase()}
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center overflow-hidden group-hover:scale-110 transition-transform">
+                {brand.logo ? (
+                  <img src={brand.logo} alt={brand.name} className="w-full h-full object-contain p-1" />
+                ) : (
+                  <span className="text-xl font-black text-primary">{brand.name.charAt(0).toUpperCase()}</span>
+                )}
               </div>
               <span className="text-xs font-bold text-gray-700 text-center group-hover:text-primary transition-colors leading-tight">
                 {brand.name}
