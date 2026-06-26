@@ -1,12 +1,12 @@
 'use client'
-// v2
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTenant } from '../lib/TenantContext'
 import { useTenantHref } from '../lib/useTenantHref'
 import { resolveUploadUrl } from '../lib/apiClient'
 import { formatPrice } from '../lib/mockCatalog'
+import { addToCart } from '../lib/cartStore'
 
 interface Category {
   id: string
@@ -40,6 +40,23 @@ export default function CategoryProductSection() {
   const [categories, setCategories] = useState<Category[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+
+  // toast
+  const [toast, setToast] = useState<{ name: string } | null>(null)
+  const toastTimer = useRef<NodeJS.Timeout | null>(null)
+  // per-product add animation: productId -> count shown
+  const [addingId, setAddingId] = useState<string | null>(null)
+
+  function handleAddToCart(e: React.MouseEvent, p: Product, brand: string) {
+    e.preventDefault()
+    e.stopPropagation()
+    addToCart({ id: p.id, slug: p.slug || p.id, name: p.name, price: p.salePrice ?? p.price, icon: '📦', brand })
+    setAddingId(p.id)
+    setTimeout(() => setAddingId(null), 600)
+    if (toastTimer.current) clearTimeout(toastTimer.current)
+    setToast({ name: p.name })
+    toastTimer.current = setTimeout(() => setToast(null), 2500)
+  }
 
   useEffect(() => {
     Promise.all([
@@ -142,6 +159,21 @@ export default function CategoryProductSection() {
                         <span className="text-[10px] text-gray-400 line-through">{formatPrice(p.price)}</span>
                       )}
                     </div>
+                    <button
+                      onClick={(e) => handleAddToCart(e, p, brand)}
+                      className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold text-white transition-all active:scale-95"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <span
+                        key={addingId === p.id ? 'anim' : 'idle'}
+                        className={addingId === p.id ? 'animate-bounce' : ''}
+                      >
+                        {addingId === p.id ? '+1' : 'Сагслах'}
+                      </span>
+                    </button>
                   </div>
                 </Link>
               )
@@ -149,6 +181,21 @@ export default function CategoryProductSection() {
           </div>
         </section>
       ))}
+
+      {/* Mobile-safe toast — fixed bottom, avoids bottom nav */}
+      {toast && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[200] w-[min(90vw,340px)] pointer-events-none">
+          <div className="bg-gray-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 animate-[slideUp_0.25s_ease-out]">
+            <span className="shrink-0 w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </span>
+            <p className="text-sm font-semibold leading-snug truncate flex-1">{toast.name} сагсанд нэмэгдлээ!</p>
+            <span className="text-green-400 shrink-0">✓</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
