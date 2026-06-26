@@ -362,7 +362,7 @@ export default function Header() {
 
             {/* Toast Notification */}
             {showToast && (
-              <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[100] w-[min(90vw,340px)] pointer-events-none">
+              <div className="fixed bottom-20 left-1/2 -translate-x-1/2 md:bottom-6 md:left-auto md:right-6 md:translate-x-0 z-[100] w-[min(90vw,340px)] pointer-events-none">
                 <div className="bg-gray-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3">
                   <span className="shrink-0 w-7 h-7 bg-white/10 rounded-full flex items-center justify-center text-base">🛒</span>
                   <span className="text-sm font-semibold flex-1 truncate">Сагсанд нэмэгдлээ!</span>

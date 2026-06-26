@@ -198,9 +198,9 @@ export default function CategoryProductSection() {
         </section>
       ))}
 
-      {/* Mobile-safe toast — fixed bottom, avoids bottom nav */}
+      {/* Toast — bottom-right on desktop, centered above bottom-nav on mobile */}
       {toast && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[200] w-[min(90vw,340px)] pointer-events-none">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 md:bottom-6 md:left-auto md:right-6 md:translate-x-0 z-[200] w-[min(90vw,340px)] pointer-events-none">
           <div className="bg-gray-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 animate-[slideUp_0.25s_ease-out]">
             <span className="shrink-0 w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
