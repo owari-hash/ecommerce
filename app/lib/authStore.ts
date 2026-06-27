@@ -41,6 +41,23 @@ export async function login(email: string, password: string): Promise<{ success:
   }
 }
 
+export async function loginWithPhone(phone: string, password: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, password }),
+    })
+    const data = await res.json()
+    if (!res.ok) return { success: false, error: data.error ?? 'Нэвтрэх амжилтгүй боллоо' }
+    _currentUser = data.user
+    dispatchChange()
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Сервертэй холбогдох боломжгүй байна' }
+  }
+}
+
 export async function register(data: {
   email: string
   password: string
@@ -68,6 +85,51 @@ export async function logout(): Promise<void> {
   await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
   _currentUser = null
   dispatchChange()
+}
+
+export async function sendRegisterOtp(phone: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch('/api/users/otp/send-register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone }),
+    })
+    const data = await res.json()
+    if (!res.ok) return { success: false, error: data.error ?? 'OTP илгээхэд алдаа гарлаа' }
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Сервертэй холбогдох боломжгүй байна' }
+  }
+}
+
+export async function forgotPasswordSend(phone: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch('/api/users/forgot-password/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone }),
+    })
+    const data = await res.json()
+    if (!res.ok) return { success: false, error: data.error ?? 'OTP илгээхэд алдаа гарлаа' }
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Сервертэй холбогдох боломжгүй байна' }
+  }
+}
+
+export async function forgotPasswordReset(phone: string, otpCode: string, newPassword: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch('/api/users/forgot-password/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, otpCode, newPassword }),
+    })
+    const data = await res.json()
+    if (!res.ok) return { success: false, error: data.error ?? 'Нууц үг сэргээхэд алдаа гарлаа' }
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Сервертэй холбогдох боломжгүй байна' }
+  }
 }
 
 export async function sendOtp(phone: string): Promise<{ success: boolean; error?: string }> {

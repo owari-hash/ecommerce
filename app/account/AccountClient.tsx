@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { readAuth, logout, sendOtp, verifyOtp, restoreSession, fetchWithAuth, type User } from '../lib/authStore';
+import { readAuth, logout, loginWithPhone, register, sendRegisterOtp, verifyOtp, forgotPasswordSend, forgotPasswordReset, restoreSession, fetchWithAuth, type User } from '../lib/authStore';
 
 // ── Types ────────────────────────────────────────────────────────────────────-
 
@@ -184,16 +184,30 @@ export default function AccountClient() {
   const redirectTo = searchParams.get('redirect') ?? '/account';
 
   const [user, setUser] = useState<User | null>(null);
+  const [activeTab, setActiveTab] = useState<'login' | 'register' | 'forgot'>('login');
   const [section, setSection] = useState<'profile' | 'orders'>('profile');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
 
-  // OTP
-  const [otpPhone, setOtpPhone] = useState('');
-  const [otpCode, setOtpCode] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
+  // Login
+  const [loginPhone, setLoginPhone] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+
+  // Register
+  const [regPhone, setRegPhone] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regConfirm, setRegConfirm] = useState('');
+  const [regOtpSent, setRegOtpSent] = useState(false);
+  const [regOtpCode, setRegOtpCode] = useState('');
+
+  // Forgot password
+  const [forgotPhone, setForgotPhone] = useState('');
+  const [forgotOtpSent, setForgotOtpSent] = useState(false);
+  const [forgotOtpCode, setForgotOtpCode] = useState('');
+  const [forgotNewPw, setForgotNewPw] = useState('');
+  const [forgotConfirmPw, setForgotConfirmPw] = useState('');
 
   // Profile edit
   const [editMode, setEditMode] = useState(false);
@@ -234,6 +248,10 @@ export default function AccountClient() {
     }
   }, [user]);
 
+  function switchTab(tab: 'login' | 'register' | 'forgot') {
+    setActiveTab(tab); setError(''); setSuccess('');
+  }
+
   async function fetchOrders() {
     setOrdersLoading(true); setOrdersError('');
     try {
@@ -268,33 +286,74 @@ export default function AccountClient() {
     finally { setLoading(false); }
   }
 
-  async function handleSendOtp(e: React.FormEvent) {
+  // ── Login handlers ──────────────────────────────────────────────────────────
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault(); setError('');
-    if (!otpPhone || otpPhone.length < 8) { setError('Зөв утасны дугаар оруулна уу'); return; }
+    if (!loginPhone || !loginPassword) { setError('Утасны дугаар болон нууц үгээ оруулна уу'); return; }
     setLoading(true);
-    const result = await sendOtp(otpPhone);
-    setLoading(false);
-    if (result.success) setOtpSent(true);
-    else setError(result.error || 'OTP илгээхэд алдаа гарлаа');
-  }
-
-  async function handleVerifyOtp(e: React.FormEvent) {
-    e.preventDefault(); setError('');
-    if (!otpCode || otpCode.length !== 6) { setError('6 оронтой OTP код оруулна уу'); return; }
-    setLoading(true);
-    const result = await verifyOtp(otpPhone, otpCode);
+    const result = await loginWithPhone(loginPhone, loginPassword);
     setLoading(false);
     if (result.success) {
       setUser(readAuth());
-      setSuccess('Амжилттай нэвтэрлээ!');
+      setTimeout(() => router.replace(redirectTo), 200);
+    } else setError(result.error || 'Нэвтрэх амжилтгүй боллоо');
+  }
+
+  // ── Register handlers ────────────────────────────────────────────────────────
+  async function handleSendRegisterOtp(e: React.FormEvent) {
+    e.preventDefault(); setError('');
+    if (!regPhone || regPhone.length < 8) { setError('Зөв утасны дугаар оруулна уу'); return; }
+    if (!regPassword || regPassword.length < 6) { setError('Нууц үг хамгийн багадаа 6 тэмдэгт байх ёстой'); return; }
+    if (regPassword !== regConfirm) { setError('Нууц үг таарахгүй байна'); return; }
+    setLoading(true);
+    const result = await sendRegisterOtp(regPhone);
+    setLoading(false);
+    if (result.success) setRegOtpSent(true);
+    else setError(result.error || 'OTP илгээхэд алдаа гарлаа');
+  }
+
+  async function handleVerifyRegisterOtp(e: React.FormEvent) {
+    e.preventDefault(); setError('');
+    if (!regOtpCode || regOtpCode.length !== 6) { setError('6 оронтой OTP код оруулна уу'); return; }
+    setLoading(true);
+    const result = await register({ phone: regPhone, email: `${regPhone}@phone.local`, password: regPassword, firstName: regPhone, lastName: '', otpCode: regOtpCode } as any);
+    setLoading(false);
+    if (result.success) {
+      setUser(readAuth());
+      setSuccess('Амжилттай бүртгүүллээ!');
       setTimeout(() => router.replace(redirectTo), 300);
-    } else setError(result.error || 'OTP код буруу байна');
+    } else setError(result.error || 'Бүртгэл амжилтгүй боллоо');
+  }
+
+  // ── Forgot password handlers ─────────────────────────────────────────────────
+  async function handleSendForgotOtp(e: React.FormEvent) {
+    e.preventDefault(); setError('');
+    if (!forgotPhone || forgotPhone.length < 8) { setError('Зөв утасны дугаар оруулна уу'); return; }
+    setLoading(true);
+    const result = await forgotPasswordSend(forgotPhone);
+    setLoading(false);
+    if (result.success) setForgotOtpSent(true);
+    else setError(result.error || 'OTP илгээхэд алдаа гарлаа');
+  }
+
+  async function handleResetPassword(e: React.FormEvent) {
+    e.preventDefault(); setError('');
+    if (!forgotOtpCode || forgotOtpCode.length !== 6) { setError('6 оронтой OTP код оруулна уу'); return; }
+    if (!forgotNewPw || forgotNewPw.length < 6) { setError('Нууц үг хамгийн багадаа 6 тэмдэгт байх ёстой'); return; }
+    if (forgotNewPw !== forgotConfirmPw) { setError('Нууц үг таарахгүй байна'); return; }
+    setLoading(true);
+    const result = await forgotPasswordReset(forgotPhone, forgotOtpCode, forgotNewPw);
+    setLoading(false);
+    if (result.success) {
+      setSuccess('Нууц үг амжилттай солигдлоо! Нэвтэрнэ үү.');
+      setTimeout(() => { switchTab('login'); setLoginPhone(forgotPhone); }, 1500);
+    } else setError(result.error || 'Нууц үг сэргээхэд алдаа гарлаа');
   }
 
   async function handleLogout() {
     await logout(); setUser(null);
-    setOtpPhone(''); setOtpCode(''); setOtpSent(false);
-    setOrders([]); setSection('profile');
+    setLoginPhone(''); setLoginPassword('');
+    setOrders([]); setSection('profile'); setActiveTab('login');
   }
 
   const initials = user ? `${(user.firstName || '?')[0]}${(user.lastName || '')[0] || ''}` : '?';
@@ -496,17 +555,22 @@ export default function AccountClient() {
   }
 
   // ── Not logged in ──────────────────────────────────────────────────────────
+  const phoneIcon = <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>;
+  const lockIcon  = <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>;
+  const inputCls = "w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-gray-50";
+
   return (
     <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/30">
             <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-black text-gray-900">Нэвтрэх</h1>
-          <p className="text-sm text-gray-500 mt-1">Утасны дугаараар нэвтэрнэ үү</p>
+          <h1 className="text-2xl font-black text-gray-900">
+            {activeTab === 'login' ? 'Нэвтрэх' : activeTab === 'register' ? 'Бүртгүүлэх' : 'Нууц үг сэргээх'}
+          </h1>
         </div>
 
         {error && (
@@ -523,38 +587,138 @@ export default function AccountClient() {
         )}
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-xl p-7">
-          {!otpSent ? (
-            <form onSubmit={handleSendOtp} className="space-y-4">
+
+          {/* Tab switcher — only login/register */}
+          {activeTab !== 'forgot' && (
+            <div className="flex gap-1 mb-6 bg-gray-100 rounded-xl p-1">
+              <button onClick={() => switchTab('login')}
+                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${activeTab === 'login' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                Нэвтрэх
+              </button>
+              <button onClick={() => switchTab('register')}
+                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${activeTab === 'register' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                Бүртгүүлэх
+              </button>
+            </div>
+          )}
+
+          {/* ── LOGIN ── */}
+          {activeTab === 'login' && (
+            <form onSubmit={handleLogin} className="space-y-4">
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                </span>
-                <input type="tel" value={otpPhone} onChange={e => setOtpPhone(e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-gray-50"
-                  placeholder="Утасны дугаар" maxLength={12} autoFocus />
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{phoneIcon}</span>
+                <input type="tel" value={loginPhone} onChange={e => setLoginPhone(e.target.value)}
+                  className={inputCls} placeholder="Утасны дугаар" maxLength={12} autoFocus />
+              </div>
+              <div className="relative">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{lockIcon}</span>
+                <input type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)}
+                  className={inputCls} placeholder="Нууц үг" />
+              </div>
+              <div className="text-right">
+                <button type="button" onClick={() => switchTab('forgot')}
+                  className="text-xs text-primary hover:underline">Нууц үг мартсан?</button>
               </div>
               <button type="submit" disabled={loading}
                 className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/25 disabled:opacity-60">
-                {loading ? <span className="flex items-center justify-center gap-2"><Spinner />Илгээж байна...</span> : 'Код авах'}
+                {loading ? <span className="flex items-center justify-center gap-2"><Spinner />Нэвтэрж байна...</span> : 'Нэвтрэх'}
               </button>
-            </form>
-          ) : (
-            <form onSubmit={handleVerifyOtp} className="space-y-4">
-              <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-700 text-center">
-                📱 <span className="font-semibold">{otpPhone}</span>-д код илгээлээ
-              </div>
-              <input type="text" inputMode="numeric" value={otpCode}
-                onChange={e => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3.5 text-center text-2xl font-bold tracking-[0.5em] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-gray-50"
-                placeholder="──────" maxLength={6} autoFocus />
-              <button type="submit" disabled={loading || otpCode.length !== 6}
-                className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/25 disabled:opacity-50">
-                {loading ? <span className="flex items-center justify-center gap-2"><Spinner />Шалгаж байна...</span> : 'Нэвтрэх'}
-              </button>
-              <button type="button" onClick={() => { setOtpSent(false); setOtpCode(''); setError(''); }}
-                className="w-full text-sm text-gray-400 hover:text-gray-600 py-1">← Буцах</button>
             </form>
           )}
+
+          {/* ── REGISTER ── */}
+          {activeTab === 'register' && (
+            <>
+              {!regOtpSent ? (
+                <form onSubmit={handleSendRegisterOtp} className="space-y-4">
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{phoneIcon}</span>
+                    <input type="tel" value={regPhone} onChange={e => setRegPhone(e.target.value)}
+                      className={inputCls} placeholder="Утасны дугаар" maxLength={12} autoFocus />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{lockIcon}</span>
+                    <input type="password" value={regPassword} onChange={e => setRegPassword(e.target.value)}
+                      className={inputCls} placeholder="Нууц үг (6+ тэмдэгт)" />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{lockIcon}</span>
+                    <input type="password" value={regConfirm} onChange={e => setRegConfirm(e.target.value)}
+                      className={inputCls} placeholder="Нууц үг давтах" />
+                  </div>
+                  <button type="submit" disabled={loading}
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/25 disabled:opacity-60">
+                    {loading ? <span className="flex items-center justify-center gap-2"><Spinner />Илгээж байна...</span> : 'Код авах'}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleVerifyRegisterOtp} className="space-y-4">
+                  <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-700 text-center">
+                    📱 <span className="font-semibold">{regPhone}</span>-д баталгаажуулах код илгээлээ
+                  </div>
+                  <input type="text" inputMode="numeric" value={regOtpCode}
+                    onChange={e => setRegOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3.5 text-center text-2xl font-bold tracking-[0.5em] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-gray-50"
+                    placeholder="──────" maxLength={6} autoFocus />
+                  <button type="submit" disabled={loading || regOtpCode.length !== 6}
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/25 disabled:opacity-50">
+                    {loading ? <span className="flex items-center justify-center gap-2"><Spinner />Шалгаж байна...</span> : 'Бүртгүүлэх'}
+                  </button>
+                  <button type="button" onClick={() => { setRegOtpSent(false); setRegOtpCode(''); setError(''); }}
+                    className="w-full text-sm text-gray-400 hover:text-gray-600 py-1">← Буцах</button>
+                </form>
+              )}
+            </>
+          )}
+
+          {/* ── FORGOT PASSWORD ── */}
+          {activeTab === 'forgot' && (
+            <>
+              {!forgotOtpSent ? (
+                <form onSubmit={handleSendForgotOtp} className="space-y-4">
+                  <p className="text-sm text-gray-500 text-center mb-2">Бүртгэлтэй утасны дугаараа оруулна уу</p>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{phoneIcon}</span>
+                    <input type="tel" value={forgotPhone} onChange={e => setForgotPhone(e.target.value)}
+                      className={inputCls} placeholder="Утасны дугаар" maxLength={12} autoFocus />
+                  </div>
+                  <button type="submit" disabled={loading}
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/25 disabled:opacity-60">
+                    {loading ? <span className="flex items-center justify-center gap-2"><Spinner />Илгээж байна...</span> : 'Код авах'}
+                  </button>
+                  <button type="button" onClick={() => switchTab('login')}
+                    className="w-full text-sm text-gray-400 hover:text-gray-600 py-1">← Буцах</button>
+                </form>
+              ) : (
+                <form onSubmit={handleResetPassword} className="space-y-4">
+                  <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-700 text-center">
+                    📱 <span className="font-semibold">{forgotPhone}</span>-д код илгээлээ
+                  </div>
+                  <input type="text" inputMode="numeric" value={forgotOtpCode}
+                    onChange={e => setForgotOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3.5 text-center text-2xl font-bold tracking-[0.5em] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-gray-50"
+                    placeholder="──────" maxLength={6} autoFocus />
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{lockIcon}</span>
+                    <input type="password" value={forgotNewPw} onChange={e => setForgotNewPw(e.target.value)}
+                      className={inputCls} placeholder="Шинэ нууц үг (6+ тэмдэгт)" />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{lockIcon}</span>
+                    <input type="password" value={forgotConfirmPw} onChange={e => setForgotConfirmPw(e.target.value)}
+                      className={inputCls} placeholder="Нууц үг давтах" />
+                  </div>
+                  <button type="submit" disabled={loading || forgotOtpCode.length !== 6}
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/25 disabled:opacity-50">
+                    {loading ? <span className="flex items-center justify-center gap-2"><Spinner />Хадгалж байна...</span> : 'Нууц үг солих'}
+                  </button>
+                  <button type="button" onClick={() => { setForgotOtpSent(false); setForgotOtpCode(''); setError(''); }}
+                    className="w-full text-sm text-gray-400 hover:text-gray-600 py-1">← Буцах</button>
+                </form>
+              )}
+            </>
+          )}
+
         </div>
       </div>
     </div>
