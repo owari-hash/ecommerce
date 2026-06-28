@@ -216,6 +216,7 @@ export default function ComparePageClient({ tenantId }: { tenantId: string }) {
                             price: price ?? 0,
                             oldPrice: oldPrice ?? undefined,
                             icon: '📦',
+                            image: p.image,
                             brand: brand || 'Дэлгүүр',
                           });
                         }}

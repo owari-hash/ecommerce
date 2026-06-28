@@ -3,9 +3,15 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import {
+  Laptop, Monitor, Smartphone, Gamepad2, Headphones, Mouse, Cpu,
+  Apple, Carrot, Beef, Milk, Fish, Croissant, CupSoda, Cookie, UtensilsCrossed,
+  Sofa, CookingPot, Lightbulb, Baby, DoorOpen, Bath, Briefcase, Sprout, Tv,
+  Tag, ShoppingBag, type LucideIcon,
+} from 'lucide-react'
 import { useTenant } from '../lib/TenantContext'
 import { useTenantHref } from '../lib/useTenantHref'
-import { CATEGORY_ICONS, getMockCategoriesByTenantId } from '../lib/mockCatalog'
+import { getMockCategoriesByTenantId } from '../lib/mockCatalog'
 
 interface Category {
   id: string
@@ -28,43 +34,44 @@ function getApiUrl() {
   return 'http://localhost:8000';
 }
 
-function getCategoryEmoji(slug: string, name?: string): string {
+/** Pick a proper line icon for a category from its slug/name. */
+function getCategoryIcon(slug: string, name?: string): LucideIcon {
   const s = (slug || '').toLowerCase();
   const n = (name || '').toLowerCase();
 
-  if (s.includes('buidan') || n.includes('буйдан')) return '🛋️';
-  if (s.includes('ajlyn-oroonii') || s.includes('ajliin-oroonii') || n.includes('ажлын өрөө')) return '💼';
-  if (s.includes('ariun-cevriin') || s.includes('ariun-tsevriin') || n.includes('ариун цэвэр')) return '🛁';
-  if (s.includes('gal-togoo') || n.includes('гал тогоо') || n.includes('хоолны')) return '🍳';
-  if (s.includes('ger-ahuin-cimeglel') || s.includes('ger-ahuin-chimeglel') || n.includes('чимэглэл') || n.includes('гэр ахуй')) return '🪴';
-  if (s.includes('gerel') || n.includes('гэрэл')) return '💡';
-  if (s.includes('zocny') || s.includes('zochnii') || n.includes('зочны')) return '📺';
-  if (s.includes('tagt') || s.includes('gadna') || n.includes('тагт') || n.includes('гадна')) return '🏡';
-  if (s.includes('untlagyn') || s.includes('untlagiin') || n.includes('унтлагын')) return '🛏️';
-  if (s.includes('huuhdiin') || n.includes('хүүхдийн')) return '🧸';
-  if (s.includes('uudnii') || n.includes('үүдний')) return '🚪';
-  if (s.includes('cahilgaan') || s.includes('electron') || n.includes('цахилгаан')) return '💻';
-  if (s.includes('brand') || n.includes('брэнд')) return '🏷️';
+  // Mongolian keyword matches
+  if (s.includes('buidan') || n.includes('буйдан')) return Sofa;
+  if (s.includes('ajlyn-oroonii') || s.includes('ajliin-oroonii') || n.includes('ажлын өрөө')) return Briefcase;
+  if (s.includes('ariun-cevriin') || s.includes('ariun-tsevriin') || n.includes('ариун цэвэр')) return Bath;
+  if (s.includes('gal-togoo') || n.includes('гал тогоо') || n.includes('хоолны')) return CookingPot;
+  if (s.includes('ger-ahuin') || n.includes('чимэглэл') || n.includes('гэр ахуй')) return Sprout;
+  if (s.includes('gerel') || n.includes('гэрэл')) return Lightbulb;
+  if (s.includes('zocny') || s.includes('zochnii') || n.includes('зочны')) return Tv;
+  if (s.includes('untlagyn') || s.includes('untlagiin') || n.includes('унтлагын')) return Sofa;
+  if (s.includes('huuhdiin') || n.includes('хүүхдийн')) return Baby;
+  if (s.includes('uudnii') || n.includes('үүдний')) return DoorOpen;
+  if (n.includes('зөөврийн') || s.includes('laptop')) return Laptop;
+  if (n.includes('суурин') || s.includes('computer') || s.includes('desktop')) return Monitor;
+  if (n.includes('ухаалаг') || s.includes('phone') || s.includes('tablet') || s.includes('smart')) return Smartphone;
+  if (n.includes('консоль') || s.includes('console') || s.includes('game')) return Gamepad2;
+  if (n.includes('аудио') || s.includes('audio') || s.includes('headphone')) return Headphones;
+  if (n.includes('дагалдах') || s.includes('accessor')) return Mouse;
+  if (n.includes('цахилгаан') || s.includes('electron')) return Cpu;
+  if (n.includes('бусад') || s.includes('other')) return Cpu;
+  if (s.includes('brand') || n.includes('брэнд')) return Tag;
 
-  // Fallbacks to standard English slugs if any
-  if (s.includes('laptop')) return '💻';
-  if (s.includes('computer')) return '🖥️';
-  if (s.includes('phone') || s.includes('tablet')) return '📱';
-  if (s.includes('console') || s.includes('game')) return '🎮';
-  if (s.includes('audio') || s.includes('headphone')) return '🎧';
-  if (s.includes('grocery') || s.includes('shop')) return '🛒';
-  if (s.includes('fruit')) return '🍎';
-  if (s.includes('meat')) return '🥩';
-  if (s.includes('dairy') || s.includes('egg') || s.includes('milk')) return '🥛';
-  if (s.includes('seafood') || s.includes('fish')) return '🐟';
-  if (s.includes('vegetable') || s.includes('broccoli')) return '🥦';
-  if (s.includes('bakery') || s.includes('bread')) return '🥐';
-  if (s.includes('beverage') || s.includes('drink')) return '🥤';
-  if (s.includes('snack') || s.includes('sweet')) return '🥨';
-  if (s.includes('home')) return '🏠';
-  if (s.includes('accessory')) return '🖱️';
+  // Grocery / food
+  if (n.includes('жимс') || s.includes('fruit')) return Apple;
+  if (n.includes('ногоо') || s.includes('vegetable')) return Carrot;
+  if (n.includes('мах') || s.includes('meat')) return Beef;
+  if (n.includes('сүү') || s.includes('dairy') || s.includes('milk') || s.includes('egg')) return Milk;
+  if (n.includes('далайн') || s.includes('seafood') || s.includes('fish')) return Fish;
+  if (n.includes('талх') || n.includes('боов') || s.includes('bakery') || s.includes('bread')) return Croissant;
+  if (n.includes('ундаа') || n.includes('ус') || s.includes('beverage') || s.includes('drink')) return CupSoda;
+  if (n.includes('зууш') || n.includes('амттан') || s.includes('snack') || s.includes('sweet')) return Cookie;
+  if (n.includes('хүнс') || s.includes('grocery') || s.includes('food')) return UtensilsCrossed;
 
-  return 'SVG_FALLBACK';
+  return ShoppingBag;
 }
 
 function resolveImageUrl(url: string | undefined, defaultEmoji: string = 'SVG_FALLBACK') {
@@ -95,10 +102,12 @@ export default function CategoryList({ showBrands = true }: { showBrands?: boole
   const { tenantId } = useTenant()
   const tenantHref = useTenantHref()
   const [categories, setCategories] = useState<Category[]>([])
+  const [catImageById, setCatImageById] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const apiUrl = getApiUrl()
+
     fetch(`${apiUrl}/api/categories/public?tenantId=${tenantId}`)
       .then((res) => res.json())
       .then((body) => {
@@ -107,6 +116,19 @@ export default function CategoryList({ showBrands = true }: { showBrands?: boole
       })
       .catch(() => setCategories(getMockCategoriesByTenantId(tenantId) as Category[]))
       .finally(() => setLoading(false))
+
+    // Representative product image per category (fallback for categories without their own image)
+    fetch(`${apiUrl}/api/products/public?tenantId=${tenantId}`)
+      .then((res) => res.json())
+      .then((body) => {
+        const map: Record<string, string> = {}
+        for (const p of (body?.data ?? [])) {
+          const img = p.images?.[0]
+          if (p.categoryId && img && !map[p.categoryId]) map[p.categoryId] = img
+        }
+        setCatImageById(map)
+      })
+      .catch(() => {})
   }, [tenantId])
 
   if (loading) {
@@ -127,16 +149,23 @@ export default function CategoryList({ showBrands = true }: { showBrands?: boole
 
   const items = [
     ...categories.map((c) => {
-      const resolved = resolveImageUrl(c.image, 'SVG_FALLBACK')
+      const resolved = resolveImageUrl(c.image, '')
+      let imageUrl = resolved.imageUrl
+
+      // Fallback: a representative product image from this category
+      if (!imageUrl && catImageById[c.id]) {
+        imageUrl = resolveImageUrl(catImageById[c.id]).imageUrl
+      }
+
       return {
         key: c.id,
         href: tenantHref(`/${c.slug}`),
-        imageUrl: resolved.imageUrl,
-        emoji: resolved.emoji,
+        imageUrl,
+        Icon: getCategoryIcon(c.slug, c.name),
         label: c.name,
       }
     }),
-    ...(showBrands ? [{ key: 'brands', href: tenantHref('/brands'), imageUrl: null, emoji: '🏷️', label: 'Брэндүүд' }] : []),
+    ...(showBrands ? [{ key: 'brands', href: tenantHref('/brands'), imageUrl: null, Icon: Tag, label: 'Брэндүүд' }] : []),
   ]
 
   return (
@@ -147,35 +176,50 @@ export default function CategoryList({ showBrands = true }: { showBrands?: boole
           Бүгдийг харах →
         </Link>
       </div>
-      <div className="flex overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2 gap-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-9 sm:gap-4">
-        {items.map((item) => (
-          <Link
-            key={item.key}
-            href={item.href}
-            className="group flex flex-col items-center text-center shrink-0 w-[72px] sm:w-auto gap-2"
-          >
-            <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-2 border-gray-200 group-hover:border-primary overflow-hidden group-hover:scale-110 transition-all duration-200 flex items-center justify-center bg-gray-50/50">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 auto-rows-[150px] sm:auto-rows-[170px]">
+        {items.map((item, idx) => {
+          // Bento accent: first tile spans two columns for a feature look
+          const wide = idx === 0
+          return (
+            <Link
+              key={item.key}
+              href={item.href}
+              className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#15171c] to-[#23262e] border border-white/5 hover:border-primary/50 transition-all duration-200 hover:-translate-y-0.5 ${wide ? 'col-span-2' : ''}`}
+            >
+              {/* glow accent */}
+              <div className="pointer-events-none absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-primary/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+
+              <div className="relative z-10 p-5 h-full flex flex-col justify-between">
+                <h3 className="text-white font-bold uppercase text-xs sm:text-sm tracking-wide leading-tight max-w-[62%]">
+                  {item.label}
+                </h3>
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-primary uppercase tracking-wider">
+                  Үргэлжлүүлэх
+                  <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
+
+              {/* product / category visual */}
               {item.imageUrl ? (
                 <Image
                   src={item.imageUrl}
                   alt={item.label}
-                  fill
-                  className="object-cover"
-                  sizes="64px"
+                  width={160}
+                  height={160}
+                  unoptimized
+                  className="absolute right-1 bottom-1 w-28 h-28 sm:w-32 sm:h-32 object-contain drop-shadow-xl group-hover:scale-110 transition-transform duration-300"
                 />
-              ) : item.emoji && item.emoji !== 'SVG_FALLBACK' && item.emoji !== '📁' ? (
-                <span className="text-2xl sm:text-3xl">{item.emoji}</span>
               ) : (
-                <svg className="w-6 h-6 text-gray-400 group-hover:text-primary transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
+                <item.Icon
+                  strokeWidth={1.4}
+                  className="absolute right-4 bottom-4 w-14 h-14 sm:w-16 sm:h-16 text-white/85 group-hover:text-primary group-hover:scale-110 transition-all duration-300"
+                />
               )}
-            </div>
-            <span className="text-[10px] sm:text-xs font-bold text-gray-600 group-hover:text-primary transition-colors leading-tight">
-              {item.label}
-            </span>
-          </Link>
-        ))}
+            </Link>
+          )
+        })}
       </div>
     </section>
   )

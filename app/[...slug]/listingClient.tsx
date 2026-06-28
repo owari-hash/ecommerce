@@ -738,6 +738,7 @@ export default function CategoryListingClient({
                       oldPrice,
                       brand: p.brand,
                       icon: category.icon,
+                      image: p.image,
                     });
                     setToastMsg('Бүтээгдэхүүнийг сагсанд нэмлээ!');
                     setShowToast(true);

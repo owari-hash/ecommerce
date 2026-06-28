@@ -195,6 +195,7 @@ export default function Header() {
       price: product.price,
       oldPrice: product.oldPrice,
       icon: '📦',
+      image: product.image,
       brand: product.brand,
     });
     setShowToast(true);

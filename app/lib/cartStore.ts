@@ -7,6 +7,7 @@ export type CartItem = {
   price: number;
   oldPrice?: number;
   icon: string;
+  image?: string;
   brand: string;
   quantity: number;
 };
