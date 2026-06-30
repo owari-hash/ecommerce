@@ -84,7 +84,7 @@ export default function HeroBanner({ bigSlides, smallSlides }: HeroBannerProps) 
                 <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
                 <div className="relative h-44 sm:h-56 md:h-72 text-white p-4 sm:p-6 md:p-10 flex flex-col justify-end gap-3">
                   <div>
-                    <span className="inline-block text-[10px] sm:text-[11px] font-black tracking-[3px] text-red-300 uppercase bg-white/10 backdrop-blur-sm px-2.5 py-1 rounded-full mb-2">{s.title}</span>
+                    <span className="inline-block text-[10px] sm:text-[11px] font-black tracking-[3px] text-primary-light uppercase bg-white/10 backdrop-blur-sm px-2.5 py-1 rounded-full mb-2">{s.title}</span>
                     <div className="text-xl sm:text-2xl md:text-4xl font-black leading-tight drop-shadow-md">{s.subtitle}</div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -113,7 +113,7 @@ export default function HeroBanner({ bigSlides, smallSlides }: HeroBannerProps) 
                 <Image src={s.image} alt={s.subtitle} fill className="object-cover" sizes="33vw" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
                 <div className="relative h-72 text-white p-5 flex flex-col justify-end">
-                  <span className="text-[10px] font-black tracking-[3px] text-red-300 uppercase mb-1">{s.title}</span>
+                  <span className="text-[10px] font-black tracking-[3px] text-primary-light uppercase mb-1">{s.title}</span>
                   <div className="text-lg font-black leading-snug">{s.subtitle}</div>
                   <span className="mt-3 inline-flex items-center gap-1 text-[11px] font-black text-primary-light">
                     Харах

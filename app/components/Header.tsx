@@ -208,11 +208,11 @@ export default function Header() {
       <div className="hidden sm:block bg-[#0a1628] text-white text-xs py-2">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <a href={`tel:${contact?.phone}`} className="hover:text-red-300 transition-colors flex items-center gap-1">
+            <a href={`tel:${contact?.phone}`} className="hover:text-primary-light transition-colors flex items-center gap-1">
               <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" /></svg>
               {contact?.phone}
             </a>
-            <a href={`mailto:${contact?.email}`} className="hover:text-red-300 transition-colors flex items-center gap-1">
+            <a href={`mailto:${contact?.email}`} className="hover:text-primary-light transition-colors flex items-center gap-1">
               <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
               {contact?.email}
             </a>
@@ -389,9 +389,9 @@ export default function Header() {
                         <p className="font-bold text-gray-900">{user.lastName} {user.firstName}</p>
                         <p className="text-xs text-gray-500">{user.phone}</p>
                       </div>
-                      <Link href="/account" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-primary">👤 Хувийн мэдээлэл</Link>
-                      <Link href="/account/wishlists" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-primary">❤️ Хадгалсан</Link>
-                      <Link href="/checkout" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-primary">🛒 Миний сагс</Link>
+                      <Link href="/account" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary">👤 Хувийн мэдээлэл</Link>
+                      <Link href="/account/wishlists" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary">❤️ Хадгалсан</Link>
+                      <Link href="/checkout" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary">🛒 Миний сагс</Link>
                       <div className="border-t border-gray-100 mt-1 pt-1">
                         <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">🚪 Гарах</button>
                       </div>
@@ -451,19 +451,19 @@ export default function Header() {
             </div>
             {categories.map(cat => (
               <Link key={cat.href} href={cat.href} onClick={() => setMenuOpen(false)}
-                className="block px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-primary border-b border-gray-100">
+                className="block px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100">
                 {cat.label}
               </Link>
             ))}
             <div className="p-2 bg-gray-50 text-xs text-gray-500 font-medium">Онцлох ангилал</div>
-            <Link href="/grocery" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-primary border-b border-gray-100"><span>🛒</span> Grocery &amp; Supermarket</Link>
-            <Link href="/fashion" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-primary border-b border-gray-100"><span>👕</span> Fashion &amp; Clothing</Link>
-            <Link href="/electronics" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-primary border-b border-gray-100"><span>💻</span> Electronics</Link>
-            <Link href="/beauty" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-primary border-b border-gray-100"><span>💄</span> Beauty &amp; Personal Care</Link>
-            <Link href="/home-living" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-primary border-b border-gray-100"><span>🏠</span> Home &amp; Living</Link>
+            <Link href="/grocery" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><span>🛒</span> Grocery &amp; Supermarket</Link>
+            <Link href="/fashion" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><span>👕</span> Fashion &amp; Clothing</Link>
+            <Link href="/electronics" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><span>💻</span> Electronics</Link>
+            <Link href="/beauty" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><span>💄</span> Beauty &amp; Personal Care</Link>
+            <Link href="/home-living" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><span>🏠</span> Home &amp; Living</Link>
             <div className="p-2 bg-gray-50 text-xs text-gray-500 font-medium mt-2">Бүртгэл</div>
-            <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-primary border-b border-gray-100"><span>👤</span> Хувийн мэдээлэл</Link>
-            <Link href="/account/wishlists" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-primary border-b border-gray-100"><span>❤️</span> Хадгалсан</Link>
+            <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><span>👤</span> Хувийн мэдээлэл</Link>
+            <Link href="/account/wishlists" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><span>❤️</span> Хадгалсан</Link>
           </div>
         </>
       )}

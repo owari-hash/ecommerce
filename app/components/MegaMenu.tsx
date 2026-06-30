@@ -170,7 +170,7 @@ export default function MegaMenu() {
                       href={cat.href}
                       className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm group overflow-hidden ${
                         activeCategory === cat.label
-                          ? 'bg-white shadow-sm text-primary font-medium ring-1 ring-red-100'
+                          ? 'bg-white shadow-sm text-primary font-medium ring-1 ring-primary/20'
                           : 'hover:bg-white hover:shadow-sm text-gray-700'
                       } ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}
                       style={{
@@ -218,7 +218,7 @@ export default function MegaMenu() {
                           style={{ transitionDelay: '50ms' }}
                         >
                           <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-100">
-                            <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center overflow-hidden relative shrink-0">
+                            <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center overflow-hidden relative shrink-0">
                               {cat.imageUrl ? (
                                 <Image src={cat.imageUrl} alt={cat.label} fill className="object-cover" sizes="40px" />
                               ) : cat.emoji ? (
@@ -250,7 +250,7 @@ export default function MegaMenu() {
                                 <Link
                                   key={sub.label}
                                   href={sub.href}
-                                  className={`group flex items-center gap-2 py-2 px-2 -mx-2 rounded-lg text-sm text-gray-600 hover:text-primary hover:bg-red-50/50 transition-all duration-150 ${
+                                  className={`group flex items-center gap-2 py-2 px-2 -mx-2 rounded-lg text-sm text-gray-600 hover:text-primary hover:bg-primary/5 transition-all duration-150 ${
                                     isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
                                   }`}
                                   style={{
@@ -258,7 +258,7 @@ export default function MegaMenu() {
                                     transitionProperty: 'opacity, transform, color, background-color',
                                   }}
                                 >
-                                  <span className="w-2 h-2 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 group-hover:from-primary group-hover:to-red-400 transition-all" />
+                                  <span className="w-2 h-2 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 group-hover:from-primary group-hover:to-primary-light transition-all" />
                                   <span className="truncate">{sub.label}</span>
                                 </Link>
                               ))}
@@ -277,7 +277,7 @@ export default function MegaMenu() {
                     style={{ transitionDelay: '30ms' }}
                   >
                     <div className="flex items-center gap-2 mb-4">
-                      <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center">
                         <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
@@ -342,7 +342,7 @@ export default function MegaMenu() {
                               sizes="224px"
                             />
                           </div>
-                          <div className="p-3 bg-gradient-to-r from-red-50 via-white to-red-50/30">
+                          <div className="p-3 bg-gradient-to-r from-primary/5 via-white to-primary/5">
                             <p className="text-[10px] text-primary font-black uppercase tracking-wider mb-1">⭐ Онцлох</p>
                             <p className="text-sm font-bold text-gray-900 line-clamp-2">{cat.featured!.title}</p>
                           </div>
@@ -353,7 +353,7 @@ export default function MegaMenu() {
 
                 {(promo?.visible ?? true) && (
                   <div
-                    className={`rounded-xl overflow-hidden border border-gray-100 bg-gradient-to-br from-red-500 via-red-600 to-red-700 text-white p-4 relative group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
+                    className={`rounded-xl overflow-hidden border border-gray-100 bg-gradient-to-br from-primary via-primary to-primary-dark text-white p-4 relative group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
                       isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
                     }`}
                     style={{ transitionDelay: isVisible ? '150ms' : '0ms' }}
@@ -365,7 +365,7 @@ export default function MegaMenu() {
                       {promo?.subtitle && <p className="text-sm opacity-90 mb-3">{promo.subtitle}</p>}
                       <Link
                         href={tenantHref(promo?.href ?? '/')}
-                        className="inline-flex items-center gap-1 bg-white text-red-600 px-4 py-2 rounded-lg text-sm font-black hover:bg-gray-100 transition-colors shadow-lg mt-3"
+                        className="inline-flex items-center gap-1 bg-white text-primary px-4 py-2 rounded-lg text-sm font-black hover:bg-gray-100 transition-colors shadow-lg mt-3"
                       >
                         Харах
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
