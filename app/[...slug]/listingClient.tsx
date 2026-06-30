@@ -623,7 +623,7 @@ export default function CategoryListingClient({
                       Дууссан
                     </div>
                   ) : p.badge ? (
-                    <div className={`absolute top-1.5 md:top-2 left-1.5 md:left-2 text-xs md:text-xs font-black px-1.5 md:px-2 py-0.5 md:py-1 rounded-lg text-white ${p.badge === 'Шинэ' ? 'bg-primary' : 'bg-red-500'}`}>
+                    <div className={`absolute top-1.5 md:top-2 left-1.5 md:left-2 text-xs md:text-xs font-black px-1.5 md:px-2 py-0.5 md:py-1 rounded-lg text-white ${p.badge === 'Шинэ' ? 'bg-emerald-500' : 'bg-primary'}`}>
                       {p.badge}
                     </div>
                   ) : null}

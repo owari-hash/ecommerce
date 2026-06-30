@@ -244,7 +244,7 @@ export default function CategoryListingClient({ category, products }: Props) {
                 <button
                   key={b}
                   type="button"
-                  className="px-3 py-1.5 rounded-full bg-red-50 text-primary border border-red-100 text-xs font-bold"
+                  className="px-3 py-1.5 rounded-full bg-primary/5 text-primary border border-primary/20 text-xs font-bold"
                   onClick={() => setSelectedBrands((s) => ({ ...s, [b]: false }))}
                 >
                   {b} ×
@@ -271,7 +271,7 @@ export default function CategoryListingClient({ category, products }: Props) {
               <div className="relative h-44 bg-gray-50 flex items-center justify-center">
                 <div className="text-6xl opacity-60">{category.icon}</div>
                 {p.badge && (
-                  <div className={`absolute top-2 left-2 text-xs font-black px-2 py-1 rounded-lg text-white ${p.badge === 'Шинэ' ? 'bg-primary' : 'bg-red-500'}`}>
+                  <div className={`absolute top-2 left-2 text-xs font-black px-2 py-1 rounded-lg text-white ${p.badge === 'Шинэ' ? 'bg-emerald-500' : 'bg-primary'}`}>
                     {p.badge}
                   </div>
                 )}

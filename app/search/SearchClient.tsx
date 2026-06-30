@@ -132,7 +132,7 @@ export default function SearchClient() {
                     Дууссан
                   </span>
                 ) : product.isSale ? (
-                  <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  <span className="absolute top-2 left-2 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                     Хямдрал
                   </span>
                 ) : product.isNew ? (
@@ -187,7 +187,7 @@ export default function SearchClient() {
               <Link
                 key={key}
                 href={`/${key}`}
-                className="px-4 py-2 bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-primary rounded-full text-sm font-medium transition-colors"
+                className="px-4 py-2 bg-gray-100 hover:bg-primary/5 text-gray-700 hover:text-primary rounded-full text-sm font-medium transition-colors"
               >
                 {label}
               </Link>
@@ -210,7 +210,7 @@ export default function SearchClient() {
               <Link
                 key={term}
                 href={`/search?q=${encodeURIComponent(term)}`}
-                className="px-3 py-1 bg-red-50 text-primary rounded-full text-sm hover:bg-primary hover:text-white transition-colors"
+                className="px-3 py-1 bg-primary/5 text-primary rounded-full text-sm hover:bg-primary hover:text-white transition-colors"
               >
                 {term}
               </Link>
