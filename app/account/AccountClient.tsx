@@ -181,7 +181,11 @@ function OrderCard({ order, expanded, onToggle }: { order: Order; expanded: bool
 export default function AccountClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') ?? '/account';
+  const rawRedirect = searchParams.get('redirect') ?? '/account';
+  // Only allow internal paths — guards against blank/error pages from bad targets
+  const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/account';
+  // Hard navigation so the httpOnly session cookie is freshly restored on the destination
+  const goAfterAuth = () => { window.location.assign(redirectTo); };
 
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<'login' | 'register' | 'forgot'>('login');
@@ -295,7 +299,7 @@ export default function AccountClient() {
     setLoading(false);
     if (result.success) {
       setUser(readAuth());
-      setTimeout(() => router.replace(redirectTo), 200);
+      goAfterAuth();
     } else setError(result.error || 'Нэвтрэх амжилтгүй боллоо');
   }
 
@@ -321,7 +325,7 @@ export default function AccountClient() {
     if (result.success) {
       setUser(readAuth());
       setSuccess('Амжилттай бүртгүүллээ!');
-      setTimeout(() => router.replace(redirectTo), 300);
+      goAfterAuth();
     } else setError(result.error || 'Бүртгэл амжилтгүй боллоо');
   }
 
@@ -656,16 +660,23 @@ export default function AccountClient() {
                   <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-700 text-center">
                     📱 <span className="font-semibold">{regPhone}</span>-д баталгаажуулах код илгээлээ
                   </div>
-                  <input type="text" inputMode="numeric" value={regOtpCode}
-                    onChange={e => setRegOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3.5 text-center text-2xl font-bold tracking-[0.5em] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-gray-50"
-                    placeholder="──────" maxLength={6} autoFocus />
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 text-center">Баталгаажуулах код</label>
+                    <input type="text" inputMode="numeric" value={regOtpCode}
+                      onChange={e => setRegOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3.5 text-center text-2xl font-bold tracking-[0.5em] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-gray-50"
+                      placeholder="──────" maxLength={6} autoFocus />
+                  </div>
                   <button type="submit" disabled={loading || regOtpCode.length !== 6}
                     className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/25 disabled:opacity-50">
                     {loading ? <span className="flex items-center justify-center gap-2"><Spinner />Шалгаж байна...</span> : 'Бүртгүүлэх'}
                   </button>
-                  <button type="button" onClick={() => { setRegOtpSent(false); setRegOtpCode(''); setError(''); }}
-                    className="w-full text-sm text-gray-400 hover:text-gray-600 py-1">← Буцах</button>
+                  <div className="flex items-center justify-between">
+                    <button type="button" onClick={() => { setRegOtpSent(false); setRegOtpCode(''); setError(''); }}
+                      className="text-sm text-gray-400 hover:text-gray-600 py-1">← Буцах</button>
+                    <button type="button" disabled={loading} onClick={handleSendRegisterOtp}
+                      className="text-sm font-semibold text-primary hover:underline py-1 disabled:opacity-50">Код дахин илгээх</button>
+                  </div>
                 </form>
               )}
             </>
