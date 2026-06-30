@@ -250,7 +250,7 @@ export default function OrdersClient() {
             🛒 Миний сагс
           </Link>
           <Link href="/account/orders"
-            className="block px-4 py-3 rounded-xl bg-red-50 font-medium text-sm transition-colors"
+            className="block px-4 py-3 rounded-xl bg-primary/5 font-medium text-sm transition-colors"
             style={{ color: 'var(--color-primary, #D32F2F)' }}
           >
             📦 Захиалгын түүх

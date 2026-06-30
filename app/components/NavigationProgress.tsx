@@ -65,7 +65,7 @@ export default function NavigationProgress() {
         >
           {/* Progress fill */}
           <motion.div
-            className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary via-red-400 to-primary"
+            className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary via-primary-light to-primary"
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
           />

@@ -87,7 +87,7 @@ export default async function StoreLocationsPage() {
 
       {/* Map placeholder — uses first location's address as label */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="bg-gradient-to-br from-red-50 to-red-100 h-64 flex flex-col items-center justify-center gap-3">
+        <div className="bg-gradient-to-br from-primary/5 to-primary/10 h-64 flex flex-col items-center justify-center gap-3">
           <span className="text-6xl">🗺️</span>
           {locations[0] ? (
             <>

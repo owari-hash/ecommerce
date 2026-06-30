@@ -167,7 +167,7 @@ export default function ComparePageClient({ tenantId }: { tenantId: string }) {
                           <div className="w-full h-full flex items-center justify-center text-5xl opacity-30">📦</div>
                         )}
                         {discountPct != null && (
-                          <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded leading-none">
+                          <span className="absolute top-2 left-2 bg-primary text-white text-[10px] font-black px-1.5 py-0.5 rounded leading-none">
                             -{discountPct}%
                           </span>
                         )}
