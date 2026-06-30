@@ -1,8 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   readCart,
   removeFromCart,
@@ -16,42 +15,106 @@ import { useTenant } from '../lib/TenantContext';
 import { restoreSession, readAuth, isLoggedIn } from '../lib/authStore';
 
 const paymentMethods = [
-  { id: 'qpay', name: 'QPay', icon: '💳', color: 'bg-blue-600' },
-  { id: 'socialpay', name: 'SocialPay', icon: '📱', color: 'bg-green-600' },
-  { id: 'monpay', name: 'MonPay', icon: '💚', color: 'bg-emerald-500' },
-  { id: 'lendmn', name: 'LendMN', icon: '🟠', color: 'bg-orange-500' },
-  { id: 'pocket', name: 'Pocket', icon: '👛', color: 'bg-purple-500' },
-  { id: 'cash', name: 'Бэлэн мөнгө', icon: '💵', color: 'bg-gray-600' },
-  { id: 'leasing', name: 'Лизинг', icon: '📋', color: 'bg-primary' },
+  { id: 'qpay', name: 'QPay', desc: 'Банкны аппаар QR уншуулж төлнө' },
+  { id: 'cash', name: 'Бэлэн мөнгө', desc: 'Хүлээж авах үед төлнө' },
 ];
+
+/** Branded square logo used instead of emoji. */
+function BrandLogo({ id, size = 40 }: { id: string; size?: number }) {
+  const map: Record<string, { mono: string; bg: string; fg?: string }> = {
+    qpay: { mono: 'Q', bg: '#0B1B3A' },
+    cash: { mono: '₮', bg: '#475569' },
+  };
+  const m = map[id] ?? { mono: id.charAt(0).toUpperCase(), bg: '#475569' };
+  return (
+    <span
+      className="inline-flex items-center justify-center rounded-xl font-black shrink-0 shadow-sm"
+      style={{ width: size, height: size, background: m.bg, color: m.fg ?? '#fff', fontSize: size * 0.42 }}
+    >
+      {m.mono}
+    </span>
+  );
+}
 
 function formatPrice(price: number): string {
   return price.toLocaleString('mn-MN') + '₮';
 }
 
+/** Horizontal checkout progress indicator. */
+function Stepper({ current }: { current: number }) {
+  const steps = ['Сагс', 'Захиалгын мэдээлэл', 'Төлбөр төлөх'];
+  return (
+    <div className="flex items-center justify-center w-full overflow-x-auto pb-1">
+      <div className="flex items-center gap-2 sm:gap-4">
+        {steps.map((label, i) => {
+          const done = i < current;
+          const active = i === current;
+          return (
+            <div key={label} className="flex items-center gap-2 sm:gap-4 shrink-0">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold border-2 transition-colors shrink-0 leading-none ${
+                    done
+                      ? 'bg-primary text-white border-primary'
+                      : active
+                      ? 'bg-white text-primary border-primary'
+                      : 'bg-gray-100 text-gray-400 border-gray-200'
+                  }`}
+                >
+                  {done ? (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    i + 1
+                  )}
+                </span>
+                <span className={`text-xs sm:text-sm font-semibold whitespace-nowrap ${done || active ? 'text-gray-800' : 'text-gray-400'}`}>
+                  {label}
+                </span>
+              </div>
+              {i < steps.length - 1 && <span className="w-6 sm:w-12 h-px bg-gray-200" />}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function CheckoutClient() {
   const tenantHref = useTenantHref();
   const { tenantId, shippingFee, shippingFreeThreshold } = useTenant();
-  const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
+  const [step, setStep] = useState(0); // 0 Сагс · 1 Мэдээлэл · 2 Төлбөр
   const [items, setItems] = useState<CartItem[]>([]);
   const [selectedPayment, setSelectedPayment] = useState<string>('');
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [successOrderNumber, setSuccessOrderNumber] = useState<string>('');
   const [successOrder, setSuccessOrder] = useState<any>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
+
+  // QPay inline flow
   const [qpayInvoice, setQpayInvoice] = useState<any>(null);
   const [qpayLoading, setQpayLoading] = useState(false);
   const [qpayPaid, setQpayPaid] = useState(false);
   const [qpayOrderNum, setQpayOrderNum] = useState<string>('');
-  const [showEbarimtPicker, setShowEbarimtPicker] = useState(false);
+
+  // И-Баримт inline
   const [ebarimtType, setEbarimtType] = useState<'person' | 'org'>('person');
   const [ebarimtTin, setEbarimtTin] = useState<string>('');
-  const [ebarimtLoading, setEbarimtLoading] = useState(false);
 
-  // Customer info
+  const qpayPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopQpayPolling = () => {
+    if (qpayPollRef.current) {
+      clearInterval(qpayPollRef.current);
+      qpayPollRef.current = null;
+    }
+  };
+  useEffect(() => stopQpayPolling, []);
+
   const [customerInfo, setCustomerInfo] = useState({
     lastName: '',
     firstName: '',
@@ -61,7 +124,6 @@ export default function CheckoutClient() {
   });
 
   useEffect(() => {
-    // Restore session but do NOT redirect — guests can view cart
     restoreSession().then(() => {
       const user = readAuth();
       if (user) {
@@ -76,7 +138,6 @@ export default function CheckoutClient() {
       setAuthChecked(true);
       setItems(readCart());
     });
-
     const onCartChange = () => setItems(readCart());
     window.addEventListener('cart:changed', onCartChange);
     return () => window.removeEventListener('cart:changed', onCartChange);
@@ -88,7 +149,6 @@ export default function CheckoutClient() {
   const shipping = total >= threshold ? 0 : fee;
   const finalTotal = total + shipping;
 
-  // Show spinner while session is being verified
   if (!authChecked) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -100,68 +160,19 @@ export default function CheckoutClient() {
   const handleQuantityChange = (id: string, delta: number) => {
     const item = items.find((x) => x.id === id);
     if (!item) return;
-    const newQty = Math.max(1, item.quantity + delta);
-    updateQuantity(id, newQty);
+    updateQuantity(id, Math.max(1, item.quantity + delta));
     setItems(readCart());
   };
+  const handleRemove = (id: string) => { removeFromCart(id); setItems(readCart()); };
+  const handleClear = () => { clearCart(); setItems([]); };
 
-  const handleRemove = (id: string) => {
-    removeFromCart(id);
-    setItems(readCart());
-  };
-
-  const handleClear = () => {
-    clearCart();
-    setItems([]);
-  };
-
-  const handlePayment = async () => {
-    if (!selectedPayment) return;
-    setShowPaymentModal(true);
-    if (selectedPayment === 'qpay') {
-      await generateQpayInvoice();
-    }
-  };
-
-  const generateQpayInvoice = async () => {
-    setQpayLoading(true);
-    setQpayInvoice(null);
-    setQpayPaid(false);
-    setErrorMessage('');
-    try {
-      const orderNum = `ORD-${Date.now()}`;
-      setQpayOrderNum(orderNum);
-      const res = await fetch('/api/qpay/invoice', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId, zakhialgiinDugaar: orderNum, dun: finalTotal, tailbar: `Захиалга ${orderNum}` }),
-      });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? 'QPay invoice үүсгэхэд алдаа гарлаа');
-      setQpayInvoice(body.data);
-      // Poll every 3s
-      const interval = setInterval(async () => {
-        const r = await fetch('/api/qpay/check', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ zakhialgiinDugaar: orderNum }),
-        });
-        const b = await r.json();
-        if (b?.data?.paid) {
-          clearInterval(interval);
-          setQpayPaid(true);
-          setShowPaymentModal(false);
-          setShowEbarimtPicker(true);
-        }
-      }, 3000);
-    } catch (err: any) {
-      setErrorMessage(err.message);
-    } finally {
-      setQpayLoading(false);
-    }
-  };
-
-  const processPaymentWithMethod = async (method: string, orderRef?: string, ebType?: 'person' | 'org', ebTin?: string) => {
+  // Create order on backend; returns created order (with orderNumber, ebarimt fields)
+  const processPaymentWithMethod = async (
+    method: string,
+    orderRef?: string,
+    ebType?: 'person' | 'org',
+    ebTin?: string,
+  ) => {
     setIsProcessing(true);
     setErrorMessage('');
     try {
@@ -188,8 +199,6 @@ export default function CheckoutClient() {
       if (!res.ok) throw new Error(body.error ?? 'Захиалга хийхэд алдаа гарлаа.');
       setSuccessOrderNumber(body.data.orderNumber);
       setSuccessOrder(body.data);
-      setShowPaymentModal(false);
-      setShowEbarimtPicker(false);
       setShowSuccessModal(true);
       clearCart();
       setItems([]);
@@ -200,14 +209,91 @@ export default function CheckoutClient() {
     }
   };
 
-  const processPayment = () => processPaymentWithMethod(selectedPayment);
+  // QPay: generate invoice + render banks inline + poll
+  const generateQpayInvoice = async () => {
+    setQpayLoading(true);
+    setQpayInvoice(null);
+    setQpayPaid(false);
+    setErrorMessage('');
+    try {
+      const orderNum = `ORD-${Date.now()}`;
+      setQpayOrderNum(orderNum);
+      const res = await fetch('/api/qpay/invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenantId, zakhialgiinDugaar: orderNum, dun: finalTotal, tailbar: `Захиалга ${orderNum}` }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? 'QPay invoice үүсгэхэд алдаа гарлаа');
+      setQpayInvoice(body.data);
+      stopQpayPolling();
+      qpayPollRef.current = setInterval(async () => {
+        try {
+          const r = await fetch('/api/qpay/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ zakhialgiinDugaar: orderNum }),
+          });
+          const b = await r.json();
+          if (b?.data?.paid) {
+            stopQpayPolling();
+            setQpayPaid(true);
+            await processPaymentWithMethod('qpay', orderNum, ebarimtType, ebarimtTin || undefined);
+          }
+        } catch { /* keep polling */ }
+      }, 3000);
+    } catch (err: any) {
+      setErrorMessage(err.message);
+    } finally {
+      setQpayLoading(false);
+    }
+  };
 
-  const isFormValid =
-    customerInfo.lastName &&
-    customerInfo.firstName &&
-    customerInfo.phone &&
-    customerInfo.address &&
-    selectedPayment;
+  // Selecting a payment method. QPay auto-generates its invoice + banks inline.
+  const handleSelectPayment = (id: string) => {
+    setSelectedPayment(id);
+    setErrorMessage('');
+    stopQpayPolling();
+    setQpayInvoice(null);
+    setQpayPaid(false);
+    if (id === 'qpay') generateQpayInvoice();
+  };
+
+  // Bottom CTA: cash creates order; QPay manual re-check.
+  const handleCta = async () => {
+    if (step < 2) { setStep(step + 1); return; }
+    if (selectedPayment === 'cash') {
+      await processPaymentWithMethod('cash', undefined, ebarimtType, ebarimtTin || undefined);
+    } else if (selectedPayment === 'qpay' && qpayOrderNum) {
+      // manual check
+      try {
+        const r = await fetch('/api/qpay/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ zakhialgiinDugaar: qpayOrderNum }),
+        });
+        const b = await r.json();
+        if (b?.data?.paid) {
+          stopQpayPolling();
+          setQpayPaid(true);
+          await processPaymentWithMethod('qpay', qpayOrderNum, ebarimtType, ebarimtTin || undefined);
+        } else {
+          setErrorMessage('Төлбөр хараахан хийгдээгүй байна. Дахин шалгана уу.');
+        }
+      } catch {
+        setErrorMessage('Төлбөр шалгахад алдаа гарлаа.');
+      }
+    }
+  };
+
+  const infoFilled = Boolean(
+    customerInfo.lastName && customerInfo.firstName && customerInfo.phone && customerInfo.address,
+  );
+  const orgTinOk = ebarimtType !== 'org' || ebarimtTin.trim().length > 0;
+  const canAdvance =
+    step === 0 ? items.length > 0
+    : step === 1 ? infoFilled
+    : Boolean(selectedPayment) && orgTinOk;
 
   if (items.length === 0 && !showSuccessModal) {
     return (
@@ -222,10 +308,7 @@ export default function CheckoutClient() {
           <div className="text-7xl mb-4 opacity-40">🛒</div>
           <h2 className="text-xl font-bold text-gray-700 mb-2">Таны сагс хоосон байна</h2>
           <p className="text-gray-400 mb-6 text-sm">Барааны жагсаалтаас хүссэн барааг сагсанд нэмнэ үү</p>
-          <Link
-            href="/s"
-            className="inline-block bg-primary hover:bg-primary-dark text-white font-bold px-8 py-3 rounded-xl transition-colors"
-          >
+          <Link href="/s" className="inline-block bg-primary hover:bg-primary-dark text-white font-bold px-8 py-3 rounded-xl transition-colors">
             Нүүр хуудас
           </Link>
         </div>
@@ -233,536 +316,292 @@ export default function CheckoutClient() {
     );
   }
 
+  const ctaLabel = step < 2 ? 'Үргэлжлүүлэх' : selectedPayment === 'qpay' ? 'Төлбөр шалгах' : 'Төлбөр төлөх';
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-4 sm:py-8 pb-28 sm:pb-8">
-      <nav className="text-sm text-gray-500 mb-6 flex items-center gap-1">
+      <nav className="text-sm text-gray-500 mb-4 flex items-center gap-1">
         <Link href="/" className="hover:text-primary">Нүүр</Link>
         <span>/</span>
-        <span className="text-gray-800 font-medium">Сагс</span>
+        <span className="text-gray-800 font-medium">Төлбөр төлөх</span>
       </nav>
-      <h1 className="text-xl sm:text-2xl font-black text-gray-800 mb-4 sm:mb-8">Худалдан авалтын сагс</h1>
+      <h1 className="text-xl sm:text-2xl font-black text-gray-800 mb-4 sm:mb-6">Төлбөр төлөх</h1>
 
-      <div className="grid lg:grid-cols-3 gap-4 sm:gap-8">
-        {/* Cart items — shown second on mobile, first on desktop */}
-        <div className="lg:col-span-2 space-y-4 order-last lg:order-first">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="font-bold text-gray-900">Бараа ({items.length})</h2>
-              {items.length > 0 && (
-                <button
-                  onClick={handleClear}
-                  className="text-sm text-gray-500 hover:text-red-500 transition-colors"
-                >
-                  Бүгдийг устгах
-                </button>
-              )}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-4 mb-6">
+        <Stepper current={step} />
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-4 sm:gap-8 items-start">
+        {/* LEFT: steps */}
+        <div className="lg:col-span-2 space-y-5">
+          {/* Step 0 — Сагс */}
+          {step === 0 && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+                <h2 className="font-bold text-gray-900">Бараа ({items.length})</h2>
+                {items.length > 0 && (
+                  <button onClick={handleClear} className="text-sm text-gray-500 hover:text-primary transition-colors">
+                    Бүгдийг устгах
+                  </button>
+                )}
+              </div>
+              <div className="divide-y divide-gray-100">
+                {items.map((item) => (
+                  <div key={item.id} className="p-4 flex gap-4">
+                    <div className="w-20 h-20 bg-gray-50 rounded-xl flex items-center justify-center text-3xl flex-shrink-0">
+                      {item.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <Link href={tenantHref(`/product/${item.slug}`)} className="font-bold text-gray-900 hover:text-primary transition-colors line-clamp-2">
+                            {item.name}
+                          </Link>
+                          <p className="text-sm text-gray-500 mt-0.5">{item.brand}</p>
+                        </div>
+                        <button onClick={() => handleRemove(item.id)} className="text-gray-400 hover:text-primary transition-colors p-1" title="Устгах">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 border border-gray-200 rounded-lg p-0.5">
+                          <button onClick={() => handleQuantityChange(item.id, -1)} className="w-7 h-7 rounded-md flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-primary transition-colors">−</button>
+                          <span className="w-8 text-center text-sm font-semibold">{item.quantity}</span>
+                          <button onClick={() => handleQuantityChange(item.id, 1)} className="w-7 h-7 rounded-md flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-primary transition-colors">+</button>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-gray-900">{formatPrice(item.price * item.quantity)}</div>
+                          {item.oldPrice && (
+                            <div className="text-xs text-gray-400 line-through">{formatPrice(item.oldPrice * item.quantity)}</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
+          )}
 
-            <div className="divide-y divide-gray-100">
-              {items.map((item) => (
-                <div key={item.id} className="p-4 flex gap-4">
-                  <div className="w-20 h-20 bg-gray-50 rounded-xl flex items-center justify-center text-3xl flex-shrink-0">
-                    {item.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <Link
-                          href={tenantHref(`/product/${item.slug}`)}
-                          className="font-bold text-gray-900 hover:text-primary transition-colors line-clamp-2"
-                        >
-                          {item.name}
-                        </Link>
-                        <p className="text-sm text-gray-500 mt-0.5">{item.brand}</p>
-                      </div>
-                      <button
-                        onClick={() => handleRemove(item.id)}
-                        className="text-gray-400 hover:text-red-500 transition-colors p-1"
-                        title="Устгах"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-
-                    <div className="mt-3 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleQuantityChange(item.id, -1)}
-                          className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
-                        >
-                          −
-                        </button>
-                        <span className="w-10 text-center font-semibold">{item.quantity}</span>
-                        <button
-                          onClick={() => handleQuantityChange(item.id, 1)}
-                          className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
-                        >
-                          +
-                        </button>
-                      </div>
-
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">{formatPrice(item.price * item.quantity)}</div>
-                        {item.oldPrice && (
-                          <div className="text-xs text-gray-400 line-through">
-                            {formatPrice(item.oldPrice * item.quantity)}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+          {/* Step 1 — Хүргэлтийн мэдээлэл */}
+          {step === 1 && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
+              <h2 className="font-bold text-gray-900 mb-4">Хүргэлтийн мэдээлэл</h2>
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <input type="text" placeholder="Овог" value={customerInfo.lastName} onChange={(e) => setCustomerInfo({ ...customerInfo, lastName: e.target.value })} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                  <input type="text" placeholder="Нэр" value={customerInfo.firstName} onChange={(e) => setCustomerInfo({ ...customerInfo, firstName: e.target.value })} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
                 </div>
-              ))}
+                <input type="tel" placeholder="Утасны дугаар" value={customerInfo.phone} onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                <input type="email" placeholder="И-мэйл (заавал биш)" value={customerInfo.email} onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                <textarea placeholder="Хүргүүлэх хаяг" value={customerInfo.address} onChange={(e) => setCustomerInfo({ ...customerInfo, address: e.target.value })} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none" rows={2} />
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Continue Shopping */}
-          <Link
-            href="/s"
-            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-primary transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Худалдан авалтаа үргэлжлүүлэх
-          </Link>
+          {/* Step 2 — Төлбөр + И-Баримт */}
+          {step === 2 && (
+            <div className="space-y-5">
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
+                <h2 className="font-bold text-gray-900 mb-4">Төлбөрийн хэлбэр</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {paymentMethods.map((method) => {
+                    const active = selectedPayment === method.id;
+                    return (
+                      <button key={method.id} onClick={() => handleSelectPayment(method.id)}
+                        className={`relative flex items-center gap-3 p-4 rounded-2xl border text-left transition-all ${active ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'}`}>
+                        <BrandLogo id={method.id} />
+                        <span className="min-w-0">
+                          <span className="block text-sm font-semibold text-gray-900">{method.name}</span>
+                          <span className="block text-xs text-gray-400">{method.desc}</span>
+                        </span>
+                        <span className={`ml-auto w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${active ? 'border-primary bg-primary' : 'border-gray-300'}`}>
+                          {active && (<svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>)}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* QPay inline: QR + live bank list */}
+                {selectedPayment === 'qpay' && (
+                  <div className="mt-4 border-t border-gray-100 pt-4">
+                    {qpayLoading && (
+                      <div className="flex flex-col items-center py-8 gap-3">
+                        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                        <p className="text-sm text-gray-500">QPay нэхэмжлэл үүсгэж байна...</p>
+                      </div>
+                    )}
+                    {qpayPaid && (
+                      <div className="flex flex-col items-center py-8 gap-2 text-center">
+                        <div className="w-14 h-14 bg-green-50 text-green-600 rounded-full flex items-center justify-center">
+                          <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        </div>
+                        <p className="font-bold text-green-700">Төлбөр амжилттай!</p>
+                        <p className="text-xs text-gray-400">Захиалгыг баталгаажуулж байна...</p>
+                      </div>
+                    )}
+                    {!qpayLoading && !qpayPaid && qpayInvoice && (
+                      <div className="grid md:grid-cols-5 gap-5">
+                        <div className="md:col-span-2 flex flex-col items-center bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                          {qpayInvoice.qr_image && (
+                            <div className="bg-white p-2.5 rounded-xl shadow-sm ring-1 ring-gray-100">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={`data:image/png;base64,${qpayInvoice.qr_image}`} alt="QPay QR" className="w-40 h-40 object-contain rounded-lg" />
+                            </div>
+                          )}
+                          <p className="flex items-center gap-1.5 text-xs text-gray-500 mt-3">
+                            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                            Банкны аппаар QR уншуулна уу
+                          </p>
+                          <p className="text-sm font-bold text-primary mt-1">{formatPrice(finalTotal)}</p>
+                        </div>
+                        <div className="md:col-span-3">
+                          <p className="text-xs font-semibold text-gray-500 mb-2">Аппликейшнээр төлөх</p>
+                          {Array.isArray(qpayInvoice.urls) && qpayInvoice.urls.length > 0 ? (
+                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-52 overflow-y-auto pr-1">
+                              {qpayInvoice.urls.map((u: any, i: number) => (
+                                <a key={i} href={u.link} target="_blank" rel="noopener noreferrer" title={u.description ?? u.name}
+                                  className="flex flex-col items-center gap-1 p-2 rounded-xl border border-gray-200 hover:border-primary hover:bg-primary/5 transition-all">
+                                  {u.logo ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img src={u.logo} alt={u.name} className="w-8 h-8 rounded-lg object-contain" />
+                                  ) : (<span className="w-8 h-8 rounded-lg bg-gray-100" />)}
+                                  <span className="text-[9px] text-gray-600 text-center leading-tight line-clamp-2">{u.name}</span>
+                                </a>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-gray-400 italic">Банкны холбоос олдсонгүй.</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {!qpayLoading && !qpayInvoice && errorMessage && (
+                      <div className="text-center py-4">
+                        <button onClick={generateQpayInvoice} className="text-sm font-semibold text-primary hover:underline">Дахин оролдох</button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* И-Баримт inline */}
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
+                <h2 className="font-bold text-gray-900 mb-3">И-Баримт</h2>
+                <div className="grid grid-cols-2 gap-2 p-1 bg-gray-100 rounded-xl mb-3 max-w-xs">
+                  {([['person', 'Хувь хүн'], ['org', 'Байгууллага']] as const).map(([val, label]) => (
+                    <button key={val} onClick={() => setEbarimtType(val)}
+                      className={`py-2 rounded-lg text-sm font-semibold transition-all ${ebarimtType === val ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {ebarimtType === 'org' && (
+                  <div className="max-w-xs">
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Байгууллагын регистрийн дугаар</label>
+                    <input type="text" inputMode="numeric" maxLength={7} placeholder="Жишээ: 1234567" value={ebarimtTin}
+                      onChange={(e) => setEbarimtTin(e.target.value.replace(/\D/g, ''))}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm tracking-wide focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Order summary — shown first on mobile so CTA is visible */}
-        <div className="space-y-4 order-first lg:order-last">
-          {/* Customer Info */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-            <h2 className="font-bold text-gray-900 mb-4">Хүргэлтын мэдээлэл</h2>
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <input
-                  type="text"
-                  placeholder="Овог"
-                  value={customerInfo.lastName}
-                  onChange={(e) => setCustomerInfo({ ...customerInfo, lastName: e.target.value })}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary"
-                />
-                <input
-                  type="text"
-                  placeholder="Нэр"
-                  value={customerInfo.firstName}
-                  onChange={(e) => setCustomerInfo({ ...customerInfo, firstName: e.target.value })}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary"
-                />
-              </div>
-              <input
-                type="tel"
-                placeholder="Утасны дугаар"
-                value={customerInfo.phone}
-                onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary"
-              />
-              <input
-                type="email"
-                placeholder="И-мэйл (заавал биш)"
-                value={customerInfo.email}
-                onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary"
-              />
-              <textarea
-                placeholder="Хүргүүлэх хаяг"
-                value={customerInfo.address}
-                onChange={(e) => setCustomerInfo({ ...customerInfo, address: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary resize-none"
-                rows={2}
-              />
-            </div>
-          </div>
-
-          {/* Payment Methods */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-            <h2 className="font-bold text-gray-900 mb-4">Төлбөрийн хэрэгсэл</h2>
-            <div className="grid grid-cols-2 gap-2">
-              {paymentMethods.map((method) => (
-                <button
-                  key={method.id}
-                  onClick={() => setSelectedPayment(method.id)}
-                  className={`p-3 rounded-xl border text-left transition-all ${
-                    selectedPayment === method.id
-                      ? 'border-primary bg-red-50 ring-1 ring-primary'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">{method.icon}</span>
-                    <span className="text-sm font-medium">{method.name}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Summary */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-            <h2 className="font-bold text-gray-900 mb-4">Захиалгын мэдээлэл</h2>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between text-gray-600">
-                <span>Бараа ({items.reduce((s, i) => s + i.quantity, 0)}ш)</span>
-                <span>{formatPrice(total)}</span>
-              </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Хүргэлт</span>
-                <span>{shipping === 0 ? 'Үнэгүй' : formatPrice(shipping)}</span>
-              </div>
-              {shipping === 0 && (
-                <p className="text-xs text-green-600">500,000₮-с дээш захиалга хүргэлт үнэгүй</p>
+        {/* RIGHT: sticky summary */}
+        <div className="lg:sticky lg:top-6 space-y-3 order-first lg:order-last">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h2 className="font-bold text-gray-900 mb-4">Захиалгын дүн</h2>
+            <div className="space-y-2.5 text-sm">
+              <div className="flex justify-between text-gray-600"><span>Бараа ({items.reduce((s, i) => s + i.quantity, 0)}ш)</span><span className="font-medium text-gray-800">{formatPrice(total)}</span></div>
+              <div className="flex justify-between text-gray-600"><span>Хүргэлт</span><span className="font-medium text-gray-800">{shipping === 0 ? 'Үнэгүй' : formatPrice(shipping)}</span></div>
+              {shipping === 0 ? (
+                <p className="text-xs text-emerald-600">{threshold.toLocaleString('mn-MN')}₮-с дээш захиалгад хүргэлт үнэгүй</p>
+              ) : (
+                <p className="text-xs text-gray-400">{threshold.toLocaleString('mn-MN')}₮-с дээш захиалгад хүргэлт үнэгүй</p>
               )}
-              <div className="border-t border-gray-100 pt-2 mt-2">
-                <div className="flex justify-between font-bold text-lg">
-                  <span className="text-gray-900">Нийт төлбөр</span>
-                  <span className="text-primary">{formatPrice(finalTotal)}</span>
+              <div className="border-t border-gray-100 pt-3 mt-1">
+                <div className="flex justify-between items-baseline">
+                  <span className="font-bold text-gray-900">Нийт дүн</span>
+                  <span className="text-2xl font-black text-primary">{formatPrice(finalTotal)}</span>
                 </div>
               </div>
             </div>
 
             {!isLoggedIn() ? (
-              <Link
-                href="/account?redirect=/checkout"
-                className="w-full mt-4 py-3 rounded-xl font-bold text-sm bg-primary hover:bg-primary-dark text-white flex items-center justify-center gap-2 transition-all"
-              >
+              <Link href="/account?redirect=/checkout" className="w-full mt-5 py-3.5 rounded-xl font-bold text-sm bg-primary hover:bg-primary-dark text-white flex items-center justify-center gap-2 transition-all">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                 Нэвтэрч захиалах
               </Link>
             ) : (
-              <button
-                onClick={handlePayment}
-                disabled={!isFormValid}
-                className={`w-full mt-4 py-3 rounded-xl font-bold text-sm transition-all ${
-                  isFormValid
-                    ? 'bg-primary hover:bg-primary-dark text-white'
-                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                Төлбөр төлөх
-              </button>
+              <>
+                <button onClick={handleCta} disabled={!canAdvance || isProcessing}
+                  className={`w-full mt-5 py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${canAdvance && !isProcessing ? 'bg-primary hover:bg-primary-dark text-white shadow-lg shadow-primary/20' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
+                  {isProcessing ? 'Боловсруулж байна...' : ctaLabel}
+                  {!isProcessing && (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>)}
+                </button>
+                {step > 0 && (
+                  <button onClick={() => setStep(step - 1)} className="w-full mt-2 py-2.5 rounded-xl font-semibold text-sm text-gray-500 hover:bg-gray-50 transition-colors">Буцах</button>
+                )}
+                {!canAdvance && (
+                  <p className="text-center text-xs text-gray-400 mt-2">
+                    {step === 0 ? 'Сагсанд бараа нэмнэ үү' : step === 1 ? 'Мэдээллээ бүрэн бөглөнө үү' : !selectedPayment ? 'Төлбөрийн хэлбэр сонгоно уу' : 'Байгууллагын регистр оруулна уу'}
+                  </p>
+                )}
+              </>
+            )}
+            {errorMessage && (
+              <div className="mt-3 p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-xs font-semibold text-center leading-normal">{errorMessage}</div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Payment Modal */}
-      {showPaymentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md transition-all">
-          <div className="absolute inset-0 bg-black/40 transition-opacity" onClick={() => setShowPaymentModal(false)} />
-          <div className={`relative bg-white rounded-3xl shadow-2xl w-full p-6 border border-gray-50/50 transition-all duration-300 transform scale-100 ${
-            selectedPayment === 'qpay' && !qpayLoading && qpayInvoice ? 'max-w-2xl' : 'max-w-md'
-          }`}>
-            <button
-              onClick={() => setShowPaymentModal(false)}
-              className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 p-1.5 rounded-full transition-all active:scale-90"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            <h3 className="text-xl font-black text-gray-900 mb-5 tracking-tight">Төлбөр баталгаажуулах</h3>
-
-            {selectedPayment === 'qpay' && (
-              <div className="space-y-4">
-                {qpayLoading && (
-                  <div className="flex flex-col items-center py-12 gap-4">
-                    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                    <p className="text-sm font-bold text-gray-500 animate-pulse">QPay нэхэмжлэх үүсгэж байна...</p>
-                  </div>
-                )}
-                {qpayPaid && (
-                  <div className="flex flex-col items-center py-10 gap-3 text-center">
-                    <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center shadow-inner">
-                      <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <p className="font-black text-lg text-green-700">Төлбөр амжилттай!</p>
-                    <p className="text-xs text-gray-400 leading-relaxed">Түр хүлээнэ үү, захиалгыг баталгаажуулж байна...</p>
-                  </div>
-                )}
-                {!qpayLoading && !qpayPaid && qpayInvoice && (
-                  <div className="grid md:grid-cols-5 gap-6">
-                    {/* Left side: QR code */}
-                    <div className="md:col-span-2 flex flex-col items-center justify-center bg-gray-50 rounded-2xl p-5 border border-gray-100/80 shadow-inner">
-                      {qpayInvoice.qr_image && (
-                        <div className="relative group p-2.5 bg-white rounded-xl shadow-md border border-gray-100 flex items-center justify-center overflow-hidden">
-                          {/* Laser scanning line animation */}
-                          <div className="absolute top-2 left-2 right-2 h-0.5 bg-primary/75 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-[bounce_2s_infinite]" />
-                          <img
-                            src={`data:image/png;base64,${qpayInvoice.qr_image}`}
-                            alt="QPay QR"
-                            className="w-40 h-40 object-contain rounded-lg transition-transform duration-300 group-hover:scale-105"
-                          />
-                        </div>
-                      )}
-                      <p className="text-xs font-bold text-gray-700 mt-4 flex items-center gap-1.5">
-                        <span className="inline-block w-1.5 h-1.5 bg-red-500 rounded-full animate-ping" />
-                        QR код уншуулах
-                      </p>
-                      <p className="text-[10px] text-gray-400 mt-1 text-center leading-relaxed">
-                        Дурын банкны аппликейшн ашиглан уншуулна уу
-                      </p>
-                    </div>
-
-                    {/* Right side: Bank links */}
-                    <div className="md:col-span-3 flex flex-col justify-between min-h-[220px]">
-                      <div>
-                        <p className="text-xs font-bold text-gray-400 mb-2.5 uppercase tracking-wider">Аппликейшнээр төлөх:</p>
-                        {Array.isArray(qpayInvoice.urls) && qpayInvoice.urls.length > 0 ? (
-                          <div className="grid grid-cols-2 gap-2 max-h-[180px] overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-gray-200">
-                            {qpayInvoice.urls.map((u: any) => (
-                              <a
-                                key={u.name}
-                                href={u.link}
-                                className="flex items-center gap-2 p-2.5 rounded-xl border border-gray-100 hover:border-primary hover:bg-red-50/20 active:scale-95 transition-all text-xs font-bold text-gray-700 shadow-sm bg-white"
-                              >
-                                {u.logo ? (
-                                  <img src={u.logo} alt={u.name} className="w-5 h-5 rounded object-cover shadow-sm flex-shrink-0" />
-                                ) : (
-                                  <div className="w-5 h-5 bg-gray-100 rounded flex items-center justify-center text-[10px] flex-shrink-0">🏦</div>
-                                )}
-                                <span className="truncate">{u.description ?? u.name}</span>
-                              </a>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-xs text-gray-400 italic">Банкны холбоос олдсонгүй.</p>
-                        )}
-                      </div>
-                      <div className="mt-4 pt-3.5 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-gray-800">
-                        <span className="text-gray-500">Төлөх нийт дүн:</span>
-                        <span className="text-primary text-base font-black tracking-tight">{formatPrice(finalTotal)}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {!qpayLoading && !qpayInvoice && !errorMessage && (
-                  <div className="text-center py-10 text-gray-400 text-sm animate-pulse">QPay бэлтгэж байна...</div>
-                )}
-              </div>
-            )}
-
-            {selectedPayment === 'socialpay' && (
-              <div className="text-center py-6">
-                <div className="w-24 h-24 bg-gradient-to-br from-green-50 to-green-100 rounded-3xl mx-auto flex items-center justify-center mb-4 shadow-sm">
-                  <span className="text-5xl">📱</span>
-                </div>
-                <h4 className="font-bold text-gray-800">SocialPay апп-аар төлөх</h4>
-                <p className="text-xs text-gray-400 mt-1 max-w-[200px] mx-auto leading-relaxed">Та өөрийн утсанд ирсэн нэхэмжлэхийг баталгаажуулна уу.</p>
-                <div className="mt-5 p-3 bg-gray-50 rounded-2xl flex justify-between items-center text-xs font-bold px-4 max-w-[260px] mx-auto">
-                  <span className="text-gray-500">Төлөх дүн:</span>
-                  <span className="text-primary text-sm font-black">{formatPrice(finalTotal)}</span>
-                </div>
-              </div>
-            )}
-
-            {selectedPayment === 'monpay' && (
-              <div className="text-center py-6">
-                <div className="w-24 h-24 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-3xl mx-auto flex items-center justify-center mb-4 shadow-sm">
-                  <span className="text-5xl">💚</span>
-                </div>
-                <h4 className="font-bold text-gray-800">MonPay апп-аар төлөх</h4>
-                <p className="text-xs text-gray-400 mt-1 max-w-[200px] mx-auto leading-relaxed">Таны MonPay данснаас холбогдох дүн хасагдах болно.</p>
-                <div className="mt-5 p-3 bg-gray-50 rounded-2xl flex justify-between items-center text-xs font-bold px-4 max-w-[260px] mx-auto">
-                  <span className="text-gray-500">Төлөх дүн:</span>
-                  <span className="text-primary text-sm font-black">{formatPrice(finalTotal)}</span>
-                </div>
-              </div>
-            )}
-
-            {selectedPayment === 'cash' && (
-              <div className="text-center py-6">
-                <div className="w-24 h-24 bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl mx-auto flex items-center justify-center mb-4 shadow-sm">
-                  <span className="text-5xl">💵</span>
-                </div>
-                <h4 className="font-bold text-gray-800">Бэлэн мөнгөөр төлөх</h4>
-                <p className="text-xs text-gray-400 mt-1 max-w-[200px] mx-auto leading-relaxed">Бараа хүргэгдэн очих үед бэлнээр төлнө үү.</p>
-                <div className="mt-5 p-3 bg-gray-50 rounded-2xl flex justify-between items-center text-xs font-bold px-4 max-w-[260px] mx-auto">
-                  <span className="text-gray-500">Төлөх дүн:</span>
-                  <span className="text-primary text-sm font-black">{formatPrice(finalTotal)}</span>
-                </div>
-              </div>
-            )}
-
-            {selectedPayment === 'leasing' && (
-              <div className="space-y-4 py-2">
-                <div>
-                  <h4 className="font-bold text-gray-800">Лизинг сонгох</h4>
-                  <p className="text-xs text-gray-400 mt-0.5">Төлбөр төлөх хугацаагаа сонгоно уу:</p>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {['3 сар', '6 сар', '12 сар'].map((term) => (
-                    <button key={term} className="py-2.5 rounded-xl border border-gray-100 text-xs font-bold hover:border-primary hover:text-primary transition-all bg-white shadow-sm active:scale-95">
-                      {term}
-                    </button>
-                  ))}
-                </div>
-                <p className="text-[10px] text-gray-400 leading-normal bg-gray-50 p-2.5 rounded-xl">
-                  ⚠️ Лизингийн дэлгэрэнгүй мэдээлэл болон гэрээ байгуулах удирдамжийг авахыг хүсвэл <strong>7709 1155</strong> дугаарт холбогдоно уу.
-                </p>
-              </div>
-            )}
-
-            {['lendmn', 'pocket'].includes(selectedPayment) && (
-              <div className="text-center py-6">
-                <h4 className="font-bold text-gray-800 flex items-center justify-center gap-1.5">
-                  <span className="inline-block w-2 h-2 bg-amber-500 rounded-full animate-ping" />
-                  {paymentMethods.find((p) => p.id === selectedPayment)?.name} холбогдож байна
-                </h4>
-                <p className="text-xs text-gray-400 mt-1">Түр хүлээнэ үү...</p>
-                <div className="w-24 h-24 bg-gradient-to-br from-amber-50 to-amber-100 rounded-3xl mx-auto flex items-center justify-center mt-4 shadow-sm animate-pulse">
-                  <span className="text-5xl">⏳</span>
-                </div>
-              </div>
-            )}
-
-            {errorMessage && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-xs font-bold text-center leading-normal">
-                🚨 {errorMessage}
-              </div>
-            )}
-
-            {selectedPayment !== 'qpay' && (
-              <button
-                onClick={processPayment}
-                disabled={isProcessing}
-                className="w-full mt-6 py-3 rounded-2xl font-bold text-sm bg-primary hover:bg-primary-dark text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg active:scale-98"
-              >
-                {isProcessing ? 'Боловсруулж байна...' : 'Төлбөр баталгаажуулах'}
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Ebarimt Picker Modal */}
-      {showEbarimtPicker && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" />
-          <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
-            <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <span className="text-2xl">✅</span>
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-1">Төлбөр амжилттай!</h3>
-            <p className="text-sm text-gray-500 mb-5">И-Баримтын төрлөө сонгоно уу</p>
-
-            <div className="flex gap-3 mb-4">
-              <button
-                onClick={() => setEbarimtType('person')}
-                className={`flex-1 py-3 rounded-xl font-bold text-sm border-2 transition-all ${ebarimtType === 'person' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600'}`}
-              >
-                👤 Хувь хүн
-              </button>
-              <button
-                onClick={() => setEbarimtType('org')}
-                className={`flex-1 py-3 rounded-xl font-bold text-sm border-2 transition-all ${ebarimtType === 'org' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600'}`}
-              >
-                🏢 Байгууллага
-              </button>
-            </div>
-
-            {ebarimtType === 'org' && (
-              <input
-                type="text"
-                placeholder="Байгууллагын регистр (ТТД)"
-                value={ebarimtTin}
-                onChange={(e) => setEbarimtTin(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium mb-4 focus:outline-none focus:border-blue-400"
-              />
-            )}
-
-            {errorMessage && (
-              <div className="mb-3 p-2 bg-red-50 border border-red-100 text-red-600 rounded-xl text-xs font-bold">
-                🚨 {errorMessage}
-              </div>
-            )}
-
-            <button
-              onClick={async () => {
-                if (ebarimtType === 'org' && !ebarimtTin.trim()) {
-                  setErrorMessage('Байгууллагын регистр оруулна уу');
-                  return;
-                }
-                setEbarimtLoading(true);
-                setErrorMessage('');
-                await processPaymentWithMethod('qpay', qpayOrderNum, ebarimtType, ebarimtTin || undefined);
-                setEbarimtLoading(false);
-                // Only close if success (showSuccessModal will be true)
-              }}
-              disabled={ebarimtLoading}
-              className="w-full py-3 rounded-2xl font-bold text-sm bg-primary hover:bg-primary-dark text-white transition-all disabled:opacity-50 shadow-md"
-            >
-              {ebarimtLoading ? 'Түр хүлээнэ үү...' : 'Баталгаажуулах'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Success Modal */}
+      {/* Success Modal (keeps ebarimt display) */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50" />
           <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center max-h-[95vh] overflow-y-auto">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Захиалга амжилттай!</h3>
-            <p className="text-sm text-gray-600 mb-6">
-              Таны захиалгыг хүлээн авлаа. Бид удахгүй тантай холбогдох болно.
-            </p>
+            <p className="text-sm text-gray-600 mb-6">Таны захиалгыг хүлээн авлаа. Бид удахгүй тантай холбогдох болно.</p>
             <div className="bg-gray-50 rounded-xl p-4 mb-4">
               <p className="text-xs text-gray-500">Захиалгын дугаар</p>
               <p className="font-bold text-gray-900">#{successOrderNumber}</p>
             </div>
-
-            {/* Ebarimt Section */}
             {successOrder?.items?.[0]?.ebarimtBillId && (
               <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-5 mb-6 border border-emerald-100/50 text-left relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-100/20 rounded-full blur-xl -mr-6 -mt-6 pointer-events-none" />
-                
                 <div className="flex justify-between items-center text-xs font-bold text-emerald-800 mb-3 border-b border-emerald-100/40 pb-2">
                   <span className="flex items-center gap-1">🎫 Цахим төлбөрийн баримт</span>
-                  <span className="text-[10px] bg-emerald-600 text-white font-extrabold px-2 py-0.5 rounded-full shadow-sm">E-BARIMT</span>
+                  <span className="text-[10px] bg-emerald-600 text-white font-extrabold px-2 py-0.5 rounded-full">E-BARIMT</span>
                 </div>
-                
                 <div className="space-y-2 text-xs">
                   <div className="flex justify-between items-center">
                     <span className="text-emerald-700/80 font-medium">Сугалааны дугаар:</span>
-                    <span className="font-black text-emerald-950 tracking-wider text-sm bg-white px-2 py-0.5 rounded-md shadow-sm border border-emerald-100/20">{successOrder.items[0].ebarimtLottery}</span>
+                    <span className="font-black text-emerald-950 tracking-wider text-sm bg-white px-2 py-0.5 rounded-md">{successOrder.items[0].ebarimtLottery}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-emerald-700/80 font-medium">Билл-ийн № (DDTD):</span>
                     <span className="font-mono text-[11px] text-emerald-900 font-semibold select-all">{successOrder.items[0].ebarimtBillId}</span>
                   </div>
                 </div>
-
                 {successOrder.items[0].ebarimtQrData && (
-                  <div className="mt-4 p-3 bg-white rounded-xl flex flex-col items-center justify-center border border-emerald-100/30 shadow-sm transition-all hover:shadow-md">
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(successOrder.items[0].ebarimtQrData)}`}
-                      alt="Ebarimt QR"
-                      className="w-28 h-28 mix-blend-multiply"
-                    />
+                  <div className="mt-4 p-3 bg-white rounded-xl flex flex-col items-center border border-emerald-100/30">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(successOrder.items[0].ebarimtQrData)}`} alt="Ebarimt QR" className="w-28 h-28 mix-blend-multiply" />
                     <span className="text-[10px] text-emerald-600 font-semibold mt-2">QR код уншуулах боломжтой</span>
                   </div>
                 )}
               </div>
             )}
-
-            <Link
-              href="/"
-              onClick={() => {
-                setShowSuccessModal(false);
-                setSuccessOrder(null);
-              }}
-              className="inline-block w-full py-3 rounded-xl font-bold text-sm bg-primary hover:bg-primary-dark text-white transition-colors animate-pulse"
-            >
+            <Link href="/" onClick={() => { setShowSuccessModal(false); setSuccessOrder(null); }}
+              className="inline-block w-full py-3 rounded-xl font-bold text-sm bg-primary hover:bg-primary-dark text-white transition-colors">
               Нүүр хуудас руу буцах
             </Link>
           </div>
