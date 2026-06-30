@@ -94,7 +94,7 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
               Дууссан
             </span>
           ) : discountPct ? (
-            <span className="bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded leading-none shadow">
+            <span className="bg-primary text-white text-[10px] font-black px-1.5 py-0.5 rounded leading-none shadow">
               -{discountPct}%
             </span>
           ) : isNew ? (
