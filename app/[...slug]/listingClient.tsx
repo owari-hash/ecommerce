@@ -474,32 +474,6 @@ export default function CategoryListingClient({
     return list;
   }, [products, selectedStatuses, selectedBrands, sort]);
 
-  const ITEMS_PER_PAGE = 12;
-  const [currentPage, setCurrentPage] = useState(1);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedBrands, selectedStatuses, sort]);
-
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const paginatedProducts = useMemo(() => {
-    return filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-  }, [filtered, currentPage]);
-
-  const getPageNumbers = () => {
-    const pages: number[] = [];
-    const delta = 2;
-    const left = currentPage - delta;
-    const right = currentPage + delta;
-    for (let i = 1; i <= totalPages; i++) {
-      if (i === 1 || i === totalPages || (i >= left && i <= right)) {
-        pages.push(i);
-      } else if (pages[pages.length - 1] !== -1) {
-        pages.push(-1);
-      }
-    }
-    return pages;
-  };
 
 
   const activeBrandsList = useMemo(
@@ -520,7 +494,7 @@ export default function CategoryListingClient({
   };
 
   // Pagination over the filtered product list
-  const LIST_PAGE_SIZE = 12;
+  const LIST_PAGE_SIZE = 20;
   const [listPage, setListPage] = useState(1);
   useEffect(() => { setListPage(1); }, [filtered.length, sort]);
   const listPageCount = Math.ceil(filtered.length / LIST_PAGE_SIZE);
@@ -657,7 +631,7 @@ export default function CategoryListingClient({
         </section>
 
         <section aria-label="product list" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-          {filtered.map((p) => (
+          {paged.map((p) => (
             <Link
               key={p.id}
               href={tenantHref(`/product/${p.slug}`)}
@@ -825,6 +799,13 @@ export default function CategoryListingClient({
             </Link>
           ))}
         </section>
+
+        <Pagination
+          page={listPage}
+          pageCount={listPageCount}
+          onPage={(p) => { setListPage(p); if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          className="mt-8"
+        />
       </div>
 
       {/* Right Column - Comparison Panel - Sticky Right */}

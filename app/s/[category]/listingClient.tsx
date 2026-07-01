@@ -204,7 +204,7 @@ export default function CategoryListingClient({ category, products }: Props) {
     return list;
   }, [products, selectedBrands, sort]);
 
-  const ITEMS_PER_PAGE = 12;
+  const ITEMS_PER_PAGE = 20;
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
