@@ -20,6 +20,7 @@ type ProductVM = {
   oldPrice?: string;
   badge: string | null;
   image?: string;
+  images?: string[];
   stock?: number;
 };
 
@@ -500,6 +501,11 @@ export default function CategoryListingClient({
   const listPageCount = Math.ceil(filtered.length / LIST_PAGE_SIZE);
   const paged = filtered.slice((listPage - 1) * LIST_PAGE_SIZE, listPage * LIST_PAGE_SIZE);
 
+  // Quick-view ("easy view") modal state
+  const [quickView, setQuickView] = useState<ProductVM | null>(null);
+  const [quickImg, setQuickImg] = useState(0);
+  const quickImages = quickView ? (quickView.images && quickView.images.length ? quickView.images : (quickView.image ? [quickView.image] : [])) : [];
+
   return (
     <div className="flex gap-6">
       {/* Desktop Filters - Sticky Left */}
@@ -635,10 +641,24 @@ export default function CategoryListingClient({
             <Link
               key={p.id}
               href={tenantHref(`/product/${p.slug}`)}
-              className={`bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col justify-between ${p.stock === 0 ? 'opacity-90' : ''}`}
+              className={`group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col justify-between ${p.stock === 0 ? 'opacity-90' : ''}`}
             >
               <div>
                 <div className="relative h-36 md:h-44 bg-gray-50 flex items-center justify-center overflow-hidden">
+                  {/* Hover "easy view" */}
+                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/0 group-hover:bg-black/10 opacity-0 group-hover:opacity-100 transition-all">
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setQuickView(p); setQuickImg(0); }}
+                      className="flex items-center gap-1.5 bg-white/95 text-gray-800 text-[11px] font-bold px-3 py-1.5 rounded-full shadow hover:bg-white active:scale-95 transition-all"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      Хурдан үзэх
+                    </button>
+                  </div>
                   {p.image ? (
                     <Image
                       src={p.image}
@@ -962,6 +982,101 @@ export default function CategoryListingClient({
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50">
           <div className="bg-gray-900 text-white px-6 py-3 rounded-xl shadow-lg text-sm font-medium">
             {toastMsg}
+          </div>
+        </div>
+      )}
+
+      {/* Quick-view ("easy view") modal */}
+      {quickView && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+          onClick={() => setQuickView(null)}
+        >
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div
+            className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden grid sm:grid-cols-2 max-h-[92vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setQuickView(null)}
+              aria-label="Хаах"
+              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/90 text-gray-500 hover:text-gray-800 shadow flex items-center justify-center"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+
+            {/* Gallery */}
+            <div className="bg-gray-50 p-4 flex flex-col">
+              <div className="relative flex-1 min-h-[240px] rounded-xl overflow-hidden bg-white flex items-center justify-center">
+                {quickImages[quickImg] ? (
+                  <Image src={quickImages[quickImg]} alt={quickView.name} fill className="object-contain p-4" sizes="(max-width:640px) 100vw, 384px" unoptimized />
+                ) : (
+                  <span className="text-6xl opacity-30">{category.icon}</span>
+                )}
+              </div>
+              {quickImages.length > 1 && (
+                <div className="mt-3 flex gap-2 overflow-x-auto">
+                  {quickImages.map((img, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setQuickImg(i)}
+                      className={`relative w-14 h-14 shrink-0 rounded-lg overflow-hidden border-2 transition-colors ${i === quickImg ? 'border-primary' : 'border-gray-200 hover:border-gray-300'}`}
+                    >
+                      <Image src={img} alt={`${quickView.name} ${i + 1}`} fill className="object-cover" sizes="56px" unoptimized />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Info */}
+            <div className="p-5 sm:p-6 flex flex-col overflow-y-auto">
+              <div className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{quickView.brand}</div>
+              <h3 className="text-base font-bold text-gray-900 leading-snug mb-3">{quickView.name}</h3>
+              <div className="flex items-baseline gap-2 mb-3">
+                <span className="text-xl font-black text-primary">{quickView.price}</span>
+                {quickView.oldPrice && <span className="text-sm font-medium text-gray-400 line-through">{quickView.oldPrice}</span>}
+              </div>
+              {quickView.stock === 0 ? (
+                <p className="text-sm font-semibold text-gray-400 mb-4">Дууссан</p>
+              ) : (
+                <p className="text-xs text-emerald-600 mb-4 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  {typeof quickView.stock === 'number' ? `Үлдэгдэл: ${quickView.stock.toLocaleString('mn-MN')}ш` : 'Бэлэн байгаа'}
+                </p>
+              )}
+              <div className="mt-auto flex flex-col gap-2 pt-2">
+                <button
+                  type="button"
+                  disabled={quickView.stock === 0}
+                  onClick={() => {
+                    addToCart({
+                      id: quickView.id,
+                      slug: quickView.slug,
+                      name: quickView.name,
+                      price: parsePrice(quickView.price),
+                      oldPrice: quickView.oldPrice ? parsePrice(quickView.oldPrice) : undefined,
+                      icon: category.icon || '📦',
+                      brand: quickView.brand,
+                    });
+                    setToastMsg('Сагсанд нэмэгдлээ');
+                    setShowToast(true);
+                    setTimeout(() => setShowToast(false), 2500);
+                  }}
+                  className="w-full py-3 rounded-xl font-bold text-sm bg-primary hover:bg-primary-dark text-white transition-colors disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
+                >
+                  Сагсанд нэмэх
+                </button>
+                <Link
+                  href={tenantHref(`/product/${quickView.slug}`)}
+                  className="w-full py-3 rounded-xl font-bold text-sm border border-gray-200 text-gray-700 hover:border-primary hover:text-primary transition-colors text-center"
+                >
+                  Дэлгэрэнгүй харах
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       )}

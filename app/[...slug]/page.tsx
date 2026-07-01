@@ -199,6 +199,7 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
               oldPrice: p.salePrice ? formatPrice(p.price) : undefined,
               badge: p.featured ? 'Шинэ' : p.salePrice ? 'Хямдрал' : null,
               image: resolveUploadUrl(p.images?.[0]),
+              images: Array.isArray(p.images) ? p.images.map((im: string) => resolveUploadUrl(im)).filter(Boolean) : [],
               stock: p.stock ?? 0,
             }))}
             categories={categories}
