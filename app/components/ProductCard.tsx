@@ -185,7 +185,7 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
               Үлдэгдэл: {stock.toLocaleString('mn-MN')}ш
             </div>
           ) : (
-            <div className="text-[9px] md:text-[10px] font-bold mt-1 text-gray-400">Үлдэгдэлгүй</div>
+            <div className="text-[9px] md:text-[10px] font-bold mt-1 text-gray-400">Дууссан</div>
           )
         )}
       </div>
