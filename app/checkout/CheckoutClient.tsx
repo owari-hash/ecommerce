@@ -286,7 +286,7 @@ export default function CheckoutClient() {
   };
 
   const infoFilled = Boolean(
-    customerInfo.lastName && customerInfo.firstName && customerInfo.phone && customerInfo.address,
+    customerInfo.firstName && customerInfo.phone && customerInfo.address,
   );
   const orgTinOk = ebarimtType !== 'org' || ebarimtTin.trim().length > 0;
   const canAdvance =
