@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
-import { addToCart } from '../../lib/cartStore';
+import { useMemo, useState, useEffect } from 'react';
+import { addToCart, readCart, updateQuantity, removeFromCart } from '../../lib/cartStore';
 import { useTenantHref } from '../../lib/useTenantHref';
+import { useTenant } from '../../lib/TenantContext';
 
 type ProductVM = {
   id: string;
@@ -138,6 +139,8 @@ function parsePrice(price: string): number {
 
 export default function CategoryListingClient({ category, products }: Props) {
   const tenantHref = useTenantHref();
+  const { branding } = useTenant();
+  const primaryColor = branding?.primaryColor ?? '#D32F2F';
   const [brandQuery, setBrandQuery] = useState('');
   const [selectedBrands, setSelectedBrands] = useState<Record<string, boolean>>({});
   const [sections, setSections] = useState<{ status: boolean; brand: boolean; price: boolean }>({
@@ -149,6 +152,39 @@ export default function CategoryListingClient({ category, products }: Props) {
   const [sort, setSort] = useState<'default' | 'price_asc' | 'price_desc'>('default');
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
+
+  const [cartMap, setCartMap] = useState<Record<string, number>>({});
+
+  const syncCart = () => {
+    const items = readCart();
+    const map: Record<string, number> = {};
+    items.forEach((i) => {
+      map[i.id] = i.quantity;
+    });
+    setCartMap(map);
+  };
+
+  useEffect(() => {
+    syncCart();
+    window.addEventListener('cart:changed', syncCart);
+    return () => {
+      window.removeEventListener('cart:changed', syncCart);
+    };
+  }, []);
+
+  const handleIncrease = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    updateQuantity(id, (cartMap[id] ?? 0) + 1);
+  };
+
+  const handleDecrease = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const next = (cartMap[id] ?? 1) - 1;
+    if (next <= 0) removeFromCart(id);
+    else updateQuantity(id, next);
+  };
 
   const brands = useMemo(() => {
     const set = new Set(products.map((p) => p.brand));
@@ -167,6 +203,34 @@ export default function CategoryListingClient({ category, products }: Props) {
     }
     return list;
   }, [products, selectedBrands, sort]);
+
+  const ITEMS_PER_PAGE = 12;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedBrands, sort]);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginatedProducts = useMemo(() => {
+    return filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  }, [filtered, currentPage]);
+
+  const getPageNumbers = () => {
+    const pages: number[] = [];
+    const delta = 2;
+    const left = currentPage - delta;
+    const right = currentPage + delta;
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= left && i <= right)) {
+        pages.push(i);
+      } else if (pages[pages.length - 1] !== -1) {
+        pages.push(-1);
+      }
+    }
+    return pages;
+  };
+
 
   const activeBrands = useMemo(
     () => Object.keys(selectedBrands).filter((b) => selectedBrands[b]),
@@ -262,7 +326,7 @@ export default function CategoryListingClient({ category, products }: Props) {
         </section>
 
         <section aria-label="product list" className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filtered.map((p) => (
+          {paginatedProducts.map((p) => (
             <Link
               key={p.id}
               href={tenantHref(`/product/${p.slug}`)}
@@ -303,33 +367,115 @@ export default function CategoryListingClient({ category, products }: Props) {
                   <div className="text-base font-black text-gray-900">{p.price}</div>
                   {p.oldPrice && <div className="text-xs text-gray-400 line-through font-semibold">{p.oldPrice}</div>}
                 </div>
-                <button
-                  type="button"
-                  className="mt-3 w-full bg-primary hover:bg-primary-dark text-white text-xs font-black py-2 rounded-xl transition-colors"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const price = parsePrice(p.price);
-                    const oldPrice = p.oldPrice ? parsePrice(p.oldPrice) : undefined;
-                    addToCart({
-                      id: p.id,
-                      name: p.name,
-                      slug: p.slug,
-                      price,
-                      oldPrice,
-                      icon: category.icon,
-                      brand: p.brand,
-                    });
-                    setToastMsg(`${p.name} сагсанд нэмэгдлээ`);
-                    setShowToast(true);
-                    setTimeout(() => setShowToast(false), 2000);
-                  }}
-                >
-                  Сагсанд нэмэх
-                </button>
+                {cartMap[p.id] ? (
+                  <div
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    className="mt-3 flex items-center justify-between rounded-xl overflow-hidden border-2 text-sm font-black"
+                    style={{ borderColor: primaryColor }}
+                  >
+                    <button
+                      onClick={(e) => handleDecrease(e, p.id)}
+                      className="px-3 py-1.5 transition-colors hover:bg-gray-50 text-gray-700 text-base leading-none"
+                    >
+                      −
+                    </button>
+                    <span className="flex-1 text-center text-xs font-black" style={{ color: primaryColor }}>
+                      {cartMap[p.id]}
+                    </span>
+                    <button
+                      onClick={(e) => handleIncrease(e, p.id)}
+                      className="px-3 py-1.5 text-white transition-colors text-base leading-none"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      +
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="mt-3 w-full bg-primary hover:bg-primary-dark text-white text-xs font-black py-2 rounded-xl transition-colors"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const price = parsePrice(p.price);
+                      const oldPrice = p.oldPrice ? parsePrice(p.oldPrice) : undefined;
+                      addToCart({
+                        id: p.id,
+                        name: p.name,
+                        slug: p.slug,
+                        price,
+                        oldPrice,
+                        icon: category.icon,
+                        brand: p.brand,
+                      });
+                      setToastMsg(`${p.name} сагсанд нэмэгдлээ`);
+                      setShowToast(true);
+                      setTimeout(() => setShowToast(false), 2000);
+                    }}
+                  >
+                    Сагслах
+                  </button>
+                )}
               </div>
             </Link>
           ))}
         </section>
+
+        {totalPages > 1 && (
+          <div className="mt-8 mb-4 flex justify-center items-center gap-1.5 flex-wrap">
+            <button
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:pointer-events-none bg-white"
+            >
+              «
+            </button>
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:pointer-events-none bg-white"
+            >
+              ‹
+            </button>
+            {getPageNumbers().map((p, idx) => {
+              if (p === -1) {
+                return (
+                  <span key={`ell-${idx}`} className="w-9 h-9 flex items-center justify-center text-gray-400 text-xs font-bold select-none">
+                    ...
+                  </span>
+                );
+              }
+              const isCurrent = p === currentPage;
+              return (
+                <button
+                  key={p}
+                  onClick={() => setCurrentPage(p)}
+                  className={`w-9 h-9 rounded-xl text-xs font-bold transition-all border ${
+                    isCurrent
+                      ? 'text-white border-transparent shadow-md shadow-primary/20'
+                      : 'border-gray-200 text-gray-600 hover:border-primary hover:text-primary bg-white'
+                  }`}
+                  style={isCurrent ? { backgroundColor: primaryColor || '#4f46e5' } : undefined}
+                >
+                  {p}
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:pointer-events-none bg-white"
+            >
+              ›
+            </button>
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+              className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:pointer-events-none bg-white"
+            >
+              »
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Mobile filter drawer */}
