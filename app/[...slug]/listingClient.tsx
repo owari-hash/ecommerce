@@ -469,11 +469,37 @@ export default function CategoryListingClient({
       list = [...list].sort((a, b) => parseInt(b.price.replace(/\D/g, '')) - parseInt(a.price.replace(/\D/g, '')));
     }
 
-    // Always push out-of-stock to the bottom
     list = [...list.filter((p) => (p.stock ?? 1) > 0), ...list.filter((p) => (p.stock ?? 1) === 0)];
-
     return list;
   }, [products, selectedStatuses, selectedBrands, sort]);
+
+  const ITEMS_PER_PAGE = 12;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedBrands, selectedStatuses, sort]);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginatedProducts = useMemo(() => {
+    return filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  }, [filtered, currentPage]);
+
+  const getPageNumbers = () => {
+    const pages: number[] = [];
+    const delta = 2;
+    const left = currentPage - delta;
+    const right = currentPage + delta;
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= left && i <= right)) {
+        pages.push(i);
+      } else if (pages[pages.length - 1] !== -1) {
+        pages.push(-1);
+      }
+    }
+    return pages;
+  };
+
 
   const activeBrandsList = useMemo(
     () => Object.keys(selectedBrands).filter((b) => selectedBrands[b]),
@@ -623,7 +649,7 @@ export default function CategoryListingClient({
         </section>
 
         <section aria-label="product list" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-          {filtered.map((p) => (
+          {paginatedProducts.map((p) => (
             <Link
               key={p.id}
               href={tenantHref(`/product/${p.slug}`)}
@@ -786,6 +812,63 @@ export default function CategoryListingClient({
             </Link>
           ))}
         </section>
+
+        {totalPages > 1 && (
+          <div className="mt-8 mb-4 flex justify-center items-center gap-1.5 flex-wrap">
+            <button
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:pointer-events-none bg-white"
+            >
+              «
+            </button>
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:pointer-events-none bg-white"
+            >
+              ‹
+            </button>
+            {getPageNumbers().map((p, idx) => {
+              if (p === -1) {
+                return (
+                  <span key={`ell-${idx}`} className="w-9 h-9 flex items-center justify-center text-gray-400 text-xs font-bold select-none">
+                    ...
+                  </span>
+                );
+              }
+              const isCurrent = p === currentPage;
+              return (
+                <button
+                  key={p}
+                  onClick={() => setCurrentPage(p)}
+                  className={`w-9 h-9 rounded-xl text-xs font-bold transition-all border ${
+                    isCurrent
+                      ? 'text-white border-transparent shadow-md shadow-primary/20'
+                      : 'border-gray-200 text-gray-600 hover:border-primary hover:text-primary bg-white'
+                  }`}
+                  style={isCurrent ? { backgroundColor: primaryColor || '#4f46e5' } : undefined}
+                >
+                  {p}
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:pointer-events-none bg-white"
+            >
+              ›
+            </button>
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+              className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:pointer-events-none bg-white"
+            >
+              »
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Right Column - Comparison Panel - Sticky Right */}
