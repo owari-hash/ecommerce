@@ -320,7 +320,7 @@ export default function AccountClient() {
     e.preventDefault(); setError('');
     if (!regOtpCode || regOtpCode.length !== 6) { setError('6 оронтой OTP код оруулна уу'); return; }
     setLoading(true);
-    const result = await register({ phone: regPhone, email: `${regPhone}@phone.local`, password: regPassword, firstName: regPhone, lastName: '', otpCode: regOtpCode } as any);
+    const result = await register({ phone: regPhone, email: `${regPhone}@phone.local`, password: regPassword, firstName: '', lastName: '', otpCode: regOtpCode } as any);
     setLoading(false);
     if (result.success) {
       setUser(readAuth());
@@ -457,11 +457,11 @@ export default function AccountClient() {
                       { label: 'Овог', value: user.lastName },
                       { label: 'Нэр', value: user.firstName },
                       { label: 'Утасны дугаар', value: user.phone },
-                      { label: 'И-мэйл', value: user.email?.includes('@phone.local') ? '—' : user.email },
+                      { label: 'И-мэйл', value: user.email?.includes('@phone.local') ? '' : user.email },
                     ].map(f => (
                       <div key={f.label}>
                         <label className="block text-xs text-gray-400 mb-1">{f.label}</label>
-                        <div className="w-full border border-gray-100 rounded-xl px-3 py-2.5 text-sm bg-gray-50 text-gray-700">{f.value || '—'}</div>
+                        <div className="w-full border border-gray-100 rounded-xl px-3 py-2.5 text-sm bg-gray-50 text-gray-700">{f.value || ''}</div>
                       </div>
                     ))}
                   </div>

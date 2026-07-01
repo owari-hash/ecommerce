@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo, useState, useEffect } from 'react';
-import { addToCart } from '../lib/cartStore';
+import { addToCart, readCart, updateQuantity, removeFromCart } from '../lib/cartStore';
 import { useTenantHref } from '../lib/useTenantHref';
 import { useTenant } from '../lib/TenantContext';
 import { readCompare, toggleCompare, writeCompare } from '../lib/compareStore';
@@ -321,6 +321,7 @@ export default function CategoryListingClient({
   const tenantHref = useTenantHref();
   const { branding } = useTenant();
   const logoFallback = resolveLogoUrl(branding.logo);
+  const primaryColor = branding?.primaryColor ?? '#D32F2F';
   const [brandQuery, setBrandQuery] = useState('');
   const [selectedBrands, setSelectedBrands] = useState<Record<string, boolean>>({});
   const [selectedStatuses, setSelectedStatuses] = useState<Record<string, boolean>>({});
@@ -333,6 +334,39 @@ export default function CategoryListingClient({
   const [sort, setSort] = useState<'default' | 'price_asc' | 'price_desc'>('default');
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
+
+  const [cartMap, setCartMap] = useState<Record<string, number>>({});
+
+  const syncCart = () => {
+    const items = readCart();
+    const map: Record<string, number> = {};
+    items.forEach((i) => {
+      map[i.id] = i.quantity;
+    });
+    setCartMap(map);
+  };
+
+  useEffect(() => {
+    syncCart();
+    window.addEventListener('cart:changed', syncCart);
+    return () => {
+      window.removeEventListener('cart:changed', syncCart);
+    };
+  }, []);
+
+  const handleIncrease = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    updateQuantity(id, (cartMap[id] ?? 0) + 1);
+  };
+
+  const handleDecrease = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const next = (cartMap[id] ?? 1) - 1;
+    if (next <= 0) removeFromCart(id);
+    else updateQuantity(id, next);
+  };
 
   // Track compared product IDs
   const [compareIds, setCompareIds] = useState<Set<string>>(
@@ -693,35 +727,61 @@ export default function CategoryListingClient({
                   Харьцуулах
                 </button>
 
-                <button
-                  type="button"
-                  disabled={p.stock === 0}
-                  className={`mt-2 w-full text-xs md:text-xs font-black py-1.5 md:py-2 rounded-lg md:rounded-xl transition-colors ${
-                    p.stock === 0
-                      ? 'bg-gray-300 hover:bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-primary hover:bg-primary-dark text-white'
-                  }`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (p.stock === 0) return;
-                    const price = parsePrice(p.price);
-                    const oldPrice = p.oldPrice ? parsePrice(p.oldPrice) : undefined;
-                    addToCart({
-                      id: p.id,
-                      name: p.name,
-                      slug: p.slug,
-                      price,
-                      oldPrice,
-                      brand: p.brand,
-                      icon: category.icon,
-                    });
-                    setToastMsg('Бүтээгдэхүүнийг сагсанд нэмлээ!');
-                    setShowToast(true);
-                    setTimeout(() => setShowToast(false), 3000);
-                  }}
-                >
-                  {p.stock === 0 ? 'Дууссан' : 'Сагсанд нэмэх'}
-                </button>
+                {cartMap[p.id] ? (
+                  <div
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    className="mt-2 flex items-center justify-between rounded-xl overflow-hidden border-2 text-sm font-black"
+                    style={{ borderColor: primaryColor }}
+                  >
+                    <button
+                      onClick={(e) => handleDecrease(e, p.id)}
+                      className="px-3 py-1.5 transition-colors hover:bg-gray-50 text-gray-700 text-base leading-none"
+                    >
+                      −
+                    </button>
+                    <span className="flex-1 text-center text-xs font-black" style={{ color: primaryColor }}>
+                      {cartMap[p.id]}
+                    </span>
+                    <button
+                      onClick={(e) => handleIncrease(e, p.id)}
+                      className="px-3 py-1.5 text-white transition-colors text-base leading-none"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      +
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={p.stock === 0}
+                    className={`mt-2 w-full text-xs md:text-xs font-black py-1.5 md:py-2 rounded-lg md:rounded-xl transition-colors ${
+                      p.stock === 0
+                        ? 'bg-gray-300 hover:bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-primary hover:bg-primary-dark text-white'
+                    }`}
+                    style={{ backgroundColor: p.stock === 0 ? '#9ca3af' : undefined }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (p.stock === 0) return;
+                      const price = parsePrice(p.price);
+                      const oldPrice = p.oldPrice ? parsePrice(p.oldPrice) : undefined;
+                      addToCart({
+                        id: p.id,
+                        name: p.name,
+                        slug: p.slug,
+                        price,
+                        oldPrice,
+                        brand: p.brand,
+                        icon: category.icon,
+                      });
+                      setToastMsg('Бүтээгдэхүүнийг сагсанд нэмлээ!');
+                      setShowToast(true);
+                      setTimeout(() => setShowToast(false), 3000);
+                    }}
+                  >
+                    {p.stock === 0 ? 'Дууссан' : 'Сагслах'}
+                  </button>
+                )}
               </div>
             </Link>
           ))}

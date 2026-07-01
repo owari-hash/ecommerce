@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
-import { addToCart } from '../../lib/cartStore';
+import { useMemo, useState, useEffect } from 'react';
+import { addToCart, readCart, updateQuantity, removeFromCart } from '../../lib/cartStore';
 import { useTenantHref } from '../../lib/useTenantHref';
+import { useTenant } from '../../lib/TenantContext';
 
 type ProductVM = {
   id: string;
@@ -138,6 +139,8 @@ function parsePrice(price: string): number {
 
 export default function CategoryListingClient({ category, products }: Props) {
   const tenantHref = useTenantHref();
+  const { branding } = useTenant();
+  const primaryColor = branding?.primaryColor ?? '#D32F2F';
   const [brandQuery, setBrandQuery] = useState('');
   const [selectedBrands, setSelectedBrands] = useState<Record<string, boolean>>({});
   const [sections, setSections] = useState<{ status: boolean; brand: boolean; price: boolean }>({
@@ -149,6 +152,39 @@ export default function CategoryListingClient({ category, products }: Props) {
   const [sort, setSort] = useState<'default' | 'price_asc' | 'price_desc'>('default');
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
+
+  const [cartMap, setCartMap] = useState<Record<string, number>>({});
+
+  const syncCart = () => {
+    const items = readCart();
+    const map: Record<string, number> = {};
+    items.forEach((i) => {
+      map[i.id] = i.quantity;
+    });
+    setCartMap(map);
+  };
+
+  useEffect(() => {
+    syncCart();
+    window.addEventListener('cart:changed', syncCart);
+    return () => {
+      window.removeEventListener('cart:changed', syncCart);
+    };
+  }, []);
+
+  const handleIncrease = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    updateQuantity(id, (cartMap[id] ?? 0) + 1);
+  };
+
+  const handleDecrease = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const next = (cartMap[id] ?? 1) - 1;
+    if (next <= 0) removeFromCart(id);
+    else updateQuantity(id, next);
+  };
 
   const brands = useMemo(() => {
     const set = new Set(products.map((p) => p.brand));
@@ -303,29 +339,54 @@ export default function CategoryListingClient({ category, products }: Props) {
                   <div className="text-base font-black text-gray-900">{p.price}</div>
                   {p.oldPrice && <div className="text-xs text-gray-400 line-through font-semibold">{p.oldPrice}</div>}
                 </div>
-                <button
-                  type="button"
-                  className="mt-3 w-full bg-primary hover:bg-primary-dark text-white text-xs font-black py-2 rounded-xl transition-colors"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const price = parsePrice(p.price);
-                    const oldPrice = p.oldPrice ? parsePrice(p.oldPrice) : undefined;
-                    addToCart({
-                      id: p.id,
-                      name: p.name,
-                      slug: p.slug,
-                      price,
-                      oldPrice,
-                      icon: category.icon,
-                      brand: p.brand,
-                    });
-                    setToastMsg(`${p.name} сагсанд нэмэгдлээ`);
-                    setShowToast(true);
-                    setTimeout(() => setShowToast(false), 2000);
-                  }}
-                >
-                  Сагсанд нэмэх
-                </button>
+                {cartMap[p.id] ? (
+                  <div
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    className="mt-3 flex items-center justify-between rounded-xl overflow-hidden border-2 text-sm font-black"
+                    style={{ borderColor: primaryColor }}
+                  >
+                    <button
+                      onClick={(e) => handleDecrease(e, p.id)}
+                      className="px-3 py-1.5 transition-colors hover:bg-gray-50 text-gray-700 text-base leading-none"
+                    >
+                      −
+                    </button>
+                    <span className="flex-1 text-center text-xs font-black" style={{ color: primaryColor }}>
+                      {cartMap[p.id]}
+                    </span>
+                    <button
+                      onClick={(e) => handleIncrease(e, p.id)}
+                      className="px-3 py-1.5 text-white transition-colors text-base leading-none"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      +
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="mt-3 w-full bg-primary hover:bg-primary-dark text-white text-xs font-black py-2 rounded-xl transition-colors"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const price = parsePrice(p.price);
+                      const oldPrice = p.oldPrice ? parsePrice(p.oldPrice) : undefined;
+                      addToCart({
+                        id: p.id,
+                        name: p.name,
+                        slug: p.slug,
+                        price,
+                        oldPrice,
+                        icon: category.icon,
+                        brand: p.brand,
+                      });
+                      setToastMsg(`${p.name} сагсанд нэмэгдлээ`);
+                      setShowToast(true);
+                      setTimeout(() => setShowToast(false), 2000);
+                    }}
+                  >
+                    Сагслах
+                  </button>
+                )}
               </div>
             </Link>
           ))}

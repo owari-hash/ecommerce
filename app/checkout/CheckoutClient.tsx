@@ -53,13 +53,12 @@ function Stepper({ current }: { current: number }) {
             <div key={label} className="flex items-center gap-2 sm:gap-4 shrink-0">
               <div className="flex items-center gap-2">
                 <span
-                  className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold border-2 transition-colors shrink-0 leading-none ${
-                    done
-                      ? 'bg-primary text-white border-primary'
-                      : active
+                  className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold border-2 transition-colors shrink-0 leading-none ${done
+                    ? 'bg-primary text-white border-primary'
+                    : active
                       ? 'bg-white text-primary border-primary'
                       : 'bg-gray-100 text-gray-400 border-gray-200'
-                  }`}
+                    }`}
                 >
                   {done ? (
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -292,8 +291,8 @@ export default function CheckoutClient() {
   const orgTinOk = ebarimtType !== 'org' || ebarimtTin.trim().length > 0;
   const canAdvance =
     step === 0 ? items.length > 0
-    : step === 1 ? infoFilled
-    : Boolean(selectedPayment) && orgTinOk;
+      : step === 1 ? infoFilled
+        : Boolean(selectedPayment) && orgTinOk;
 
   if (items.length === 0 && !showSuccessModal) {
     return (
@@ -391,7 +390,6 @@ export default function CheckoutClient() {
               <h2 className="font-bold text-gray-900 mb-4">Хүргэлтийн мэдээлэл</h2>
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <input type="text" placeholder="Овог" value={customerInfo.lastName} onChange={(e) => setCustomerInfo({ ...customerInfo, lastName: e.target.value })} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
                   <input type="text" placeholder="Нэр" value={customerInfo.firstName} onChange={(e) => setCustomerInfo({ ...customerInfo, firstName: e.target.value })} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
                 </div>
                 <input type="tel" placeholder="Утасны дугаар" value={customerInfo.phone} onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
@@ -582,10 +580,12 @@ export default function CheckoutClient() {
                   <span className="text-[10px] bg-emerald-600 text-white font-extrabold px-2 py-0.5 rounded-full">E-BARIMT</span>
                 </div>
                 <div className="space-y-2 text-xs">
-                  <div className="flex justify-between items-center">
-                    <span className="text-emerald-700/80 font-medium">Сугалааны дугаар:</span>
-                    <span className="font-black text-emerald-950 tracking-wider text-sm bg-white px-2 py-0.5 rounded-md">{successOrder.items[0].ebarimtLottery}</span>
-                  </div>
+                  {successOrder.items[0].ebarimtLottery && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-emerald-700/80 font-medium">Сугалааны дугаар:</span>
+                      <span className="font-black text-emerald-950 tracking-wider text-sm bg-white px-2 py-0.5 rounded-md">{successOrder.items[0].ebarimtLottery}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center">
                     <span className="text-emerald-700/80 font-medium">Билл-ийн № (DDTD):</span>
                     <span className="font-mono text-[11px] text-emerald-900 font-semibold select-all">{successOrder.items[0].ebarimtBillId}</span>

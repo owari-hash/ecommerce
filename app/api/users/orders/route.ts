@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { fetchTenantConfig } from '../../../lib/tenantConfig'
 
 export async function GET(request: NextRequest) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
@@ -10,7 +11,13 @@ export async function GET(request: NextRequest) {
   }
 
   // Forward tenant context header if present
-  const tenantId = request.headers.get('x-tenant-id') ?? ''
+  let tenantId = request.headers.get('x-tenant-id') ?? ''
+  if (!tenantId) {
+    const host = request.headers.get('x-tenant-host') ?? request.headers.get('host') ?? 'localhost'
+    const tenantSlug = request.headers.get('x-tenant-slug')
+    const config = await fetchTenantConfig(host, tenantSlug)
+    tenantId = config?.tenantId ?? ''
+  }
 
   const res = await fetch(`${apiUrl}/api/users/orders`, {
     headers: {

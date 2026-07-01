@@ -35,16 +35,16 @@ type Order = {
 // ── Status helpers ─────────────────────────────────────────────────────────────
 
 const ORDER_STATUS: Record<string, { label: string; color: string; bg: string }> = {
-  pending:    { label: 'Хүлээгдэж байна', color: '#D97706', bg: '#FEF3C7' },
+  pending: { label: 'Хүлээгдэж байна', color: '#D97706', bg: '#FEF3C7' },
   processing: { label: 'Боловсруулж байна', color: '#2563EB', bg: '#DBEAFE' },
-  delivered:  { label: 'Хүргэгдсэн',       color: '#059669', bg: '#D1FAE5' },
-  cancelled:  { label: 'Цуцлагдсан',       color: '#DC2626', bg: '#FEE2E2' },
+  delivered: { label: 'Хүргэгдсэн', color: '#059669', bg: '#D1FAE5' },
+  cancelled: { label: 'Цуцлагдсан', color: '#DC2626', bg: '#FEE2E2' },
 };
 
 const PAYMENT_STATUS: Record<string, { label: string; color: string }> = {
-  pending:  { label: 'Төлөгдөөгүй', color: '#D97706' },
-  paid:     { label: 'Төлөгдсөн',   color: '#059669' },
-  refunded: { label: 'Буцаагдсан',  color: '#6B7280' },
+  pending: { label: 'Төлөгдөөгүй', color: '#D97706' },
+  paid: { label: 'Төлөгдсөн', color: '#059669' },
+  refunded: { label: 'Буцаагдсан', color: '#6B7280' },
 };
 
 function formatDate(iso: string) {
@@ -142,7 +142,6 @@ function OrderCard({ order, expanded, onToggle }: {
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Хүргэлтийн мэдээлэл</p>
             <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-600 space-y-1">
-              <p>{order.customerInfo.lastName} {order.customerInfo.firstName}</p>
               <p>{order.customerInfo.phone}</p>
               {order.customerInfo.email && <p>{order.customerInfo.email}</p>}
               <p>{order.customerInfo.address}</p>
