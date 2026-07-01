@@ -24,6 +24,7 @@ type EbarimtDoc = {
 const ORDER_STATUS: Record<string, { label: string; color: string; bg: string }> = {
   pending:    { label: 'Хүлээгдэж байна', color: '#D97706', bg: '#FEF3C7' },
   processing: { label: 'Боловсруулж байна', color: '#2563EB', bg: '#DBEAFE' },
+  shipped:    { label: 'Хүргэлтэд гарсан', color: '#7C3AED', bg: '#EDE9FE' },
   delivered:  { label: 'Хүргэгдсэн', color: '#059669', bg: '#D1FAE5' },
   cancelled:  { label: 'Цуцлагдсан', color: '#DC2626', bg: '#FEE2E2' },
 };

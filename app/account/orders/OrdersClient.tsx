@@ -34,20 +34,7 @@ type Order = {
   };
 };
 
-// ── Status helpers ─────────────────────────────────────────────────────────────
-
-const ORDER_STATUS: Record<string, { label: string; color: string; bg: string }> = {
-  pending:    { label: 'Хүлээгдэж байна', color: '#D97706', bg: '#FEF3C7' },
-  processing: { label: 'Боловсруулж байна', color: '#2563EB', bg: '#DBEAFE' },
-  delivered:  { label: 'Хүргэгдсэн',       color: '#059669', bg: '#D1FAE5' },
-  cancelled:  { label: 'Цуцлагдсан',       color: '#DC2626', bg: '#FEE2E2' },
-};
-
-const PAYMENT_STATUS: Record<string, { label: string; color: string }> = {
-  pending:  { label: 'Төлөгдөөгүй', color: '#D97706' },
-  paid:     { label: 'Төлөгдсөн',   color: '#059669' },
-  refunded: { label: 'Буцаагдсан',  color: '#6B7280' },
-};
+// ── Status helpers (ORDER_STATUS/PAYMENT_STATUS imported from lib/orderStatus) ──
 
 function formatDate(iso: string) {
   const d = new Date(iso);
