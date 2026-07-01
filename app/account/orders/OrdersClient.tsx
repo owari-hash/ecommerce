@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { readAuth, restoreSession, type User } from '../../lib/authStore';
+import { ORDER_STATUS, PAYMENT_STATUS } from '../../lib/orderStatus';
+import Pagination from '../../components/Pagination';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -33,19 +35,6 @@ type Order = {
 };
 
 // ── Status helpers ─────────────────────────────────────────────────────────────
-
-const ORDER_STATUS: Record<string, { label: string; color: string; bg: string }> = {
-  pending:    { label: 'Хүлээгдэж байна', color: '#D97706', bg: '#FEF3C7' },
-  processing: { label: 'Боловсруулж байна', color: '#2563EB', bg: '#DBEAFE' },
-  delivered:  { label: 'Хүргэгдсэн',       color: '#059669', bg: '#D1FAE5' },
-  cancelled:  { label: 'Цуцлагдсан',       color: '#DC2626', bg: '#FEE2E2' },
-};
-
-const PAYMENT_STATUS: Record<string, { label: string; color: string }> = {
-  pending:  { label: 'Төлөгдөөгүй', color: '#D97706' },
-  paid:     { label: 'Төлөгдсөн',   color: '#059669' },
-  refunded: { label: 'Буцаагдсан',  color: '#6B7280' },
-};
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -169,6 +158,8 @@ export default function OrdersClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 6;
 
   useEffect(() => {
     async function init() {
@@ -202,6 +193,7 @@ export default function OrdersClient() {
         return;
       }
       setOrders(Array.isArray(data.data) ? data.data : []);
+      setPage(1);
     } catch {
       setError('Сервертэй холбогдох боломжгүй байна');
     } finally {
@@ -317,7 +309,7 @@ export default function OrdersClient() {
                 </button>
               </div>
 
-              {orders.map((order) => (
+              {orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((order) => (
                 <OrderCard
                   key={order._id}
                   order={order}
@@ -325,6 +317,13 @@ export default function OrdersClient() {
                   onToggle={() => toggle(order._id)}
                 />
               ))}
+
+              <Pagination
+                page={page}
+                pageCount={Math.ceil(orders.length / PAGE_SIZE)}
+                onPage={(p) => { setPage(p); setExpandedId(null); }}
+                className="pt-4"
+              />
             </div>
           )}
         </div>

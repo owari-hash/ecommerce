@@ -9,6 +9,7 @@ import { useTenant } from '../lib/TenantContext';
 import { readCompare, toggleCompare, writeCompare } from '../lib/compareStore';
 import { formatPrice } from '../lib/mockCatalog';
 import { resolveUploadUrl } from '../lib/apiClient';
+import Pagination from '../components/Pagination';
 
 type ProductVM = {
   id: string;
@@ -458,6 +459,13 @@ export default function CategoryListingClient({
     setBrandQuery('');
   };
 
+  // Pagination over the filtered product list
+  const LIST_PAGE_SIZE = 12;
+  const [listPage, setListPage] = useState(1);
+  useEffect(() => { setListPage(1); }, [filtered.length, sort]);
+  const listPageCount = Math.ceil(filtered.length / LIST_PAGE_SIZE);
+  const paged = filtered.slice((listPage - 1) * LIST_PAGE_SIZE, listPage * LIST_PAGE_SIZE);
+
   return (
     <div className="flex gap-6">
       {/* Desktop Filters - Sticky Left */}
@@ -589,7 +597,7 @@ export default function CategoryListingClient({
         </section>
 
         <section aria-label="product list" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-          {filtered.map((p) => (
+          {paged.map((p) => (
             <Link
               key={p.id}
               href={tenantHref(`/product/${p.slug}`)}
@@ -654,6 +662,11 @@ export default function CategoryListingClient({
                   <div className="mt-1.5 md:mt-2 flex items-baseline gap-2">
                     <div className="text-sm md:text-base font-black text-gray-900">{p.price}</div>
                     {p.oldPrice && <div className="text-[10px] md:text-xs text-gray-400 line-through font-semibold">{p.oldPrice}</div>}
+                    {typeof p.stock === 'number' && p.stock > 0 && (
+                      <div className={`text-[9px] md:text-[10px] font-bold mt-0.5 ${p.stock <= 5 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                        Үлдэгдэл: {p.stock.toLocaleString('mn-MN')}ш
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -726,6 +739,13 @@ export default function CategoryListingClient({
             </Link>
           ))}
         </section>
+
+        <Pagination
+          page={listPage}
+          pageCount={listPageCount}
+          onPage={(p) => { setListPage(p); if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          className="mt-8"
+        />
       </div>
 
       {/* Right Column - Comparison Panel - Sticky Right */}

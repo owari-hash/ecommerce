@@ -179,6 +179,15 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
             <span className="text-[10px] font-medium text-gray-400 line-through">{formatPrice(oldPrice)}</span>
           )}
         </div>
+        {typeof stock === 'number' && (
+          stock > 0 ? (
+            <div className={`text-[9px] md:text-[10px] font-bold mt-1 ${stock <= 5 ? 'text-amber-600' : 'text-emerald-600'}`}>
+              Үлдэгдэл: {stock.toLocaleString('mn-MN')}ш
+            </div>
+          ) : (
+            <div className="text-[9px] md:text-[10px] font-bold mt-1 text-gray-400">Үлдэгдэлгүй</div>
+          )
+        )}
       </div>
 
       {/* Quick view modal (portal — kept out of the <a> DOM tree) */}
@@ -227,7 +236,8 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
                 <p className="text-sm font-semibold text-gray-400 mb-4">Дууссан</p>
               ) : (
                 <p className="text-xs text-emerald-600 mb-4 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Бэлэн байгаа
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  {typeof stock === 'number' ? `Үлдэгдэл: ${stock.toLocaleString('mn-MN')}ш` : 'Бэлэн байгаа'}
                 </p>
               )}
               <div className="mt-auto flex flex-col gap-2">
