@@ -23,12 +23,21 @@ export async function generateMetadata(): Promise<Metadata> {
   
   const config = await fetchTenantConfig(host, tenantSlug);
 
+  const tenantName = config?.branding?.name || "Дэлгүүр";
+  const logo = config?.branding?.logo || "/logo.png";
+
   return {
-    title: config?.branding?.name || "Дэлгүүр",
+    // `%s | <tenant>` so each route's own title shows with the tenant name;
+    // pages without a title fall back to just the tenant name.
+    title: {
+      default: tenantName,
+      template: `%s | ${tenantName}`,
+    },
     description: config?.branding?.description || "Бүх төрлийн бараа, хэрэгсэл",
     icons: {
-      icon: config?.branding?.logo || "/logo.png",
-      apple: config?.branding?.logo || "/logo.png",
+      icon: logo,
+      shortcut: logo,
+      apple: logo,
     },
   };
 }

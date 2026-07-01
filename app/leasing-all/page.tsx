@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Лизинг үйлчилгээ | Их Наяд Плаза' };
+export const metadata: Metadata = { title: 'Лизинг үйлчилгээ' };
 
 const banks = [
   { name: 'Хаан банк', logo: '🏦', rate: '0%', term: '12 сар хүртэл' },

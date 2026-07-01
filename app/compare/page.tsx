@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import { fetchTenantConfig } from '../lib/tenantConfig';
 import ComparePageClient from './pageClient';
 
-export const metadata: Metadata = { title: 'Харьцуулах | Их Наяд Плаза' };
+export const metadata: Metadata = { title: 'Харьцуулах' };
 
 export default async function ComparePage() {
   const headersList = await headers();

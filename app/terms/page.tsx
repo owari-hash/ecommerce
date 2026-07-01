@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Үйлчилгээний нөхцөл | Их Наяд Плаза' };
+export const metadata: Metadata = { title: 'Үйлчилгээний нөхцөл' };
 
 export default function TermsPage() {
   return (

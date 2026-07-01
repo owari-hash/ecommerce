@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Мэдээ | Их Наяд Плаза' };
+export const metadata: Metadata = { title: 'Мэдээ' };
 
 const news = [
   { id: 1, title: 'iPhone 15 Pro Max Монголд ирлээ', date: '2026-04-15', excerpt: 'Apple-ийн хамгийн шинэ iPhone 15 Pro Max Их Наяд Плаза дэлгүүрт ирлээ. Titanium бие, A17 Pro chip...', category: 'Шинэ бараа' },

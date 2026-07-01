@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Төлбөр буцаах хүсэлт | Их Наяд Плаза' };
+export const metadata: Metadata = { title: 'Төлбөр буцаах хүсэлт' };
 
 export default function RefundPage() {
   return (

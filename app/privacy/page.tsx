@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Нууцлалын баталгаа | Их Наяд Плаза' };
+export const metadata: Metadata = { title: 'Нууцлалын баталгаа' };
 
 export default function PrivacyPage() {
   return (

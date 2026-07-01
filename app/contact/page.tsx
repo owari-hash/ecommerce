@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Холбоо барих | Их Наяд Плаза' };
+export const metadata: Metadata = { title: 'Холбоо барих' };
 
 export default function ContactPage() {
   return (
