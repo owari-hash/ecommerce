@@ -69,10 +69,14 @@ function OrderCard({ order, expanded, onToggle }: {
         onClick={onToggle}
         className="w-full text-left px-5 py-4 flex flex-wrap items-center gap-3 hover:bg-gray-50 transition-colors"
       >
-        {/* Order number */}
+        {/* Order number + products */}
         <div className="flex-1 min-w-0">
           <p className="font-bold text-gray-900 text-sm truncate">#{order.orderNumber}</p>
-          <p className="text-xs text-gray-400 mt-0.5">{formatDate(order.createdAt)}</p>
+          <p className="text-xs text-gray-600 mt-0.5 truncate">
+            {order.items.map((it) => it.name).join(', ')}
+            {order.items.length > 1 && <span className="text-gray-400"> · {order.items.length} нэр төрөл</span>}
+          </p>
+          <p className="text-[11px] text-gray-400 mt-0.5">{formatDate(order.createdAt)}</p>
         </div>
 
         {/* Status badges */}
