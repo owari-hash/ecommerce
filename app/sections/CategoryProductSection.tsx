@@ -48,6 +48,18 @@ export default function CategoryProductSection() {
   const [addingId, setAddingId] = useState<string | null>(null)
   const [cartMap, setCartMap] = useState<Record<string, number>>({}) // id -> quantity
 
+  // Quick-view ("Хялбар үзэлт") modal
+  const [quickView, setQuickView] = useState<Product | null>(null)
+  const [quickImg, setQuickImg] = useState(0)
+  const quickImages = quickView ? (quickView.images || []).map((im) => resolveUploadUrl(im)).filter(Boolean) as string[] : []
+
+  useEffect(() => {
+    if (!quickView) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [quickView])
+
   function syncCart() {
     const items = readCart()
     const map: Record<string, number> = {}
@@ -188,6 +200,20 @@ export default function CategoryProductSection() {
                         Дууссан
                       </span>
                     )}
+                    {/* Hover "Хялбар үзэлт" */}
+                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/0 group-hover:bg-black/10 opacity-0 group-hover:opacity-100 transition-all">
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setQuickView(p); setQuickImg(0) }}
+                        className="flex items-center gap-1.5 bg-white/95 text-gray-800 text-[11px] font-bold px-3 py-1.5 rounded-full shadow hover:bg-white active:scale-95 transition-all"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        Хялбар үзэлт
+                      </button>
+                    </div>
                   </div>
                   <div className="p-2.5 flex flex-col flex-1">
                     <p className="text-[10px] text-gray-400 font-medium truncate">{brand}</p>
@@ -200,6 +226,11 @@ export default function CategoryProductSection() {
                         <span className="text-[10px] text-gray-400 line-through">{formatPrice(p.price)}</span>
                       )}
                     </div>
+                    {typeof p.stock === 'number' && p.stock > 0 && (
+                      <div className={`text-[9px] font-bold mt-1 ${p.stock <= 5 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                        Үлдэгдэл: {p.stock.toLocaleString('mn-MN')}ш
+                      </div>
+                    )}
                     {cartMap[p.id] ? (
                       <div
                         onClick={(e) => { e.preventDefault(); e.stopPropagation() }}
@@ -248,6 +279,87 @@ export default function CategoryProductSection() {
           </div>
         </section>
       ))}
+
+      {/* Quick-view ("Хялбар үзэлт") modal */}
+      {quickView && (() => {
+        const qv = quickView
+        const brand = (qv.brandId && qv.brandId !== 'br1') ? qv.brandId : tenantName
+        const displayPrice = qv.salePrice ?? qv.price
+        return (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" onClick={() => setQuickView(null)}>
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden grid sm:grid-cols-2 max-h-[92vh]" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                onClick={() => setQuickView(null)}
+                aria-label="Хаах"
+                className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/90 text-gray-500 hover:text-gray-800 shadow flex items-center justify-center"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+
+              {/* Gallery */}
+              <div className="bg-gray-50 p-4 flex flex-col">
+                <div className="relative flex-1 min-h-[240px] rounded-xl overflow-hidden bg-white flex items-center justify-center">
+                  {quickImages[quickImg] ? (
+                    <Image src={quickImages[quickImg]} alt={qv.name} fill className="object-contain p-4" sizes="(max-width:640px) 100vw, 384px" unoptimized />
+                  ) : (
+                    <span className="text-6xl opacity-30">📦</span>
+                  )}
+                </div>
+                {quickImages.length > 1 && (
+                  <div className="mt-3 flex gap-2 overflow-x-auto">
+                    {quickImages.map((img, i) => (
+                      <button key={i} type="button" onClick={() => setQuickImg(i)}
+                        className={`relative w-14 h-14 shrink-0 rounded-lg overflow-hidden border-2 transition-colors ${i === quickImg ? 'border-primary' : 'border-gray-200 hover:border-gray-300'}`}>
+                        <Image src={img} alt={`${qv.name} ${i + 1}`} fill className="object-cover" sizes="56px" unoptimized />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Info */}
+              <div className="p-5 sm:p-6 flex flex-col overflow-y-auto">
+                <div className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{brand}</div>
+                <h3 className="text-base font-bold text-gray-900 leading-snug mb-3">{qv.name}</h3>
+                <div className="flex items-baseline gap-2 mb-3">
+                  <span className="text-xl font-black" style={{ color: primaryColor }}>{formatPrice(displayPrice)}</span>
+                  {qv.salePrice && <span className="text-sm font-medium text-gray-400 line-through">{formatPrice(qv.price)}</span>}
+                </div>
+                {qv.stock === 0 ? (
+                  <p className="text-sm font-semibold text-gray-400 mb-4">Дууссан</p>
+                ) : (
+                  <p className="text-xs text-emerald-600 mb-4 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    {typeof qv.stock === 'number' ? `Үлдэгдэл: ${qv.stock.toLocaleString('mn-MN')}ш` : 'Бэлэн байгаа'}
+                  </p>
+                )}
+                <div className="mt-auto flex flex-col gap-2 pt-2">
+                  <button
+                    type="button"
+                    disabled={qv.stock === 0}
+                    onClick={() => {
+                      addToCart({ id: qv.id, slug: qv.slug || qv.id, name: qv.name, price: displayPrice, icon: '📦', brand })
+                      if (toastTimer.current) clearTimeout(toastTimer.current)
+                      setToast({ name: qv.name })
+                      toastTimer.current = setTimeout(() => setToast(null), 2500)
+                    }}
+                    className="w-full py-3 rounded-xl font-bold text-sm text-white transition-colors disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
+                    style={{ backgroundColor: qv.stock === 0 ? undefined : primaryColor }}
+                  >
+                    Сагсанд нэмэх
+                  </button>
+                  <Link href={tenantHref(`/product/${qv.slug || qv.id}`)} onClick={() => setQuickView(null)}
+                    className="w-full py-3 rounded-xl font-bold text-sm border border-gray-200 text-gray-700 hover:border-primary hover:text-primary transition-colors text-center">
+                    Дэлгэрэнгүй харах
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Toast — bottom-right on desktop, centered above bottom-nav on mobile */}
       {toast && (

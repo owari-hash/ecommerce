@@ -136,8 +136,8 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
           <button
             type="button"
             onClick={openQuickView}
-            aria-label="Хурдан үзэх"
-            title="Хурдан үзэх"
+            aria-label="Хялбар үзэлт"
+            title="Хялбар үзэлт"
             className="w-7 h-7 rounded-lg flex items-center justify-center shadow bg-white/90 text-gray-500 hover:text-primary opacity-0 group-hover:opacity-100 transition-all duration-150"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
