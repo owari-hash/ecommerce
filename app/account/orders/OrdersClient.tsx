@@ -17,7 +17,8 @@ type OrderItem = {
 };
 
 type Order = {
-  _id: string;
+  id?: string;
+  _id?: string;
   orderNumber: string;
   items: OrderItem[];
   total: number;
@@ -212,11 +213,10 @@ export default function OrdersClient() {
         <div className="space-y-2">
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4">
             <div className="flex items-center gap-3">
-              <div
-                className="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold"
-                style={{ background: 'var(--color-primary, #D32F2F)' }}
-              >
-                {user ? `${user.firstName[0]}${user.lastName[0]}` : '?'}
+              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-primary/10 text-primary ring-2 ring-primary/20 shrink-0">
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
               </div>
               <div>
                 <p className="font-bold text-gray-900">{user?.lastName} {user?.firstName}</p>
@@ -308,14 +308,17 @@ export default function OrdersClient() {
                 </button>
               </div>
 
-              {orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((order) => (
-                <OrderCard
-                  key={order._id}
-                  order={order}
-                  expanded={expandedId === order._id}
-                  onToggle={() => toggle(order._id)}
-                />
-              ))}
+              {orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((order) => {
+                const oid = (order.id ?? order._id) as string;
+                return (
+                  <OrderCard
+                    key={oid}
+                    order={order}
+                    expanded={expandedId === oid}
+                    onToggle={() => toggle(oid)}
+                  />
+                );
+              })}
 
               <Pagination
                 page={page}

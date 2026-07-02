@@ -7,16 +7,12 @@ import { readAuth, logout, loginWithPhone, register, sendRegisterOtp, verifyOtp,
 
 // ── Types ────────────────────────────────────────────────────────────────────-
 
-type OrderItem = { productId: string; name: string; quantity: number; price: number };
+type OrderItem = { productId: string; name: string; quantity: number; price: number; ebarimtBillId?: string; ebarimtLottery?: string; ebarimtQrData?: string };
 type Order = {
-  _id: string; orderNumber: string; items: OrderItem[];
+  id?: string; _id?: string; orderNumber: string; items: OrderItem[];
   total: number; paymentMethod: string; paymentStatus: string;
   orderStatus: string; createdAt: string;
   customerInfo: { firstName: string; lastName: string; phone: string; email?: string; address: string };
-};
-type EbarimtDoc = {
-  billId: string; lottery: string; qrData: string;
-  totalAmount: number; totalVAT: number; type: string;
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -49,61 +45,36 @@ function Spinner() {
 }
 
 // ── EbarimtBadge ─────────────────────────────────────────────────────────────
-function EbarimtBadge({ orderNumber }: { orderNumber: string }) {
-  const [data, setData] = useState<EbarimtDoc | null>(null);
-  const [loading, setLoading] = useState(false);
+// Renders ebarimt straight from the order item (no authed fetch) — the order
+// already carries billId / lottery / QR, so this works even if the session
+// cookie has expired.
+function EbarimtBadge({ item }: { item: OrderItem }) {
   const [open, setOpen] = useState(false);
-  const [err, setErr] = useState('');
-
-  async function load() {
-    if (open) { setOpen(false); return; }
-    if (data || err) { setOpen(true); return; }
-    setLoading(true);
-    setErr('');
-    try {
-      const res = await fetchWithAuth(`/api/users/ebarimt/${orderNumber}`);
-      const json = await res.json();
-      if (res.ok) {
-        setData(json);
-      } else {
-        setErr(json.error ?? 'И-баримт олдсонгүй');
-      }
-    } catch {
-      setErr('Холбогдох боломжгүй байна');
-    } finally {
-      setLoading(false);
-      setOpen(true);
-    }
-  }
 
   return (
     <div>
       <button
-        onClick={load}
+        onClick={() => setOpen((o) => !o)}
         className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
       >
-        {loading ? <Spinner /> : <span>🧾</span>}
+        <span>🧾</span>
         {open ? 'Хаах' : 'И-Баримт харах'}
       </button>
-      {open && err && (
-        <div className="mt-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-500">{err}</div>
-      )}
-      {open && data && (
+      {open && (
         <div className="mt-2 bg-emerald-50 border border-emerald-200 rounded-xl p-4 space-y-2 text-sm">
           <div className="flex items-center justify-between">
             <span className="font-bold text-emerald-800">И-Баримт</span>
-            <span className="text-xs text-emerald-600">{data.type === 'B2B_RECEIPT' ? 'Байгууллага' : 'Хувь хүн'}</span>
+            <span className="text-[10px] bg-emerald-600 text-white font-extrabold px-2 py-0.5 rounded-full">E-BARIMT</span>
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div><span className="text-gray-500">ДДТД:</span><br/><span className="font-mono font-semibold text-gray-800 break-all">{data.billId}</span></div>
-            {data.lottery && <div><span className="text-gray-500">Сугалаа:</span><br/><span className="font-bold text-emerald-700 text-base">{data.lottery}</span></div>}
-            <div><span className="text-gray-500">Нийт дүн:</span><br/><span className="font-semibold">{fmtPrice(data.totalAmount)}</span></div>
-            {data.totalVAT > 0 && <div><span className="text-gray-500">НӨАТ:</span><br/><span className="font-semibold">{fmtPrice(data.totalVAT)}</span></div>}
+            <div><span className="text-gray-500">ДДТД:</span><br/><span className="font-mono font-semibold text-gray-800 break-all">{item.ebarimtBillId}</span></div>
+            {item.ebarimtLottery && <div><span className="text-gray-500">Сугалаа:</span><br/><span className="font-bold text-emerald-700 text-base">{item.ebarimtLottery}</span></div>}
           </div>
-          {data.qrData && (
+          {item.ebarimtQrData && (
             <div className="text-center pt-1">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(data.qrData)}`}
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(item.ebarimtQrData)}`}
                 alt="Ebarimt QR"
                 className="mx-auto rounded-lg border border-emerald-200"
                 width={120} height={120}
@@ -170,7 +141,7 @@ function OrderCard({ order, expanded, onToggle }: { order: Order; expanded: bool
 
           <div className="flex items-center justify-between">
             <span className="text-xs text-gray-500">Төлбөр: <span className="font-medium text-gray-700">{order.paymentMethod}</span></span>
-            {order.paymentStatus === 'paid' && <EbarimtBadge orderNumber={order.orderNumber} />}
+            {order.items?.[0]?.ebarimtBillId && <EbarimtBadge item={order.items[0]} />}
           </div>
         </div>
       )}
@@ -383,8 +354,10 @@ export default function AccountClient() {
           <aside className="space-y-3">
             {/* Avatar card */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 flex sm:flex-col items-center sm:text-center gap-3">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-primary/30">
-                {initials}
+              <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center shadow-inner ring-2 ring-primary/20">
+                <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
               </div>
               <div>
                 <p className="font-bold text-gray-900">{displayName || user.phone}</p>
@@ -542,13 +515,16 @@ export default function AccountClient() {
                 {!ordersLoading && !ordersError && orders.length > 0 && (
                   <div className="space-y-3">
                     <p className="text-xs text-gray-400">Нийт <span className="font-bold text-gray-700">{orders.length}</span> захиалга</p>
-                    {orders.map(order => (
-                      <OrderCard
-                        key={order._id} order={order}
-                        expanded={expandedId === order._id}
-                        onToggle={() => setExpandedId(p => p === order._id ? null : order._id)}
-                      />
-                    ))}
+                    {orders.map(order => {
+                      const oid = (order.id ?? order._id ?? '') as string;
+                      return (
+                        <OrderCard
+                          key={oid} order={order}
+                          expanded={expandedId === oid}
+                          onToggle={() => setExpandedId(p => p === oid ? null : oid)}
+                        />
+                      );
+                    })}
                   </div>
                 )}
               </div>
