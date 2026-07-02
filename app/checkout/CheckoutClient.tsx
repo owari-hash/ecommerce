@@ -102,6 +102,32 @@ export default function CheckoutClient() {
   // И-Баримт inline
   const [ebarimtType, setEbarimtType] = useState<'person' | 'org'>('person');
   const [ebarimtTin, setEbarimtTin] = useState<string>('');
+  const [ebarimtOrgName, setEbarimtOrgName] = useState<string>('');
+
+  // Debounce register lookup
+  useEffect(() => {
+    let t: any = null;
+    if (ebarimtType === 'org' && ebarimtTin && ebarimtTin.length === 7) {
+      t = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/ebarimt/resolve?regNo=${encodeURIComponent(ebarimtTin)}`);
+          if (!res.ok) return;
+          const j = await res.json();
+          if (j?.found && j.tin) {
+            setEbarimtTin(String(j.tin));
+            if (j.info && j.info.name) setEbarimtOrgName(j.info.name);
+          } else {
+            setEbarimtOrgName('');
+          }
+        } catch (e) {
+          // ignore
+        }
+      }, 700);
+    } else {
+      setEbarimtOrgName('');
+    }
+    return () => clearTimeout(t);
+  }, [ebarimtType, ebarimtTin]);
 
   const qpayPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -442,6 +468,9 @@ export default function CheckoutClient() {
                     <input type="text" inputMode="numeric" maxLength={7} placeholder="Жишээ: 1234567" value={ebarimtTin}
                       onChange={(e) => setEbarimtTin(e.target.value.replace(/\D/g, ''))}
                       className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm tracking-wide focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                    {ebarimtOrgName && (
+                      <div className="mt-2 text-xs text-gray-600">Регистр нэр: <span className="font-semibold text-gray-800">{ebarimtOrgName}</span></div>
+                    )}
                   </div>
                 )}
               </div>
