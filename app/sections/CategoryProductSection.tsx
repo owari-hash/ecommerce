@@ -259,7 +259,7 @@ function CategoryRow({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function CategoryProductSection() {
+export default function CategoryProductSection({ categoryId }: { categoryId?: string }) {
   const { tenantId, branding } = useTenant()
   const tenantHref = useTenantHref()
   const tenantName = branding?.name ?? ''
@@ -329,12 +329,19 @@ export default function CategoryProductSection() {
       fetch(`/api/products/public?tenantId=${tenantId}`).then((r) => r.json()),
     ])
       .then(([catBody, prodBody]) => {
-        if (catBody?.data) setCategories(catBody.data.filter((c: Category) => c.status === 'active' && !c.parentId))
+        if (catBody?.data) {
+          const allCats = catBody.data.filter((c: Category) => c.status === 'active' && !c.parentId)
+          if (categoryId) {
+            setCategories(allCats.filter((c: Category) => c.id === categoryId))
+          } else {
+            setCategories(allCats)
+          }
+        }
         if (prodBody?.data) setProducts(prodBody.data.filter((p: Product) => p.status === 'active' || !p.status))
       })
       .catch(console.error)
       .finally(() => setLoading(false))
-  }, [tenantId])
+  }, [tenantId, categoryId])
 
   if (loading) {
     return (
