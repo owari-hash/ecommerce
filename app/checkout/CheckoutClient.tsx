@@ -113,9 +113,12 @@ export default function CheckoutClient() {
           const res = await fetch(`/api/ebarimt/resolve?regNo=${encodeURIComponent(ebarimtTin)}`);
           if (!res.ok) return;
           const j = await res.json();
-          if (j?.found && j.tin) {
-            setEbarimtTin(String(j.tin));
-            if (j.info && j.info.name) setEbarimtOrgName(j.info.name);
+          if (j?.found) {
+            if (j.info && j.info.name) {
+              setEbarimtOrgName(j.info.name);
+            } else {
+              setEbarimtOrgName('Байгууллага олдсонгүй');
+            }
           } else {
             setEbarimtOrgName('');
           }
