@@ -103,11 +103,13 @@ export default function CheckoutClient() {
   const [ebarimtType, setEbarimtType] = useState<'person' | 'org'>('person');
   const [ebarimtTin, setEbarimtTin] = useState<string>('');
   const [ebarimtOrgName, setEbarimtOrgName] = useState<string>('');
+  const [ebarimtLoading, setEbarimtLoading] = useState<boolean>(false);
 
   // Debounce register lookup
   useEffect(() => {
     let t: any = null;
     if (ebarimtType === 'org' && ebarimtTin && ebarimtTin.length === 7) {
+      setEbarimtLoading(true);
       t = setTimeout(async () => {
         try {
           const res = await fetch(`/api/ebarimt/resolve?regNo=${encodeURIComponent(ebarimtTin)}`);
@@ -124,10 +126,13 @@ export default function CheckoutClient() {
           }
         } catch (e) {
           // ignore
+        } finally {
+          setEbarimtLoading(false);
         }
       }, 700);
     } else {
       setEbarimtOrgName('');
+      setEbarimtLoading(false);
     }
     return () => clearTimeout(t);
   }, [ebarimtType, ebarimtTin]);
@@ -471,8 +476,14 @@ export default function CheckoutClient() {
                     <input type="text" inputMode="numeric" maxLength={7} placeholder="Жишээ: 1234567" value={ebarimtTin}
                       onChange={(e) => setEbarimtTin(e.target.value.replace(/\D/g, ''))}
                       className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm tracking-wide focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
-                    {ebarimtOrgName && (
-                      <div className="mt-2 text-xs text-gray-600">Регистр нэр: <span className="font-semibold text-gray-800">{ebarimtOrgName}</span></div>
+                    {ebarimtLoading && (
+                      <div className="mt-2 text-xs text-gray-500 flex items-center gap-1.5">
+                        <div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        <span>Хайж байна...</span>
+                      </div>
+                    )}
+                    {!ebarimtLoading && ebarimtOrgName && (
+                      <div className="mt-2 text-xs text-gray-600">Байгууллагын нэр: <span className="font-semibold text-gray-800">{ebarimtOrgName}</span></div>
                     )}
                   </div>
                 )}
