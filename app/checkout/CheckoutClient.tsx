@@ -102,6 +102,40 @@ export default function CheckoutClient() {
   // И-Баримт inline
   const [ebarimtType, setEbarimtType] = useState<'person' | 'org'>('person');
   const [ebarimtTin, setEbarimtTin] = useState<string>('');
+  const [ebarimtOrgName, setEbarimtOrgName] = useState<string>('');
+  const [ebarimtLoading, setEbarimtLoading] = useState<boolean>(false);
+
+  // Debounce register lookup
+  useEffect(() => {
+    let t: any = null;
+    if (ebarimtType === 'org' && ebarimtTin && ebarimtTin.length === 7) {
+      setEbarimtLoading(true);
+      t = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/ebarimt/resolve?regNo=${encodeURIComponent(ebarimtTin)}`);
+          if (!res.ok) return;
+          const j = await res.json();
+          if (j?.found) {
+            if (j.info && j.info.name) {
+              setEbarimtOrgName(j.info.name);
+            } else {
+              setEbarimtOrgName('Байгууллага олдсонгүй');
+            }
+          } else {
+            setEbarimtOrgName('');
+          }
+        } catch (e) {
+          // ignore
+        } finally {
+          setEbarimtLoading(false);
+        }
+      }, 700);
+    } else {
+      setEbarimtOrgName('');
+      setEbarimtLoading(false);
+    }
+    return () => clearTimeout(t);
+  }, [ebarimtType, ebarimtTin]);
 
   const qpayPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -130,7 +164,6 @@ export default function CheckoutClient() {
           lastName: user.lastName ?? '',
           firstName: user.firstName ?? '',
           phone: user.phone ?? '',
-          email: user.email ?? '',
         }));
       }
       setAuthChecked(true);
@@ -290,8 +323,8 @@ export default function CheckoutClient() {
   const orgTinOk = ebarimtType !== 'org' || ebarimtTin.trim().length > 0;
   const canAdvance =
     step === 0 ? items.length > 0
-      : step === 1 ? infoFilled
-        : Boolean(selectedPayment) && orgTinOk;
+      : step === 1 ? infoFilled && orgTinOk
+        : Boolean(selectedPayment);
 
   if (items.length === 0 && !showSuccessModal) {
     return (
@@ -425,6 +458,36 @@ export default function CheckoutClient() {
                     className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm bg-gray-50/60 resize-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white transition-colors" />
                 </div>
               </div>
+
+              {/* И-Баримт */}
+              <div className="border-t border-gray-100 pt-5 mt-2">
+                <h3 className="font-bold text-gray-900 mb-3">И-Баримт</h3>
+                <div className="grid grid-cols-2 gap-2 p-1 bg-gray-100 rounded-xl mb-3 max-w-xs">
+                  {([['person', 'Хувь хүн'], ['org', 'Байгууллага']] as const).map(([val, label]) => (
+                    <button key={val} onClick={() => setEbarimtType(val)}
+                      className={`py-2 rounded-lg text-sm font-semibold transition-all ${ebarimtType === val ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {ebarimtType === 'org' && (
+                  <div className="max-w-xs">
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Байгууллагын регистрийн дугаар <span className="text-primary">*</span></label>
+                    <input type="text" inputMode="numeric" maxLength={7} placeholder="Жишээ: 1234567" value={ebarimtTin}
+                      onChange={(e) => setEbarimtTin(e.target.value.replace(/\D/g, ''))}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm tracking-wide focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                    {ebarimtLoading && (
+                      <div className="mt-2 text-xs text-gray-500 flex items-center gap-1.5">
+                        <div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        <span>Хайж байна...</span>
+                      </div>
+                    )}
+                    {!ebarimtLoading && ebarimtOrgName && (
+                      <div className="mt-2 text-xs text-gray-600">Байгууллагын нэр: <span className="font-semibold text-gray-800">{ebarimtOrgName}</span></div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -515,26 +578,6 @@ export default function CheckoutClient() {
                 )}
               </div>
 
-              {/* И-Баримт inline */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
-                <h2 className="font-bold text-gray-900 mb-3">И-Баримт</h2>
-                <div className="grid grid-cols-2 gap-2 p-1 bg-gray-100 rounded-xl mb-3 max-w-xs">
-                  {([['person', 'Хувь хүн'], ['org', 'Байгууллага']] as const).map(([val, label]) => (
-                    <button key={val} onClick={() => setEbarimtType(val)}
-                      className={`py-2 rounded-lg text-sm font-semibold transition-all ${ebarimtType === val ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                {ebarimtType === 'org' && (
-                  <div className="max-w-xs">
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Байгууллагын регистрийн дугаар</label>
-                    <input type="text" inputMode="numeric" maxLength={7} placeholder="Жишээ: 1234567" value={ebarimtTin}
-                      onChange={(e) => setEbarimtTin(e.target.value.replace(/\D/g, ''))}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm tracking-wide focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
-                  </div>
-                )}
-              </div>
             </div>
           )}
         </div>
@@ -589,7 +632,7 @@ export default function CheckoutClient() {
                 )}
                 {!canAdvance && (
                   <p className="text-center text-xs text-gray-400 mt-2">
-                    {step === 0 ? 'Сагсанд бараа нэмнэ үү' : step === 1 ? 'Мэдээллээ бүрэн бөглөнө үү' : !selectedPayment ? 'Төлбөрийн хэлбэр сонгоно уу' : 'Байгууллагын регистр оруулна уу'}
+                    {step === 0 ? 'Сагсанд бараа нэмнэ үү' : step === 1 ? (!infoFilled ? 'Мэдээллээ бүрэн бөглөнө үү' : 'Байгууллагын регистр оруулна уу') : 'Төлбөрийн хэлбэр сонгоно уу'}
                   </p>
                 )}
               </>

@@ -203,7 +203,7 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 shadow-md">
+    <header className="fixed top-0 left-0 right-0 w-full z-50 shadow-md">
       {/* Top Bar – hidden on mobile */}
       <div className="hidden sm:block bg-[#0a1628] text-white text-xs py-2">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">

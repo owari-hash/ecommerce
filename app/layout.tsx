@@ -135,6 +135,8 @@ export default async function RootLayout({
         <TenantProvider config={config}>
           <NavigationProgress />
           <Header />
+          {/* Spacer to offset fixed header height: ~60px mobile, ~132px desktop */}
+          <div className="h-[60px] sm:h-[132px] shrink-0" aria-hidden="true" />
           <main className="flex-1 pb-24 md:pb-0">{children}</main>
           <Footer />
           <MobileBottomNav />

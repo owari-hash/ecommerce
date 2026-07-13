@@ -140,7 +140,7 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
           <div className="text-7xl mb-4 opacity-40">📦</div>
           <h2 className="text-xl font-bold text-gray-700 mb-2">{brandName} брэндийн бараанууд</h2>
-          <p className="text-gray-400 mb-6 text-sm">Одоогоар бараа байхгүй байна.</p>
+          <p className="text-gray-400 mb-6 text-sm">Одоогоор бараа байхгүй байна.</p>
           <Link href={`/brands${tenantQs}`} className="inline-block font-bold px-8 py-3 rounded-xl transition-colors text-white" style={{ backgroundColor: primaryColor }}>
             Бүх брэнд харах
           </Link>

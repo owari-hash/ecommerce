@@ -106,9 +106,9 @@ export default function CategoryList({ showBrands = true }: { showBrands?: boole
     return (
       <section className="max-w-7xl mx-auto px-4 mt-12 mb-8 animate-pulse">
         <div className="h-6 bg-gray-200 rounded w-1/4 mb-6" />
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="flex gap-3 overflow-hidden">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-[150px] sm:h-[170px] rounded-2xl bg-gray-200" />
+            <div key={i} className="h-[140px] w-[130px] shrink-0 rounded-2xl bg-gray-200" />
           ))}
         </div>
       </section>
@@ -138,47 +138,44 @@ export default function CategoryList({ showBrands = true }: { showBrands?: boole
           Бүгдийг харах →
         </Link>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 auto-rows-[150px] sm:auto-rows-[170px]">
-        {items.map((item, idx) => {
-          const wide = idx === 0
-          return (
-            <Link
-              key={item.key}
-              href={item.href}
-              className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#15171c] to-[#23262e] border border-white/5 hover:border-primary/50 transition-all duration-200 hover:-translate-y-0.5 ${wide ? 'col-span-2' : ''}`}
-            >
-              <div className="pointer-events-none absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-primary/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+        {items.map((item) => (
+          <Link
+            key={item.key}
+            href={item.href}
+            className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#15171c] to-[#23262e] border border-white/5 hover:border-primary/50 transition-all duration-200 hover:-translate-y-0.5 shrink-0 w-[130px] h-[140px] sm:w-[150px] sm:h-[160px] snap-start"
+          >
+            <div className="pointer-events-none absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-primary/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
 
-              <div className="relative z-10 p-5 h-full flex flex-col justify-between">
-                <h3 className="text-white font-bold uppercase text-xs sm:text-sm tracking-wide leading-tight max-w-[62%]">
-                  {item.label}
-                </h3>
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-primary uppercase tracking-wider">
-                  Дэлгүүрлэх
-                  <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </div>
+            <div className="relative z-10 p-4 h-full flex flex-col justify-between">
+              <h3 className="text-white font-bold text-xs sm:text-sm tracking-wide leading-tight">
+                {item.label}
+              </h3>
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary uppercase tracking-wider">
+                Харах
+                <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </div>
 
-              {item.imageUrl ? (
-                <Image
-                  src={item.imageUrl}
-                  alt={item.label}
-                  width={160}
-                  height={160}
-                  unoptimized
-                  className="absolute right-1 bottom-1 w-28 h-28 sm:w-32 sm:h-32 object-contain drop-shadow-xl group-hover:scale-110 transition-transform duration-300"
-                />
-              ) : (
-                <item.Icon
-                  strokeWidth={1.4}
-                  className="absolute right-4 bottom-4 w-14 h-14 sm:w-16 sm:h-16 text-white/85 group-hover:text-primary group-hover:scale-110 transition-all duration-300"
-                />
-              )}
-            </Link>
-          )
-        })}
+            {item.imageUrl ? (
+              <Image
+                src={item.imageUrl}
+                alt={item.label}
+                width={100}
+                height={100}
+                unoptimized
+                className="absolute right-1 bottom-1 w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-xl group-hover:scale-110 transition-transform duration-300"
+              />
+            ) : (
+              <item.Icon
+                strokeWidth={1.4}
+                className="absolute right-3 bottom-3 w-10 h-10 sm:w-12 sm:h-12 text-white/85 group-hover:text-primary group-hover:scale-110 transition-all duration-300"
+              />
+            )}
+          </Link>
+        ))}
       </div>
     </section>
   )

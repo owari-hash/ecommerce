@@ -31,7 +31,235 @@ interface Product {
   status: string
 }
 
-export default function CategoryProductSection() {
+// ── Horizontal scroll row for one category ────────────────────────────────────
+function CategoryRow({
+  cat,
+  items,
+  primaryColor,
+  tenantName,
+  tenantHref,
+  cartMap,
+  addingId,
+  onAddToCart,
+  onIncrease,
+  onDecrease,
+  onQuickView,
+}: {
+  cat: Category
+  items: Product[]
+  primaryColor: string
+  tenantName: string
+  tenantHref: (href: string) => string
+  cartMap: Record<string, number>
+  addingId: string | null
+  onAddToCart: (e: React.MouseEvent, p: Product, brand: string) => void
+  onIncrease: (e: React.MouseEvent, id: string) => void
+  onDecrease: (e: React.MouseEvent, id: string) => void
+  onQuickView: (p: Product) => void
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  function checkScroll() {
+    const el = scrollRef.current
+    if (!el) return
+    setCanScrollLeft(el.scrollLeft > 4)
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
+  }
+
+  useEffect(() => {
+    checkScroll()
+    const el = scrollRef.current
+    if (!el) return
+    el.addEventListener('scroll', checkScroll, { passive: true })
+    const ro = new ResizeObserver(checkScroll)
+    ro.observe(el)
+    return () => { el.removeEventListener('scroll', checkScroll); ro.disconnect() }
+  }, [items])
+
+  function scrollBy(dir: 'left' | 'right') {
+    const el = scrollRef.current
+    if (!el) return
+    const amount = el.clientWidth * 0.75
+    el.scrollBy({ left: dir === 'right' ? amount : -amount, behavior: 'smooth' })
+  }
+
+  return (
+    <section>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2.5">
+          <span className="w-1 h-5 rounded-full" style={{ backgroundColor: primaryColor }} />
+          <h2 className="text-base sm:text-lg font-black text-gray-900">{cat.name}</h2>
+        </div>
+        <Link
+          href={tenantHref(`/${cat.slug}`)}
+          className="text-xs sm:text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all"
+          style={{ color: primaryColor }}
+        >
+          Бүгдийг харах
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+          </svg>
+        </Link>
+      </div>
+
+      {/* Scrollable row */}
+      <div className="relative group/row">
+        {/* Left arrow */}
+        {canScrollLeft && (
+          <button
+            type="button"
+            onClick={() => scrollBy('left')}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 -translate-x-1/2 w-9 h-9 rounded-full bg-white shadow-lg border border-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:shadow-xl transition-all"
+            aria-label="Зүүн"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+        )}
+
+        {/* Right arrow */}
+        {canScrollRight && (
+          <button
+            type="button"
+            onClick={() => scrollBy('right')}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 translate-x-1/2 w-9 h-9 rounded-full bg-white shadow-lg border border-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:shadow-xl transition-all"
+            aria-label="Баруун"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        )}
+
+        <div
+          ref={scrollRef}
+          className="flex gap-3 overflow-x-auto scroll-smooth pb-1"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {items.map((p) => {
+            const img = resolveUploadUrl(p.images?.[0])
+            const brand = (p.brandId && p.brandId !== 'br1') ? p.brandId : tenantName
+            const isOnSale = !!p.salePrice
+            const displayPrice = p.salePrice ?? p.price
+
+            return (
+              <Link
+                key={p.id}
+                href={tenantHref(`/product/${p.slug || p.id}`)}
+                className="group flex-shrink-0 w-40 sm:w-44 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-gray-200 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden flex flex-col"
+              >
+                <div className="relative aspect-square bg-gray-50 overflow-hidden flex items-center justify-center">
+                  {img ? (
+                    <Image
+                      src={img}
+                      alt={p.name}
+                      fill
+                      className={`object-cover group-hover:scale-105 transition-transform duration-300 ${p.stock === 0 ? 'grayscale opacity-60' : ''}`}
+                      sizes="176px"
+                    />
+                  ) : (
+                    <span className="text-4xl">📦</span>
+                  )}
+                  {isOnSale && (
+                    <span className="absolute top-2 left-2 text-[10px] font-black text-white px-1.5 py-0.5 rounded-full" style={{ backgroundColor: primaryColor }}>
+                      SALE
+                    </span>
+                  )}
+                  {p.stock === 0 && (
+                    <span className="absolute top-2 right-2 text-[10px] font-black bg-gray-700 text-white px-1.5 py-0.5 rounded-full">
+                      Дууссан
+                    </span>
+                  )}
+                  {/* Hover quick-view */}
+                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/0 group-hover:bg-black/10 opacity-0 group-hover:opacity-100 transition-all">
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView(p) }}
+                      className="flex items-center gap-1.5 bg-white/95 text-gray-800 text-[11px] font-bold px-3 py-1.5 rounded-full shadow hover:bg-white active:scale-95 transition-all"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      Хялбар үзэлт
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-2.5 flex flex-col flex-1">
+                  <p className="text-[10px] text-gray-400 font-medium truncate">{brand}</p>
+                  <p className="text-[11px] sm:text-xs font-bold text-gray-800 leading-tight mt-0.5 line-clamp-2 flex-1">{p.name}</p>
+                  <div className="mt-1.5 flex items-baseline gap-1.5">
+                    <span className="text-xs sm:text-sm font-black" style={{ color: primaryColor }}>
+                      {formatPrice(displayPrice)}
+                    </span>
+                    {isOnSale && (
+                      <span className="text-[10px] text-gray-400 line-through">{formatPrice(p.price)}</span>
+                    )}
+                  </div>
+                  {typeof p.stock === 'number' && p.stock > 0 && (
+                    <div className={`text-[9px] font-bold mt-1 ${p.stock <= 5 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                      Үлдэгдэл: {p.stock.toLocaleString('mn-MN')}ш
+                    </div>
+                  )}
+                  {cartMap[p.id] ? (
+                    <div
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation() }}
+                      className="mt-2 flex items-center justify-between rounded-xl overflow-hidden border-2 text-sm font-black"
+                      style={{ borderColor: primaryColor }}
+                    >
+                      <button
+                        onClick={(e) => onDecrease(e, p.id)}
+                        className="px-3 py-1.5 transition-colors hover:bg-gray-50 text-gray-700 text-base leading-none"
+                      >
+                        −
+                      </button>
+                      <span className="flex-1 text-center text-xs font-black" style={{ color: primaryColor }}>
+                        {cartMap[p.id]}
+                      </span>
+                      <button
+                        onClick={(e) => onIncrease(e, p.id)}
+                        className="px-3 py-1.5 text-white transition-colors text-base leading-none"
+                        style={{ backgroundColor: primaryColor }}
+                      >
+                        +
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={(e) => onAddToCart(e, p, brand)}
+                      disabled={p.stock === 0}
+                      className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ backgroundColor: p.stock === 0 ? '#9ca3af' : primaryColor }}
+                    >
+                      <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <span
+                        key={addingId === p.id ? 'anim' : 'idle'}
+                        className={addingId === p.id ? 'animate-bounce' : ''}
+                      >
+                        {addingId === p.id ? '+1' : 'Сагслах'}
+                      </span>
+                    </button>
+                  )}
+                </div>
+              </Link>
+            )
+          })}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
+export default function CategoryProductSection({ categoryId }: { categoryId?: string }) {
   const { tenantId, branding } = useTenant()
   const tenantHref = useTenantHref()
   const tenantName = branding?.name ?? ''
@@ -44,11 +272,10 @@ export default function CategoryProductSection() {
   // toast
   const [toast, setToast] = useState<{ name: string } | null>(null)
   const toastTimer = useRef<NodeJS.Timeout | null>(null)
-  // per-product add animation: productId -> count shown
   const [addingId, setAddingId] = useState<string | null>(null)
-  const [cartMap, setCartMap] = useState<Record<string, number>>({}) // id -> quantity
+  const [cartMap, setCartMap] = useState<Record<string, number>>({})
 
-  // Quick-view ("Хялбар үзэлт") modal
+  // Quick-view modal
   const [quickView, setQuickView] = useState<Product | null>(null)
   const [quickImg, setQuickImg] = useState(0)
   const quickImages = quickView ? (quickView.images || []).map((im) => resolveUploadUrl(im)).filter(Boolean) as string[] : []
@@ -102,12 +329,19 @@ export default function CategoryProductSection() {
       fetch(`/api/products/public?tenantId=${tenantId}`).then((r) => r.json()),
     ])
       .then(([catBody, prodBody]) => {
-        if (catBody?.data) setCategories(catBody.data.filter((c: Category) => c.status === 'active' && !c.parentId))
+        if (catBody?.data) {
+          const allCats = catBody.data.filter((c: Category) => c.status === 'active' && !c.parentId)
+          if (categoryId) {
+            setCategories(allCats.filter((c: Category) => c.id === categoryId))
+          } else {
+            setCategories(allCats)
+          }
+        }
         if (prodBody?.data) setProducts(prodBody.data.filter((p: Product) => p.status === 'active' || !p.status))
       })
       .catch(console.error)
       .finally(() => setLoading(false))
-  }, [tenantId])
+  }, [tenantId, categoryId])
 
   if (loading) {
     return (
@@ -118,9 +352,9 @@ export default function CategoryProductSection() {
               <div className="h-5 bg-gray-200 rounded-full w-32" />
               <div className="h-4 bg-gray-100 rounded-full w-20" />
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            <div className="flex gap-3 overflow-hidden">
               {Array.from({ length: 6 }).map((_, j) => (
-                <div key={j} className="rounded-2xl overflow-hidden bg-white border border-gray-100">
+                <div key={j} className="rounded-2xl overflow-hidden bg-white border border-gray-100 flex-shrink-0 w-40 sm:w-44">
                   <div className="aspect-square bg-gray-100" />
                   <div className="p-2.5 space-y-2">
                     <div className="h-2.5 bg-gray-100 rounded w-3/4" />
@@ -149,135 +383,20 @@ export default function CategoryProductSection() {
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-4 mt-6 sm:mt-10 space-y-8 sm:space-y-12">
       {categoriesWithProducts.map(({ cat, items }) => (
-        <section key={cat.id}>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2.5">
-              <span className="w-1 h-5 rounded-full" style={{ backgroundColor: primaryColor }} />
-              <h2 className="text-base sm:text-lg font-black text-gray-900">{cat.name}</h2>
-            </div>
-            <Link
-              href={tenantHref(`/${cat.slug}`)}
-              className="text-xs sm:text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all"
-              style={{ color: primaryColor }}
-            >
-              Бүгдийг харах
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7"/></svg>
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-            {items.map((p) => {
-              const img = resolveUploadUrl(p.images?.[0])
-              const brand = (p.brandId && p.brandId !== 'br1') ? p.brandId : tenantName
-              const isOnSale = !!p.salePrice
-              const displayPrice = p.salePrice ?? p.price
-
-              return (
-                <Link
-                  key={p.id}
-                  href={tenantHref(`/product/${p.slug || p.id}`)}
-                  className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-gray-200 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden flex flex-col"
-                >
-                  <div className="relative aspect-square bg-gray-50 overflow-hidden flex items-center justify-center">
-                    {img ? (
-                      <Image
-                        src={img}
-                        alt={p.name}
-                        fill
-                        className={`object-cover group-hover:scale-105 transition-transform duration-300 ${p.stock === 0 ? 'grayscale opacity-60' : ''}`}
-                        sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 20vw"
-                      />
-                    ) : (
-                      <span className="text-4xl">📦</span>
-                    )}
-                    {isOnSale && (
-                      <span className="absolute top-2 left-2 text-[10px] font-black text-white px-1.5 py-0.5 rounded-full" style={{ backgroundColor: primaryColor }}>
-                        SALE
-                      </span>
-                    )}
-                    {p.stock === 0 && (
-                      <span className="absolute top-2 right-2 text-[10px] font-black bg-gray-700 text-white px-1.5 py-0.5 rounded-full">
-                        Дууссан
-                      </span>
-                    )}
-                    {/* Hover "Хялбар үзэлт" */}
-                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/0 group-hover:bg-black/10 opacity-0 group-hover:opacity-100 transition-all">
-                      <button
-                        type="button"
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setQuickView(p); setQuickImg(0) }}
-                        className="flex items-center gap-1.5 bg-white/95 text-gray-800 text-[11px] font-bold px-3 py-1.5 rounded-full shadow hover:bg-white active:scale-95 transition-all"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                        Хялбар үзэлт
-                      </button>
-                    </div>
-                  </div>
-                  <div className="p-2.5 flex flex-col flex-1">
-                    <p className="text-[11px] sm:text-[13px] font-bold text-gray-900 leading-tight line-clamp-2 flex-1">{p.name}</p>
-                    <p className="text-[10px] text-gray-400 font-medium truncate mt-0.5">{brand}</p>
-                    <div className="mt-1 flex items-baseline gap-1.5">
-                      <span className="text-xs sm:text-sm font-black" style={{ color: isOnSale ? primaryColor : '#111827' }}>
-                        {formatPrice(displayPrice)}
-                      </span>
-                      {isOnSale && (
-                        <span className="text-[10px] text-gray-400 line-through">{formatPrice(p.price)}</span>
-                      )}
-                    </div>
-                    {typeof p.stock === 'number' && p.stock > 0 && (
-                      <div className={`text-[9px] font-bold mt-1 ${p.stock <= 5 ? 'text-amber-600' : 'text-emerald-600'}`}>
-                        Үлдэгдэл: {p.stock.toLocaleString('mn-MN')}ш
-                      </div>
-                    )}
-                    {cartMap[p.id] ? (
-                      <div
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation() }}
-                        className="mt-2 flex items-center justify-between rounded-xl overflow-hidden border-2 text-sm font-black"
-                        style={{ borderColor: primaryColor }}
-                      >
-                        <button
-                          onClick={(e) => handleDecrease(e, p.id)}
-                          className="px-3 py-1.5 transition-colors hover:bg-gray-50 text-gray-700 text-base leading-none"
-                        >
-                          −
-                        </button>
-                        <span className="flex-1 text-center text-xs font-black" style={{ color: primaryColor }}>
-                          {cartMap[p.id]}
-                        </span>
-                        <button
-                          onClick={(e) => handleIncrease(e, p.id)}
-                          className="px-3 py-1.5 text-white transition-colors text-base leading-none"
-                          style={{ backgroundColor: primaryColor }}
-                        >
-                          +
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={(e) => handleAddToCart(e, p, brand)}
-                        disabled={p.stock === 0}
-                        className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                        style={{ backgroundColor: p.stock === 0 ? '#9ca3af' : primaryColor }}
-                      >
-                        <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        <span
-                          key={addingId === p.id ? 'anim' : 'idle'}
-                          className={addingId === p.id ? 'animate-bounce' : ''}
-                        >
-                          {addingId === p.id ? '+1' : 'Сагслах'}
-                        </span>
-                      </button>
-                    )}
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        </section>
+        <CategoryRow
+          key={cat.id}
+          cat={cat}
+          items={items}
+          primaryColor={primaryColor}
+          tenantName={tenantName}
+          tenantHref={tenantHref}
+          cartMap={cartMap}
+          addingId={addingId}
+          onAddToCart={handleAddToCart}
+          onIncrease={handleIncrease}
+          onDecrease={handleDecrease}
+          onQuickView={(p) => { setQuickView(p); setQuickImg(0) }}
+        />
       ))}
 
       {/* Quick-view ("Хялбар үзэлт") modal */}
@@ -361,7 +480,7 @@ export default function CategoryProductSection() {
         )
       })()}
 
-      {/* Toast — bottom-right on desktop, centered above bottom-nav on mobile */}
+      {/* Toast */}
       {toast && (
         <div className="fixed bottom-20 left-1/2 -translate-x-1/2 md:bottom-6 md:left-auto md:right-6 md:translate-x-0 z-[200] w-[min(90vw,340px)] pointer-events-none">
           <div className="bg-gray-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 animate-[slideUp_0.25s_ease-out]">
