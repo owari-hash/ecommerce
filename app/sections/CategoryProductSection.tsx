@@ -193,8 +193,7 @@ function CategoryRow({
 
         <div
           ref={scrollRef}
-          className="grid grid-flow-col grid-rows-2 gap-3 overflow-x-auto scroll-smooth pb-1 auto-cols-[9.5rem] sm:auto-cols-[11rem]"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"
         >
           {items.map((p) => {
             const img = resolveUploadUrl(p.images?.[0])

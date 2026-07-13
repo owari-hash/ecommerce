@@ -50,7 +50,9 @@ export default function Footer() {
           <div className="col-span-2">
             <div className="mb-5 flex items-center gap-3">
               {branding.logo ? (
-                <Image src={branding.logo} alt={branding.name || 'Logo'} width={160} height={36} className="h-9 w-auto object-contain max-w-[160px] brightness-0 invert" style={{ width: 'auto' }} />
+                <span className="inline-flex items-center bg-white rounded-xl px-3 py-2 shadow-sm">
+                  <Image src={branding.logo} alt={branding.name || 'Logo'} width={160} height={36} className="h-8 w-auto object-contain max-w-[150px]" style={{ width: 'auto' }} />
+                </span>
               ) : (
                 <span className="font-black text-xl text-white">{branding.name}</span>
               )}
