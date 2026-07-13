@@ -68,6 +68,7 @@ function CategoryRow({
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
+  const isSlider = items.length > 10
 
   function checkScroll() {
     const el = scrollRef.current
@@ -96,7 +97,7 @@ function CategoryRow({
   // Auto-slide every 2s with a smooth eased glide (loops; pauses on hover/touch).
   useEffect(() => {
     const el = scrollRef.current
-    if (!el) return
+    if (!el || !isSlider) return
     let paused = false
     let raf = 0
     const pause = () => { paused = true }
@@ -164,7 +165,7 @@ function CategoryRow({
       {/* Scrollable row */}
       <div className="relative group/row">
         {/* Left arrow */}
-        {canScrollLeft && (
+        {isSlider && canScrollLeft && (
           <button
             type="button"
             onClick={() => scrollBy('left')}
@@ -178,7 +179,7 @@ function CategoryRow({
         )}
 
         {/* Right arrow */}
-        {canScrollRight && (
+        {isSlider && canScrollRight && (
           <button
             type="button"
             onClick={() => scrollBy('right')}
@@ -193,7 +194,10 @@ function CategoryRow({
 
         <div
           ref={scrollRef}
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"
+          className={isSlider
+            ? 'grid grid-flow-col grid-rows-2 gap-3 overflow-x-auto scroll-smooth pb-1 auto-cols-[9.5rem] sm:auto-cols-[11rem]'
+            : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'}
+          style={isSlider ? { scrollbarWidth: 'none', msOverflowStyle: 'none' } : undefined}
         >
           {items.map((p) => {
             const img = resolveUploadUrl(p.images?.[0])
@@ -430,7 +434,7 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
   const categoriesWithProducts = categories
     .map((cat) => ({
       cat,
-      items: products.filter((p) => p.categoryId === cat.id && (p.stock ?? 1) > 0).slice(0, 10),
+      items: products.filter((p) => p.categoryId === cat.id && (p.stock ?? 1) > 0).slice(0, 24),
     }))
     .filter(({ items }) => items.length > 0)
 
