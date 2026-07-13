@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import GroceryBentoMobile from '../components/GroceryBentoMobile'
+import ImagePlaceholder from '../components/ImagePlaceholder'
 
 export type GroceryTile = {
   label: string
@@ -28,13 +29,17 @@ function BentoCard({ tile, className, style }: { tile: GroceryTile; className?: 
       className={`group relative overflow-hidden rounded-2xl bg-[#161b22] border border-white/5 hover:border-white/20 transition-all duration-300 hover:shadow-xl hover:shadow-black/60 ${className ?? ''}`}
       style={style}
     >
-      <Image
-        src={tile.image}
-        alt={tile.label}
-        fill
-        className="object-cover opacity-60 group-hover:opacity-75 group-hover:scale-105 transition-all duration-500"
-        sizes="(max-width:768px) 100vw, 33vw"
-      />
+      {tile.image ? (
+        <Image
+          src={tile.image}
+          alt={tile.label}
+          fill
+          className="object-cover opacity-60 group-hover:opacity-75 group-hover:scale-105 transition-all duration-500"
+          sizes="(max-width:768px) 100vw, 33vw"
+        />
+      ) : (
+        <ImagePlaceholder />
+      )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent" />
       <div className="relative h-full p-4 flex flex-col justify-end">
         <p className="text-[10px] font-black uppercase tracking-[3px] text-primary mb-1">{tile.sub}</p>

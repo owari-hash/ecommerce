@@ -10,6 +10,7 @@ import { readCompare, toggleCompare, writeCompare } from '../lib/compareStore';
 import { formatPrice } from '../lib/mockCatalog';
 import { resolveUploadUrl } from '../lib/apiClient';
 import Pagination from '../components/Pagination';
+import ImagePlaceholder from '../components/ImagePlaceholder';
 
 type ProductVM = {
   id: string;
@@ -678,7 +679,7 @@ export default function CategoryListingClient({
                       unoptimized
                     />
                   ) : (
-                    <div className={`text-4xl md:text-6xl opacity-60 ${p.stock === 0 ? 'grayscale opacity-40' : ''}`}>{category.icon}</div>
+                    <ImagePlaceholder />
                   )}
                   {p.stock === 0 ? (
                     <div className="absolute top-1.5 md:top-2 left-1.5 md:left-2 text-xs md:text-xs font-black px-1.5 md:px-2 py-0.5 md:py-1 rounded-lg text-white bg-gray-800">

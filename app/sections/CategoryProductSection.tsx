@@ -7,6 +7,7 @@ import { useTenantHref } from '../lib/useTenantHref'
 import { resolveUploadUrl } from '../lib/apiClient'
 import { formatPrice } from '../lib/mockCatalog'
 import { addToCart, readCart, updateQuantity, removeFromCart } from '../lib/cartStore'
+import ImagePlaceholder from '../components/ImagePlaceholder'
 
 interface Category {
   id: string
@@ -162,7 +163,7 @@ function CategoryRow({
                       sizes="176px"
                     />
                   ) : (
-                    <span className="text-4xl">📦</span>
+                    <ImagePlaceholder />
                   )}
                   {isOnSale && (
                     <span className="absolute top-2 left-2 text-[10px] font-black text-white px-1.5 py-0.5 rounded-full" style={{ backgroundColor: primaryColor }}>
@@ -423,7 +424,7 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
                   {quickImages[quickImg] ? (
                     <Image src={quickImages[quickImg]} alt={qv.name} fill className="object-contain p-4" sizes="(max-width:640px) 100vw, 384px" unoptimized />
                   ) : (
-                    <span className="text-6xl opacity-30">📦</span>
+                    <ImagePlaceholder />
                   )}
                 </div>
                 {quickImages.length > 1 && (

@@ -10,6 +10,7 @@ import { addToCart } from '../lib/cartStore';
 import { useTenantHref } from '../lib/useTenantHref';
 import { useTenant } from '../lib/TenantContext';
 import { resolveUploadUrl } from '../lib/apiClient';
+import ImagePlaceholder from './ImagePlaceholder';
 
 type Props = {
   id: string;
@@ -109,9 +110,7 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
             />
           </div>
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-4xl opacity-30">
-            {CATEGORY_ICONS[category]}
-          </div>
+          <ImagePlaceholder />
         )}
 
         {/* Discount / NEW / Out of Stock badge */}

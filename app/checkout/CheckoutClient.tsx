@@ -67,11 +67,11 @@ function Stepper({ current }: { current: number }) {
                     i + 1
                   )}
                 </span>
-                <span className={`text-xs sm:text-sm font-semibold whitespace-nowrap ${done || active ? 'text-gray-800' : 'text-gray-400'}`}>
+                <span className={`text-xs sm:text-sm font-semibold whitespace-nowrap ${active ? 'inline' : 'hidden sm:inline'} ${done || active ? 'text-gray-800' : 'text-gray-400'}`}>
                   {label}
                 </span>
               </div>
-              {i < steps.length - 1 && <span className="w-6 sm:w-12 h-px bg-gray-200" />}
+              {i < steps.length - 1 && <span className="w-4 sm:w-12 h-px bg-gray-200 shrink-0" />}
             </div>
           );
         })}
