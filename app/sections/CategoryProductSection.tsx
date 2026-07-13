@@ -1,7 +1,7 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { useTenant } from '../lib/TenantContext'
 import { useTenantHref } from '../lib/useTenantHref'
 import { resolveUploadUrl } from '../lib/apiClient'
@@ -86,6 +86,36 @@ function CategoryRow({
     el.scrollBy({ left: dir === 'right' ? amount : -amount, behavior: 'smooth' })
   }
 
+  // Auto-slide every 2s (loops back at the end; pauses on hover/touch).
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    let paused = false
+    const pause = () => { paused = true }
+    const resume = () => { paused = false }
+    el.addEventListener('mouseenter', pause)
+    el.addEventListener('mouseleave', resume)
+    el.addEventListener('touchstart', pause, { passive: true })
+    const id = setInterval(() => {
+      if (paused) return
+      const node = scrollRef.current
+      if (!node) return
+      const firstCard = node.querySelector('[data-card]') as HTMLElement | null
+      const step = firstCard ? firstCard.offsetWidth + 12 : node.clientWidth * 0.8
+      if (node.scrollLeft + node.clientWidth >= node.scrollWidth - 4) {
+        node.scrollTo({ left: 0, behavior: 'smooth' })
+      } else {
+        node.scrollBy({ left: step, behavior: 'smooth' })
+      }
+    }, 2000)
+    return () => {
+      clearInterval(id)
+      el.removeEventListener('mouseenter', pause)
+      el.removeEventListener('mouseleave', resume)
+      el.removeEventListener('touchstart', pause)
+    }
+  }, [items])
+
   return (
     <section>
       {/* Header */}
@@ -150,6 +180,7 @@ function CategoryRow({
             return (
               <Link
                 key={p.id}
+                data-card
                 href={tenantHref(`/product/${p.slug || p.id}`)}
                 className="group flex-shrink-0 w-40 sm:w-44 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-gray-200 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden flex flex-col"
               >
@@ -383,21 +414,41 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-4 mt-6 sm:mt-10 space-y-8 sm:space-y-12">
-      {categoriesWithProducts.map(({ cat, items }) => (
-        <CategoryRow
-          key={cat.id}
-          cat={cat}
-          items={items}
-          primaryColor={primaryColor}
-          tenantName={tenantName}
-          tenantHref={tenantHref}
-          cartMap={cartMap}
-          addingId={addingId}
-          onAddToCart={handleAddToCart}
-          onIncrease={handleIncrease}
-          onDecrease={handleDecrease}
-          onQuickView={(p) => { setQuickView(p); setQuickImg(0) }}
-        />
+      {categoriesWithProducts.map(({ cat, items }, idx) => (
+        <Fragment key={cat.id}>
+          <CategoryRow
+            cat={cat}
+            items={items}
+            primaryColor={primaryColor}
+            tenantName={tenantName}
+            tenantHref={tenantHref}
+            cartMap={cartMap}
+            addingId={addingId}
+            onAddToCart={handleAddToCart}
+            onIncrease={handleIncrease}
+            onDecrease={handleDecrease}
+            onQuickView={(p) => { setQuickView(p); setQuickImg(0) }}
+          />
+          {/* Promo big-slide after every 2 rows */}
+          {(idx + 1) % 2 === 0 && idx < categoriesWithProducts.length - 1 && (
+            <Link
+              href={tenantHref(`/${categoriesWithProducts[(idx + 1) % categoriesWithProducts.length]?.cat.slug ?? ''}`)}
+              className="group block relative overflow-hidden rounded-2xl sm:rounded-3xl p-6 sm:p-10 text-white shadow-lg"
+              style={{ background: `linear-gradient(135deg, ${primaryColor}, color-mix(in srgb, ${primaryColor} 65%, #000))` }}
+            >
+              <div className="absolute -right-10 -bottom-10 w-44 h-44 rounded-full bg-white/10" />
+              <div className="absolute right-20 top-3 w-24 h-24 rounded-full bg-white/5" />
+              <div className="relative z-10 max-w-lg">
+                <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[3px] opacity-80 mb-1.5">Онцгой санал</p>
+                <h3 className="text-lg sm:text-3xl font-black leading-tight mb-3">Шинэ бараа, хямдралтай бүтээгдэхүүн</h3>
+                <span className="inline-flex items-center gap-1.5 bg-white text-gray-900 text-xs sm:text-sm font-black px-5 py-2.5 rounded-full group-hover:gap-2.5 transition-all">
+                  Дэлгүүр хэсэх
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+                </span>
+              </div>
+            </Link>
+          )}
+        </Fragment>
       ))}
 
       {/* Quick-view ("Хялбар үзэлт") modal */}

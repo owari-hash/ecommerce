@@ -13,6 +13,7 @@ import {
 import { useTenantHref } from '../lib/useTenantHref';
 import { useTenant } from '../lib/TenantContext';
 import { restoreSession, readAuth, isLoggedIn } from '../lib/authStore';
+import ImagePlaceholder from '../components/ImagePlaceholder';
 
 const paymentMethods = [
   { id: 'qpay', name: 'QPay', desc: 'Банкны аппаар QR уншуулж төлнө' },
@@ -356,15 +357,25 @@ export default function CheckoutClient() {
         <span>/</span>
         <span className="text-gray-800 font-medium">Төлбөр төлөх</span>
       </nav>
-      <h1 className="text-xl sm:text-2xl font-black text-gray-800 mb-4 sm:mb-6">Төлбөр төлөх</h1>
+      <div className="flex items-center gap-2.5 mb-4 sm:mb-6">
+        <button
+          type="button"
+          onClick={() => { if (typeof window !== 'undefined') window.history.back(); }}
+          aria-label="Буцах"
+          className="lg:hidden w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:border-primary hover:text-primary transition-colors shrink-0"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+        </button>
+        <h1 className="text-xl sm:text-2xl font-black text-gray-800">Төлбөр төлөх</h1>
+      </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-4 mb-6">
         <Stepper current={step} />
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-4 sm:gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8 items-start">
         {/* LEFT: steps */}
-        <div className="lg:col-span-2 space-y-5">
+        <div className="lg:col-span-2 space-y-5 min-w-0">
           {/* Step 0 — Сагс */}
           {step === 0 && (
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -378,34 +389,34 @@ export default function CheckoutClient() {
               </div>
               <div className="divide-y divide-gray-100">
                 {items.map((item) => (
-                  <div key={item.id} className="p-4 flex gap-4">
-                    <div className="w-20 h-20 bg-gray-50 rounded-xl flex items-center justify-center text-3xl flex-shrink-0">
-                      {item.icon}
+                  <div key={item.id} className="p-3 sm:p-4 flex gap-3 sm:gap-4">
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0">
+                      <ImagePlaceholder />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <Link href={tenantHref(`/product/${item.slug}`)} className="font-bold text-gray-900 hover:text-primary transition-colors line-clamp-2">
+                      <div className="flex items-start justify-between gap-1.5">
+                        <div className="min-w-0">
+                          <Link href={tenantHref(`/product/${item.slug}`)} className="block text-sm font-bold text-gray-900 hover:text-primary transition-colors line-clamp-2">
                             {item.name}
                           </Link>
-                          <p className="text-sm text-gray-500 mt-0.5">{item.brand}</p>
+                          <p className="text-xs text-gray-500 mt-0.5 truncate">{item.brand}</p>
                         </div>
-                        <button onClick={() => handleRemove(item.id)} className="text-gray-400 hover:text-primary transition-colors p-1" title="Устгах">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button onClick={() => handleRemove(item.id)} className="text-gray-400 hover:text-primary transition-colors p-0.5 shrink-0" title="Устгах">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
                       </div>
-                      <div className="mt-3 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 border border-gray-200 rounded-lg p-0.5">
-                          <button onClick={() => handleQuantityChange(item.id, -1)} className="w-7 h-7 rounded-md flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-primary transition-colors">−</button>
-                          <span className="w-8 text-center text-sm font-semibold">{item.quantity}</span>
-                          <button onClick={() => handleQuantityChange(item.id, 1)} className="w-7 h-7 rounded-md flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-primary transition-colors">+</button>
+                      <div className="mt-2.5 flex items-center justify-between gap-2">
+                        <div className="flex items-center border border-gray-200 rounded-lg p-0.5 shrink-0">
+                          <button onClick={() => handleQuantityChange(item.id, -1)} className="w-6 h-6 sm:w-7 sm:h-7 rounded-md flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-primary transition-colors">−</button>
+                          <span className="w-6 sm:w-8 text-center text-sm font-semibold">{item.quantity}</span>
+                          <button onClick={() => handleQuantityChange(item.id, 1)} className="w-6 h-6 sm:w-7 sm:h-7 rounded-md flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-primary transition-colors">+</button>
                         </div>
-                        <div className="text-right">
-                          <div className="font-bold text-gray-900">{formatPrice(item.price * item.quantity)}</div>
+                        <div className="text-right min-w-0">
+                          <div className="text-sm font-bold text-gray-900 whitespace-nowrap">{formatPrice(item.price * item.quantity)}</div>
                           {item.oldPrice && (
-                            <div className="text-xs text-gray-400 line-through">{formatPrice(item.oldPrice * item.quantity)}</div>
+                            <div className="text-[11px] text-gray-400 line-through whitespace-nowrap">{formatPrice(item.oldPrice * item.quantity)}</div>
                           )}
                         </div>
                       </div>
@@ -583,7 +594,7 @@ export default function CheckoutClient() {
         </div>
 
         {/* RIGHT: sticky summary */}
-        <div className="lg:sticky lg:top-6 space-y-3 order-first lg:order-last">
+        <div className="lg:sticky lg:top-6 space-y-3 order-first lg:order-last min-w-0">
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <h2 className="font-bold text-gray-900 mb-4">Төлбөрийн мэдээлэл</h2>
 
