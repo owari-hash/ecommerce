@@ -216,10 +216,10 @@ export default function CategoryProductSection() {
                     </div>
                   </div>
                   <div className="p-2.5 flex flex-col flex-1">
-                    <p className="text-[10px] text-gray-400 font-medium truncate">{brand}</p>
-                    <p className="text-[11px] sm:text-xs font-bold text-gray-800 leading-tight mt-0.5 line-clamp-2 flex-1">{p.name}</p>
-                    <div className="mt-1.5 flex items-baseline gap-1.5">
-                      <span className="text-xs sm:text-sm font-black" style={{ color: primaryColor }}>
+                    <p className="text-[11px] sm:text-[13px] font-bold text-gray-900 leading-tight line-clamp-2 flex-1">{p.name}</p>
+                    <p className="text-[10px] text-gray-400 font-medium truncate mt-0.5">{brand}</p>
+                    <div className="mt-1 flex items-baseline gap-1.5">
+                      <span className="text-xs sm:text-sm font-black" style={{ color: isOnSale ? primaryColor : '#111827' }}>
                         {formatPrice(displayPrice)}
                       </span>
                       {isOnSale && (

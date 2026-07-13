@@ -84,10 +84,10 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
   return (
     <Link
       href={tenantHref(`/product/${slug}`)}
-      className="group flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200 overflow-hidden"
+      className="group flex flex-col bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-200 overflow-hidden"
     >
       {/* Image */}
-      <div className="relative aspect-[4/3] bg-gray-50 overflow-hidden">
+      <div className="relative aspect-square bg-gray-50 overflow-hidden">
         {resolvedImage ? (
           <Image
             src={resolvedImage}
@@ -162,19 +162,17 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
         </div>
       </div>
 
-      {/* Info */}
+      {/* Info — shoppy-style: name first, subtitle, price (sale-coloured) */}
       <div className="p-2.5 md:p-3 flex flex-col gap-0.5 flex-1">
-        <div className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-400 truncate">
-          {brand}
-        </div>
         <div
-          className="text-[11px] md:text-xs font-semibold text-gray-800 leading-snug flex-1"
+          className="text-[11px] md:text-[13px] font-bold text-gray-900 leading-snug flex-1"
           style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
         >
           {name}
         </div>
-        <div className="flex items-baseline gap-1.5 mt-1.5">
-          <span className="text-xs md:text-sm font-black text-gray-900">{formatPrice(price)}</span>
+        <div className="text-[10px] md:text-[11px] text-gray-400 truncate">{brand}</div>
+        <div className="flex items-baseline gap-1.5 mt-1">
+          <span className={`text-xs md:text-sm font-black ${oldPrice ? 'text-primary' : 'text-gray-900'}`}>{formatPrice(price)}</span>
           {oldPrice && (
             <span className="text-[10px] font-medium text-gray-400 line-through">{formatPrice(oldPrice)}</span>
           )}
