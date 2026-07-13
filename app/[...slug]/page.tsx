@@ -146,13 +146,20 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
     <div className="pb-8">
       <h1 className="sr-only">Бүтээгдэхүүний хайлтын үр дүн</h1>
 
-      {/* Top banner — clean gradient with the category name (tenant primary colour) */}
-      <div className="relative w-full h-28 sm:h-40 md:h-52 mb-4 sm:mb-6 overflow-hidden bg-gradient-to-r from-primary to-primary-dark">
-        <div className="absolute -right-12 -top-12 w-56 h-56 rounded-full bg-white/10" />
-        <div className="absolute right-24 bottom-0 w-40 h-40 rounded-full bg-white/5" />
+      {/* Top banner — quality photo with a primary-tinted overlay + category name */}
+      <div className="relative w-full h-28 sm:h-40 md:h-52 mb-4 sm:mb-6 overflow-hidden">
+        <Image
+          src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1600&h=520&fit=crop&q=80"
+          alt=""
+          fill
+          priority
+          className="object-cover"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/75 to-primary/25" />
         <div className="relative h-full max-w-7xl mx-auto px-4 md:px-8 flex flex-col justify-center">
-          <p className="text-[10px] sm:text-xs font-black uppercase tracking-[3px] text-white/70">Ангилал</p>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white drop-shadow-sm leading-tight">{label}</h2>
+          <p className="text-[10px] sm:text-xs font-black uppercase tracking-[3px] text-white/80">Ангилал</p>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white drop-shadow leading-tight">{label}</h2>
         </div>
       </div>
 
