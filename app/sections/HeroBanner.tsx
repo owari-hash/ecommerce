@@ -125,6 +125,26 @@ export default function HeroBanner({ bigSlides, smallSlides }: HeroBannerProps) 
           />
         </div>
       </div>
+
+     
+      <div className="mt-3 sm:mt-4 grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+        {[
+          { title: 'Шуурхай хүргэлт', sub: '24-48 цагт', d: 'M9 17a2 2 0 11-4 0 2 2 0 014 0zM20 17a2 2 0 11-4 0 2 2 0 014 0z M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8h4l3 4v3a1 1 0 01-1 1h-1m-4 0H9' },
+          { title: 'Найдвартай төлбөр', sub: 'QPay & банк', d: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
+          { title: 'И-Баримт', sub: 'Автомат олгоно', d: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+          { title: 'Тусламж дэмжлэг', sub: 'Ажлын өдрүүдэд', d: 'M18 10a8 8 0 11-16 0 8 8 0 0116 0zM8 15h8M9 9h.01M15 9h.01' },
+        ].map((f) => (
+          <div key={f.title} className="flex items-center gap-2.5 bg-white rounded-xl border border-gray-100 shadow-sm px-3 py-2.5">
+            <span className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={f.d} /></svg>
+            </span>
+            <div className="min-w-0">
+              <p className="text-[11px] sm:text-xs font-bold text-gray-800 truncate">{f.title}</p>
+              <p className="text-[10px] text-gray-400 truncate">{f.sub}</p>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

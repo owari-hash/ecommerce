@@ -542,19 +542,32 @@ export default function CheckoutClient() {
         {/* RIGHT: sticky summary */}
         <div className="lg:sticky lg:top-6 space-y-3 order-first lg:order-last">
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <h2 className="font-bold text-gray-900 mb-4">Захиалгын дүн</h2>
-            <div className="space-y-2.5 text-sm">
-              <div className="flex justify-between text-gray-600"><span>Бараа ({items.reduce((s, i) => s + i.quantity, 0)}ш)</span><span className="font-medium text-gray-800">{formatPrice(total)}</span></div>
+            <h2 className="font-bold text-gray-900 mb-4">Төлбөрийн мэдээлэл</h2>
+
+            
+            {items.length > 0 && (
+              <div className="space-y-2 mb-3 max-h-44 overflow-y-auto pr-1">
+                {items.map((it) => (
+                  <div key={it.id} className="flex items-start justify-between gap-2 text-sm">
+                    <span className="text-gray-600 flex-1 min-w-0 truncate">
+                      {it.name} <span className="text-gray-400 text-xs">×{it.quantity}</span>
+                    </span>
+                    <span className="font-semibold text-gray-800 whitespace-nowrap">{formatPrice(it.price * it.quantity)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="border-t border-gray-100 pt-3 space-y-2.5 text-sm">
+              <div className="flex justify-between text-gray-600"><span>Бүтээгдэхүүний үнэ</span><span className="font-medium text-gray-800">{formatPrice(total)}</span></div>
               <div className="flex justify-between text-gray-600"><span>Хүргэлт</span><span className="font-medium text-gray-800">{shipping === 0 ? 'Үнэгүй' : formatPrice(shipping)}</span></div>
-              {shipping === 0 ? (
-                <p className="text-xs text-emerald-600">{threshold.toLocaleString('mn-MN')}₮-с дээш захиалгад хүргэлт үнэгүй</p>
-              ) : (
-                <p className="text-xs text-gray-400">{threshold.toLocaleString('mn-MN')}₮-с дээш захиалгад хүргэлт үнэгүй</p>
-              )}
+              <p className={`text-xs ${shipping === 0 ? 'text-emerald-600' : 'text-gray-400'}`}>
+                {threshold.toLocaleString('mn-MN')}₮-с дээш захиалгад хүргэлт үнэгүй
+              </p>
               <div className="border-t border-gray-100 pt-3 mt-1">
                 <div className="flex justify-between items-baseline">
-                  <span className="font-bold text-gray-900">Нийт дүн</span>
-                  <span className="text-2xl font-black text-primary">{formatPrice(finalTotal)}</span>
+                  <span className="font-bold text-gray-900">Нийт төлөх дүн</span>
+                  <span className="text-xl sm:text-2xl font-black text-primary">{formatPrice(finalTotal)}</span>
                 </div>
               </div>
             </div>
