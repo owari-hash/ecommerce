@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, Truck, ShieldCheck, RotateCcw, Headphones } from 'lucide-react'
 import { useTenant } from '../lib/TenantContext'
 import HeroDetailModal from '../components/HeroDetailModal'
 
@@ -52,10 +52,10 @@ const DEFAULT_BIG: Slide[] = [
 ]
 
 const TRUST_ITEMS = [
-  { label: 'Үнэгүй хүргэлт', sub: 'Тодорхой дүнгээс дээш', color: '#2563EB', icon: 'M5 8h9l3 4v5h-2M5 8V6a1 1 0 011-1h6a1 1 0 011 1v2M5 8v9h2m10 0a2 2 0 11-4 0 2 2 0 014 0zM7 17a2 2 0 11-4 0 2 2 0 014 0z' },
-  { label: 'Баталгаат чанар', sub: 'Албан ёсны нийлүүлэгч', color: '#059669', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
-  { label: '7 хоногийн буцаалт', sub: 'Сэтгэл ханамж', color: '#D97706', icon: 'M4 4v5h5M20 20v-5h-5M5.5 9a7 7 0 0112.5-3M18.5 15a7 7 0 01-12.5 3' },
-  { label: '24/7 тусламж', sub: 'Хэрэглэгчийн үйлчилгээ', color: '#7C3AED', icon: 'M18 10a8 8 0 10-16 0v4a2 2 0 002 2h1a1 1 0 001-1v-4a1 1 0 00-1-1H4m14 4v-4a1 1 0 011-1h1a1 1 0 011 1v4a2 2 0 01-2 2h-2a2 2 0 01-2 2v0' },
+  { label: 'Үнэгүй хүргэлт', sub: 'Тодорхой дүнгээс дээш', color: '#2563EB', Icon: Truck },
+  { label: 'Баталгаат чанар', sub: 'Албан ёсны нийлүүлэгч', color: '#059669', Icon: ShieldCheck },
+  { label: '7 хоногийн буцаалт', sub: 'Сэтгэл ханамж', color: '#D97706', Icon: RotateCcw },
+  { label: '24/7 тусламж', sub: 'Хэрэглэгчийн үйлчилгээ', color: '#7C3AED', Icon: Headphones },
 ]
 
 export default function HeroBanner({ bigSlides, tenantId }: HeroBannerProps) {
@@ -158,33 +158,26 @@ export default function HeroBanner({ bigSlides, tenantId }: HeroBannerProps) {
 
       </section>
 
-      {/* Trust strip — individually elevated cards, one design across all breakpoints */}
+      {/* Trust strip — 2x2 grid on mobile, 4-up on tablet+, same card design throughout */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4">
-        <div
-          className="mt-4 sm:mt-6 flex sm:grid sm:grid-cols-4 gap-2.5 sm:gap-4 overflow-x-auto sm:overflow-visible -mx-3 sm:mx-0 px-3 sm:px-0 pb-1 sm:pb-0"
-          style={{ scrollbarWidth: 'none' }}
-        >
+        <div className="mt-4 sm:mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
           {TRUST_ITEMS.map((item) => (
             <div
               key={item.label}
-              className="shrink-0 sm:shrink w-[210px] sm:w-auto flex items-center gap-3 rounded-2xl border border-gray-100 bg-white px-4 py-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+              className="flex items-center gap-2.5 sm:gap-3 rounded-2xl border border-gray-100 bg-white px-3 sm:px-4 py-3 sm:py-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 min-w-0"
             >
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0"
                 style={{ backgroundColor: `${item.color}17` }}
               >
-                <svg className="w-[18px] h-[18px]" style={{ color: item.color }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={item.icon} />
-                </svg>
+                <item.Icon className="w-4 h-4 sm:w-[18px] sm:h-[18px]" style={{ color: item.color }} strokeWidth={1.8} />
               </div>
               <div className="min-w-0">
-                <p className="text-xs sm:text-sm font-bold text-gray-900 leading-tight truncate">{item.label}</p>
+                <p className="text-[11px] sm:text-sm font-bold text-gray-900 leading-tight truncate">{item.label}</p>
                 <p className="text-[10px] sm:text-xs text-gray-400 leading-tight truncate">{item.sub}</p>
               </div>
             </div>
           ))}
-          {/* Trailing spacer so the last card has visible breathing room past the edge on mobile */}
-          <div className="shrink-0 w-1 sm:hidden" aria-hidden />
         </div>
       </div>
 
