@@ -195,15 +195,15 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
           className="fixed inset-0 z-[200] flex items-center justify-center p-4"
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); setQuickOpen(false); }}
         >
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div
-            className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden grid sm:grid-cols-2"
+            className="relative bg-white rounded-3xl shadow-2xl ring-1 ring-black/5 w-full max-w-3xl overflow-hidden grid sm:grid-cols-2"
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
           >
             <button
               type="button"
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); setQuickOpen(false); }}
-              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/90 text-gray-500 hover:text-gray-800 shadow flex items-center justify-center"
+              className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/95 text-gray-500 hover:text-gray-800 shadow-md flex items-center justify-center transition-colors"
               aria-label="Хаах"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -212,48 +212,60 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
             </button>
 
             {/* Image */}
-            <div className="relative aspect-square sm:aspect-auto sm:min-h-[320px] bg-gray-50 flex items-center justify-center p-6">
+            <div className="relative aspect-square sm:aspect-auto sm:min-h-[360px] bg-gradient-to-br from-gray-50 to-gray-100/60 flex items-center justify-center p-8">
               {previewImage ? (
-                <Image src={previewImage} alt={name} fill className="object-contain p-6" sizes="(max-width:640px) 100vw, 320px" unoptimized />
+                <div className="relative w-full h-full rounded-2xl bg-white shadow-sm overflow-hidden">
+                  <Image src={previewImage} alt={name} fill className="object-contain p-6" sizes="(max-width:640px) 100vw, 360px" unoptimized />
+                </div>
               ) : (
                 <CategoryIcon className="w-16 h-16 text-gray-300" strokeWidth={1.4} />
               )}
               {discountPct ? (
-                <span className="absolute top-3 left-3 bg-primary text-white text-xs font-black px-2 py-0.5 rounded shadow">-{discountPct}%</span>
+                <span className="absolute top-4 left-4 bg-primary text-white text-xs font-black px-2.5 py-1 rounded-full shadow">-{discountPct}%</span>
               ) : null}
             </div>
 
             {/* Details */}
-            <div className="p-5 sm:p-6 flex flex-col">
-              <div className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{brand}</div>
-              <h3 className="text-base font-bold text-gray-900 leading-snug mb-3">{name}</h3>
-              <div className="flex items-baseline gap-2 mb-4">
-                <span className="text-xl font-black text-primary">{formatPrice(price)}</span>
+            <div className="p-6 sm:p-7 flex flex-col">
+              <span className="inline-flex self-start items-center bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full mb-3">
+                {brand}
+              </span>
+              <h3 className="text-lg font-black text-gray-900 leading-snug mb-3">{name}</h3>
+              <div className="flex items-baseline gap-2 mb-3">
+                <span className="text-2xl font-black text-gray-900">{formatPrice(price)}</span>
                 {oldPrice && <span className="text-sm font-medium text-gray-400 line-through">{formatPrice(oldPrice)}</span>}
               </div>
               {stock === 0 ? (
-                <p className="text-sm font-semibold text-gray-400 mb-4">Дууссан</p>
+                <span className="inline-flex self-start items-center gap-1.5 text-xs font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full mb-5">
+                  Дууссан
+                </span>
               ) : (
-                <p className="text-xs text-emerald-600 mb-4 flex items-center gap-1">
+                <span className="inline-flex self-start items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full mb-5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   {typeof stock === 'number' ? `Үлдэгдэл: ${stock.toLocaleString('mn-MN')}ш` : 'Бэлэн байгаа'}
-                </p>
+                </span>
               )}
-              <div className="mt-auto flex flex-col gap-2">
+              <div className="mt-auto flex flex-col gap-1.5">
                 <button
                   type="button"
                   onClick={handleAddToCart}
                   disabled={stock === 0}
-                  className="w-full py-3 rounded-xl font-bold text-sm bg-primary hover:bg-primary-dark text-white transition-colors disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm bg-primary hover:bg-primary-dark text-white shadow-sm transition-colors disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
                   Сагсанд нэмэх
                 </button>
                 <Link
                   href={tenantHref(`/product/${slug}`)}
                   onClick={() => setQuickOpen(false)}
-                  className="w-full py-3 rounded-xl font-bold text-sm border border-gray-200 text-gray-700 hover:border-primary hover:text-primary transition-colors text-center"
+                  className="w-full py-3 rounded-2xl font-bold text-sm text-gray-500 hover:text-primary hover:bg-gray-50 transition-colors text-center flex items-center justify-center gap-1"
                 >
                   Дэлгэрэнгүй харах
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                  </svg>
                 </Link>
               </div>
             </div>
