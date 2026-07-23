@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Package, RotateCw, FlipHorizontal, FlipVertical, QrCode, Wallet, Percent, Smartphone, Banknote } from 'lucide-react';
+import { Package, RotateCw, FlipHorizontal, FlipVertical } from 'lucide-react';
 import { toggleCompare, readCompare } from '../../lib/compareStore';
 import { addToCart } from '../../lib/cartStore';
 import { Lens } from '../../components/Lens';
@@ -31,12 +31,12 @@ type Props = {
 };
 
 const paymentOptions = [
-  { key: 'qpay', label: 'QPay', icon: QrCode, color: '#1E88E5' },
-  { key: 'socialpay', label: 'SocialPay', icon: Wallet, color: '#E91E63' },
-  { key: 'monpay', label: 'MonPay', icon: Wallet, color: '#00A651' },
-  { key: 'lendmn', label: 'LendMN', icon: Percent, color: '#F57C00' },
-  { key: 'pocket', label: 'Pocket', icon: Smartphone, color: '#7C4DFF' },
-  { key: 'cash', label: 'Бэлэн мөнгө', icon: Banknote, color: '#546E7A' },
+  { key: 'qpay', label: 'QPay' },
+  { key: 'socialpay', label: 'SocialPay' },
+  { key: 'monpay', label: 'MonPay' },
+  { key: 'lendmn', label: 'LendMN' },
+  { key: 'pocket', label: 'Pocket' },
+  { key: 'cash', label: 'Бэлэн мөнгө' },
 ];
 
 function parsePrice(price: string): number {
@@ -446,25 +446,14 @@ export default function ProductDetailClient({ product }: Props) {
 
           {/* Payment options */}
           <div className="mt-5">
-            <div className="text-sm font-black text-gray-900 mb-2.5">Төлбөрийн боломжууд</div>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-              {paymentOptions.map((x) => {
-                const Icon = x.icon;
-                return (
-                  <div
-                    key={x.key}
-                    className="group flex flex-col items-center gap-1.5 rounded-2xl border border-gray-200 bg-white px-2 py-3 hover:border-gray-300 hover:shadow-sm transition-all"
-                  >
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: `${x.color}1A` }}
-                    >
-                      <Icon className="w-4 h-4" style={{ color: x.color }} strokeWidth={2.2} />
-                    </div>
-                    <span className="text-[10px] font-bold text-gray-600 text-center leading-tight">{x.label}</span>
-                  </div>
-                );
-              })}
+            <div className="text-sm font-black text-gray-900 mb-2">Төлбөрийн боломжууд</div>
+            <div className="flex flex-wrap gap-2">
+              {paymentOptions.map((x) => (
+                <button key={x.key} type="button"
+                  className="rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-gray-600 hover:border-gray-300 transition-colors">
+                  {x.label}
+                </button>
+              ))}
             </div>
           </div>
 

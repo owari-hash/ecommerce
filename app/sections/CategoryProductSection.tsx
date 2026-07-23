@@ -13,8 +13,8 @@ import Reveal from '../components/Reveal'
 
 // Curated, high-quality banner photos used for the promo big-slides.
 const PROMO_IMAGES = [
-  'https://images.unsplash.com/photo-1607083206968-13611e3d76db?w=1600&h=500&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1600&h=500&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1607083206968-13611e3d76db?w=2000&h=650&fit=crop&q=90',
+  'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=2000&h=650&fit=crop&q=90',
 ]
 
 interface Category {

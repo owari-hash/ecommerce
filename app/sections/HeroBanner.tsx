@@ -28,7 +28,7 @@ const DEFAULT_BIG: Slide[] = [
     title: 'Онцлох бүтээгдэхүүн',
     subtitle: 'Цахилгаан бараа',
     emoji: '🎮',
-    image: 'https://images.unsplash.com/photo-1622297845775-5ff3fef71d13?w=2400&h=1400&fit=crop&q=90',
+    image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=2400&h=1400&fit=crop&q=90',
     images: [
       'https://images.unsplash.com/photo-1622297845775-5ff3fef71d13?w=1800&h=1800&fit=crop&q=90',
       'https://images.unsplash.com/photo-1607853202273-797f1c22a38e?w=1800&h=1800&fit=crop&q=90',
