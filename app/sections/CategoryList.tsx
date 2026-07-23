@@ -139,17 +139,17 @@ export default function CategoryList({ showBrands = true }: { showBrands?: boole
           <ArrowRight className="w-4 h-4" strokeWidth={2.2} />
         </Link>
       </div>
-      <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+      <div className="grid grid-flow-col grid-rows-2 sm:flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
         {items.map((item) => (
           <Link
             key={item.key}
             href={item.href}
-            className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#15171c] to-[#23262e] border border-white/5 hover:border-primary/50 transition-all duration-200 hover:-translate-y-0.5 shrink-0 w-[130px] h-[140px] sm:w-[150px] sm:h-[160px] snap-start"
+            className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#15171c] to-[#23262e] border border-white/5 hover:border-primary/50 transition-all duration-200 hover:-translate-y-0.5 shrink-0 w-[130px] h-[100px] sm:w-[150px] sm:h-[160px] snap-start"
           >
             <div className="pointer-events-none absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-primary/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
 
-            <div className="relative z-10 p-4 h-full flex flex-col justify-between">
-              <h3 className="text-white font-bold text-xs sm:text-sm tracking-wide leading-tight">
+            <div className="relative z-10 p-3 sm:p-4 h-full flex flex-col justify-between">
+              <h3 className="text-white font-bold text-xs sm:text-sm tracking-wide leading-tight line-clamp-2 pr-10 sm:pr-0">
                 {item.label}
               </h3>
               <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary uppercase tracking-wider">
@@ -167,12 +167,12 @@ export default function CategoryList({ showBrands = true }: { showBrands?: boole
                 width={100}
                 height={100}
                 unoptimized
-                className="absolute right-1 bottom-1 w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-xl group-hover:scale-110 transition-transform duration-300"
+                className="absolute right-1 bottom-1 w-11 h-11 sm:w-20 sm:h-20 object-contain drop-shadow-xl group-hover:scale-110 transition-transform duration-300"
               />
             ) : (
               <item.Icon
                 strokeWidth={1.4}
-                className="absolute right-3 bottom-3 w-10 h-10 sm:w-12 sm:h-12 text-white/85 group-hover:text-primary group-hover:scale-110 transition-all duration-300"
+                className="absolute right-2.5 bottom-2.5 sm:right-3 sm:bottom-3 w-7 h-7 sm:w-12 sm:h-12 text-white/85 group-hover:text-primary group-hover:scale-110 transition-all duration-300"
               />
             )}
           </Link>
