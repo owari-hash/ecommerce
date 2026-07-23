@@ -12,15 +12,15 @@ export type GroceryTile = {
 }
 
 const DEFAULT_TILES: GroceryTile[] = [
-  { label: 'Шинэ жимс & ногоо', sub: 'Fresh Produce',       href: '/grocery/fresh-fruits', image: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=900&h=420&fit=crop' },
-  { label: 'Хүнсний дэлгүүр',   sub: 'Grocery Store',       href: '/grocery',              image: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=500&h=420&fit=crop' },
-  { label: 'Сүүн бүтээгдэхүүн', sub: 'Dairy & Eggs',        href: '/grocery/dairy-eggs',   image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=500&h=420&fit=crop' },
-  { label: 'Мах & Шувуу',       sub: 'Meat & Poultry',      href: '/grocery/meat-poultry', image: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=500&h=380&fit=crop' },
-  { label: 'Далайн хүнс',       sub: 'Seafood',             href: '/grocery/seafood',      image: 'https://images.unsplash.com/photo-1534482421-64566f976cfa?w=500&h=380&fit=crop' },
-  { label: 'Органик ногоо',     sub: 'Organic Vegetables',  href: '/grocery/vegetables',   image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=700&h=600&fit=crop' },
-  { label: 'Бэйкери',           sub: 'Bread & Pastry',      href: '/grocery/bakery',       image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=900&h=420&fit=crop' },
-  { label: 'Уух зүйлс',         sub: 'Beverages',           href: '/grocery/beverages',    image: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=500&h=380&fit=crop' },
-  { label: 'Хөнгөн зууш',       sub: 'Snacks',              href: '/grocery/snacks',       image: 'https://images.unsplash.com/photo-1555243896-c709bfa0b564?w=500&h=380&fit=crop' },
+  { label: 'Шинэ жимс & ногоо', sub: 'Fresh Produce',       href: '/grocery/fresh-fruits', image: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=1400&h=900&fit=crop&q=90' },
+  { label: 'Хүнсний дэлгүүр',   sub: 'Grocery Store',       href: '/grocery',              image: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=1200&h=1000&fit=crop&q=90' },
+  { label: 'Сүүн бүтээгдэхүүн', sub: 'Dairy & Eggs',        href: '/grocery/dairy-eggs',   image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=1200&h=1000&fit=crop&q=90' },
+  { label: 'Махан бүтээгдэхүүн',       sub: 'Meat & Poultry',      href: '/grocery/meat-poultry', image: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=1200&h=900&fit=crop&q=90' },
+  { label: 'Далайн хүнс',       sub: 'Seafood',             href: '/grocery/seafood',      image: 'https://images.unsplash.com/photo-1534482421-64566f976cfa?w=1200&h=900&fit=crop&q=90' },
+  { label: 'Органик ногоо',     sub: 'Organic Vegetables',  href: '/grocery/vegetables',   image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=1400&h=1200&fit=crop&q=90' },
+  { label: 'Бэйкери',           sub: 'Bread & Pastry',      href: '/grocery/bakery',       image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1400&h=900&fit=crop&q=90' },
+  { label: 'Уух зүйлс',         sub: 'Beverages',           href: '/grocery/beverages',    image: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=1200&h=900&fit=crop&q=90' },
+  { label: 'Хөнгөн зууш',       sub: 'Snacks',              href: '/grocery/snacks',       image: 'https://images.unsplash.com/photo-1555243896-c709bfa0b564?w=1200&h=900&fit=crop&q=90' },
 ]
 
 function BentoCard({ tile, className, style }: { tile: GroceryTile; className?: string; style?: React.CSSProperties }) {

@@ -92,27 +92,15 @@ const DEFAULT_CONFIG: TenantConfig = {
   shippingFreeThreshold: 500000,
 }
 
-import fs from "fs";
-import path from "path";
-
-function logDebug(msg: string) {
-  try {
-    const logPath = path.join(process.cwd(), "debug.log");
-    fs.appendFileSync(logPath, `${new Date().toISOString()} [tenantConfig] ${msg}\n`);
-  } catch (e) {}
-}
-
 export const fetchTenantConfig = cache(async (host: string, tenantSlug?: string | null): Promise<TenantConfig | null> => {
   if (process.env.USE_MOCK_DATA === 'true') {
     return DEFAULT_CONFIG
   }
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
-  const url = tenantSlug 
+  const url = tenantSlug
     ? `${apiUrl}/api/config?tenant=${encodeURIComponent(tenantSlug)}`
     : `${apiUrl}/api/config`
-
-  logDebug(`Fetching config from: ${url}`);
 
   try {
     const res = await fetch(url, {
@@ -120,21 +108,15 @@ export const fetchTenantConfig = cache(async (host: string, tenantSlug?: string 
       cache: 'no-store',
     })
 
-    logDebug(`Fetch status: ${res.status} for URL: ${url}`);
-
     if (!res.ok) {
-      logDebug(`Fetch failed, status: ${res.status}`);
       if (res.status === 404) {
         return null
       }
       return DEFAULT_CONFIG
     }
 
-    const data = await res.json()
-    logDebug(`Fetch successful, tenantId: ${data.tenantId}`);
-    return data
-  } catch (err: any) {
-    logDebug(`Fetch catch error: ${err.message}`);
+    return await res.json()
+  } catch {
     return DEFAULT_CONFIG
   }
 })

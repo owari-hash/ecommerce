@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Package, RotateCw, FlipHorizontal, FlipVertical } from 'lucide-react';
+import { Package, RotateCw, FlipHorizontal, FlipVertical, QrCode, Wallet, Percent, Smartphone, Banknote } from 'lucide-react';
 import { toggleCompare, readCompare } from '../../lib/compareStore';
 import { addToCart } from '../../lib/cartStore';
 import { Lens } from '../../components/Lens';
@@ -31,12 +31,12 @@ type Props = {
 };
 
 const paymentOptions = [
-  { key: 'qpay', label: 'QPay' },
-  { key: 'socialpay', label: 'SocialPay' },
-  { key: 'monpay', label: 'MonPay' },
-  { key: 'lendmn', label: 'LendMN' },
-  { key: 'pocket', label: 'Pocket' },
-  { key: 'cash', label: 'Бэлэн мөнгө' },
+  { key: 'qpay', label: 'QPay', icon: QrCode, color: '#1E88E5' },
+  { key: 'socialpay', label: 'SocialPay', icon: Wallet, color: '#E91E63' },
+  { key: 'monpay', label: 'MonPay', icon: Wallet, color: '#00A651' },
+  { key: 'lendmn', label: 'LendMN', icon: Percent, color: '#F57C00' },
+  { key: 'pocket', label: 'Pocket', icon: Smartphone, color: '#7C4DFF' },
+  { key: 'cash', label: 'Бэлэн мөнгө', icon: Banknote, color: '#546E7A' },
 ];
 
 function parsePrice(price: string): number {
@@ -141,7 +141,7 @@ export default function ProductDetailClient({ product }: Props) {
         {/* ── Images ── */}
         <section aria-label="images" className="flex flex-col gap-3">
           {/* Main image */}
-          <div className="rounded-2xl border border-gray-200 bg-gray-50 overflow-hidden relative">
+          <div className="rounded-3xl border border-gray-200 bg-gray-50 overflow-hidden relative shadow-sm">
             <Lens
               zoomFactor={2}
               lensSize={160}
@@ -334,9 +334,9 @@ export default function ProductDetailClient({ product }: Props) {
               <span className="ml-1 text-xs text-gray-400">(0)</span>
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               {/* Wishlist */}
-              <button className="flex items-center gap-1 border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-600 hover:border-gray-300 hover:text-primary transition-colors">
+              <button className="flex items-center gap-1 rounded-full bg-gray-50 hover:bg-gray-100 px-2.5 py-1.5 text-xs text-gray-600 hover:text-primary transition-colors">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
@@ -353,10 +353,10 @@ export default function ProductDetailClient({ product }: Props) {
                   price: parsePrice(product.price),
                   oldPrice: product.oldPrice ? parsePrice(product.oldPrice) : undefined,
                 })}
-                className={`flex items-center gap-1 border rounded-lg px-2 py-1.5 text-xs transition-colors ${
+                className={`flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs transition-colors ${
                   inCompare
-                    ? 'border-primary bg-primary text-white'
-                    : 'border-gray-200 text-gray-600 hover:border-primary hover:text-primary'
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-primary'
                 }`}
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -365,7 +365,7 @@ export default function ProductDetailClient({ product }: Props) {
                 <span className="hidden sm:inline">{inCompare ? 'Харьцуулж байна' : 'Харьцуулах'}</span>
               </button>
               {/* Share */}
-              <button className="flex items-center gap-1 border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-600 hover:border-gray-300 hover:text-primary transition-colors">
+              <button className="flex items-center gap-1 rounded-full bg-gray-50 hover:bg-gray-100 px-2.5 py-1.5 text-xs text-gray-600 hover:text-primary transition-colors">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                 </svg>
@@ -375,7 +375,7 @@ export default function ProductDetailClient({ product }: Props) {
           </div>
 
           {/* Price + Add to cart (desktop) */}
-          <div className="mt-5 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+          <div className="mt-5 rounded-3xl border border-gray-100 bg-gradient-to-br from-gray-50 to-white p-5 shadow-sm">
             {product.isPosLinked && (
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[10px] font-bold text-emerald-600 mb-3 animate-pulse">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -446,14 +446,25 @@ export default function ProductDetailClient({ product }: Props) {
 
           {/* Payment options */}
           <div className="mt-5">
-            <div className="text-sm font-black text-gray-900 mb-2">Төлбөрийн боломжууд</div>
-            <div className="flex flex-wrap gap-2">
-              {paymentOptions.map((x) => (
-                <button key={x.key} type="button"
-                  className="rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-gray-600 hover:border-gray-300 transition-colors">
-                  {x.label}
-                </button>
-              ))}
+            <div className="text-sm font-black text-gray-900 mb-2.5">Төлбөрийн боломжууд</div>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+              {paymentOptions.map((x) => {
+                const Icon = x.icon;
+                return (
+                  <div
+                    key={x.key}
+                    className="group flex flex-col items-center gap-1.5 rounded-2xl border border-gray-200 bg-white px-2 py-3 hover:border-gray-300 hover:shadow-sm transition-all"
+                  >
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: `${x.color}1A` }}
+                    >
+                      <Icon className="w-4 h-4" style={{ color: x.color }} strokeWidth={2.2} />
+                    </div>
+                    <span className="text-[10px] font-bold text-gray-600 text-center leading-tight">{x.label}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 

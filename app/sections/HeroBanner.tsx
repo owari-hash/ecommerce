@@ -28,7 +28,7 @@ const DEFAULT_BIG: Slide[] = [
     title: 'Онцлох бүтээгдэхүүн',
     subtitle: 'Цахилгаан бараа',
     emoji: '🎮',
-    image: 'https://unsplash.com/photos/a-video-game-console-sitting-on-top-of-a-wooden-table-uY6ZORCOCAM?w=2400&h=1400&fit=crop&q=90',
+    image: 'https://images.unsplash.com/photo-1622297845775-5ff3fef71d13?w=2400&h=1400&fit=crop&q=90',
     images: [
       'https://images.unsplash.com/photo-1622297845775-5ff3fef71d13?w=1800&h=1800&fit=crop&q=90',
       'https://images.unsplash.com/photo-1607853202273-797f1c22a38e?w=1800&h=1800&fit=crop&q=90',
@@ -63,16 +63,15 @@ export default function HeroBanner({ bigSlides, tenantId }: HeroBannerProps) {
   const resolvedBig = bigSlides && bigSlides.length > 0 ? bigSlides : DEFAULT_BIG
 
   const [idx, setIdx] = useState(0)
-  const [paused, setPaused] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const len = resolvedBig.length
   const slide = resolvedBig[idx] ?? resolvedBig[0]
 
   useEffect(() => {
-    if (paused || len <= 1 || modalOpen) return
+    if (len <= 1 || modalOpen) return
     const t = window.setInterval(() => setIdx((i) => (i + 1) % len), 3000)
     return () => window.clearInterval(t)
-  }, [paused, len, modalOpen])
+  }, [len, modalOpen])
 
   const sectionRef = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] })
@@ -85,8 +84,6 @@ export default function HeroBanner({ bigSlides, tenantId }: HeroBannerProps) {
       <section
         ref={sectionRef}
         id="hero-banner"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
         className="relative w-full h-[78vh] sm:h-[86vh] min-h-[540px] max-h-[880px] overflow-hidden bg-gray-950"
       >
         {/* Background photo — crossfade + slow Ken Burns zoom between slides */}

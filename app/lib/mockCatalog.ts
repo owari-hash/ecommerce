@@ -88,7 +88,7 @@ export const MOCK_PRODUCTS: CatalogProduct[] = [
     category: 'laptop',
     price: 4990000,
     isNew: true,
-    image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop',
+    image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=1200&h=1200&fit=crop&q=90',
     props: [
       { k: 'Төлөв', v: 'Шинэ' },
       { k: 'Санах ойшил', v: '16GB' },
@@ -107,7 +107,7 @@ export const MOCK_PRODUCTS: CatalogProduct[] = [
     price: 3490000,
     oldPrice: 3790000,
     isSale: true,
-    image: 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=400&h=300&fit=crop',
+    image: 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=1200&h=1200&fit=crop&q=90',
     props: [
       { k: 'Төлөв', v: 'Шинэ' },
       { k: 'Санах ойшил', v: '16GB' },
@@ -123,7 +123,7 @@ export const MOCK_PRODUCTS: CatalogProduct[] = [
     brand: 'ASUS',
     category: 'computer',
     price: 2890000,
-    image: 'https://images.unsplash.com/photo-1624705002806-5d72df19c3ad?w=400&h=300&fit=crop',
+    image: 'https://images.unsplash.com/photo-1624705002806-5d72df19c3ad?w=1200&h=1200&fit=crop&q=90',
     props: [
       { k: 'Төлөв', v: 'Шинэ' },
       { k: 'Ангилал', v: 'Graphic card' },
@@ -138,7 +138,7 @@ export const MOCK_PRODUCTS: CatalogProduct[] = [
     brand: 'SONY',
     category: 'audio-equipment',
     price: 890000,
-    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop',
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1200&h=1200&fit=crop&q=90',
     oldPrice: 990000,
     isSale: true,
     props: [
@@ -154,7 +154,7 @@ export const MOCK_PRODUCTS: CatalogProduct[] = [
     brand: 'Импорт',
     category: 'fresh-fruits',
     price: 8500,
-    image: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=400&h=300&fit=crop',
+    image: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=1200&h=1200&fit=crop&q=90',
     props: [{ k: 'Төрөл', v: 'Жимс' }, { k: 'Жин', v: '1кг' }],
   },
   // Grocery - Meat
@@ -166,7 +166,7 @@ export const MOCK_PRODUCTS: CatalogProduct[] = [
     category: 'meat-poultry',
     price: 24500,
     isNew: true,
-    image: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400&h=300&fit=crop',
+    image: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=1200&h=1200&fit=crop&q=90',
     props: [{ k: 'Төрөл', v: 'Үхрийн мах' }, { k: 'Жин', v: '1кг' }],
   },
   // Grocery - Dairy
@@ -177,7 +177,7 @@ export const MOCK_PRODUCTS: CatalogProduct[] = [
     brand: 'СҮҮ ХК',
     category: 'dairy-eggs',
     price: 3800,
-    image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&h=300&fit=crop',
+    image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=1200&h=1200&fit=crop&q=90',
     props: [{ k: 'Төрөл', v: 'Сүү' }, { k: 'Хэмжээ', v: '1л' }],
   },
   // Grocery - Bakery
@@ -188,7 +188,7 @@ export const MOCK_PRODUCTS: CatalogProduct[] = [
     brand: 'Батбайгаль',
     category: 'bakery',
     price: 2500,
-    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=300&fit=crop',
+    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&h=1200&fit=crop&q=90',
     props: [{ k: 'Төрөл', v: 'Талх' }],
   },
   // Grocery - Vegetables
@@ -199,7 +199,7 @@ export const MOCK_PRODUCTS: CatalogProduct[] = [
     brand: 'Дотоодын',
     category: 'vegetables',
     price: 6500,
-    image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&h=300&fit=crop',
+    image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=1200&h=1200&fit=crop&q=90',
     props: [{ k: 'Төрөл', v: 'Ногоо' }],
   },
 ];
