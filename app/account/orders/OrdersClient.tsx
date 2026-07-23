@@ -68,20 +68,38 @@ function OrderCard({ order, expanded, onToggle }: {
       {/* Header */}
       <button
         onClick={onToggle}
-        className="w-full text-left px-5 py-4 flex flex-wrap items-center gap-3 hover:bg-gray-50 transition-colors"
+        className="w-full text-left px-5 py-4 hover:bg-gray-50 transition-colors"
       >
-        {/* Order number + products */}
-        <div className="flex-1 min-w-0">
-          <p className="font-bold text-gray-900 text-sm truncate">#{order.orderNumber}</p>
-          <p className="text-xs text-gray-600 mt-0.5 truncate">
-            {order.items.map((it) => it.name).join(', ')}
-            {order.items.length > 1 && <span className="text-gray-400"> · {order.items.length} нэр төрөл</span>}
-          </p>
-          <p className="text-[11px] text-gray-400 mt-0.5">{formatDate(order.createdAt)}</p>
+        <div className="flex items-start justify-between gap-3">
+          {/* Order number + products */}
+          <div className="min-w-0">
+            <p className="font-bold text-gray-900 text-sm break-words">#{order.orderNumber}</p>
+            <p className="text-xs text-gray-600 mt-0.5 break-words">
+              {order.items.map((it) => it.name).join(', ')}
+              {order.items.length > 1 && <span className="text-gray-400"> · {order.items.length} нэр төрөл</span>}
+            </p>
+            <p className="text-[11px] text-gray-400 mt-0.5">{formatDate(order.createdAt)}</p>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Total */}
+            <p className="font-black text-gray-900 text-sm whitespace-nowrap">
+              {formatPrice(order.total)}
+            </p>
+
+            {/* Chevron */}
+            <svg
+              className="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform"
+              style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
         </div>
 
         {/* Status badges */}
-        <div className="flex flex-wrap gap-2 items-center">
+        <div className="flex flex-wrap gap-2 items-center mt-2.5">
           <span
             className="text-xs font-semibold px-2.5 py-1 rounded-full"
             style={{ color: status.color, background: status.bg }}
@@ -92,20 +110,6 @@ function OrderCard({ order, expanded, onToggle }: {
             {payment.label}
           </span>
         </div>
-
-        {/* Total */}
-        <p className="font-black text-gray-900 text-sm whitespace-nowrap">
-          {formatPrice(order.total)}
-        </p>
-
-        {/* Chevron */}
-        <svg
-          className="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform"
-          style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
-          fill="none" stroke="currentColor" viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
       </button>
 
       {/* Expandable detail */}

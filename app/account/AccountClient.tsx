@@ -96,19 +96,23 @@ function OrderCard({ order, expanded, onToggle }: { order: Order; expanded: bool
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-      <button onClick={onToggle} className="w-full text-left px-5 py-4 flex flex-wrap items-center gap-3 hover:bg-gray-50 transition-colors">
-        <div className="flex-1 min-w-0">
-          <p className="font-bold text-gray-900 text-sm truncate">#{order.orderNumber}</p>
-          <p className="text-xs text-gray-400 mt-0.5">{fmtDate(order.createdAt)}</p>
+      <button onClick={onToggle} className="w-full text-left px-5 py-4 hover:bg-gray-50 transition-colors">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-bold text-gray-900 text-sm break-words">#{order.orderNumber}</p>
+            <p className="text-xs text-gray-400 mt-0.5">{fmtDate(order.createdAt)}</p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <p className="font-black text-gray-900 text-sm whitespace-nowrap">{fmtPrice(order.total)}</p>
+            <svg className="w-4 h-4 text-gray-400 shrink-0 transition-transform" style={{ transform: expanded ? 'rotate(180deg)' : '' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 mt-2.5">
           <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ color: status.color, background: status.bg }}>{status.label}</span>
           <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ color: payment.color, background: payment.bg }}>{payment.label}</span>
         </div>
-        <p className="font-black text-gray-900 text-sm whitespace-nowrap">{fmtPrice(order.total)}</p>
-        <svg className="w-4 h-4 text-gray-400 shrink-0 transition-transform" style={{ transform: expanded ? 'rotate(180deg)' : '' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
       </button>
 
       {expanded && (
@@ -539,49 +543,35 @@ export default function AccountClient() {
   // ── Not logged in ──────────────────────────────────────────────────────────
   const phoneIcon = <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>;
   const lockIcon  = <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>;
-  const inputCls = "w-full border border-gray-200 rounded-2xl pl-11 pr-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 bg-[#faf8f5] transition-colors";
+  const inputCls = "w-full border border-gray-200 rounded-2xl pl-11 pr-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 bg-[#faf8f5] transition-colors";
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
+    <div className="min-h-[calc(100dvh-90px)] flex items-center justify-center px-4 py-5">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-7">
-          <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center mx-auto mb-4 shadow-md shadow-primary/20">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-            {activeTab === 'login' ? 'Нэвтрэх' : activeTab === 'register' ? 'Бүртгүүлэх' : 'Нууц үг сэргээх'}
-          </h1>
-          <p className="text-[13px] text-gray-400 mt-1">
-            {activeTab === 'login' ? 'Дахин тавтай морил' : activeTab === 'register' ? 'Шинэ бүртгэл үүсгэх' : 'Утасны дугаараа баталгаажуулна уу'}
-          </p>
-        </div>
-
         {error && (
-          <div className="mb-4 flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-600">
+          <div className="mb-3 flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 text-sm text-red-600">
             <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/></svg>
             {error}
           </div>
         )}
         {success && (
-          <div className="mb-4 flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-600">
+          <div className="mb-3 flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-4 py-2.5 text-sm text-green-600">
             <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
             {success}
           </div>
         )}
 
-        <div className="bg-white rounded-3xl border border-[#f0e9df] shadow-[0_24px_60px_-24px_rgba(35,32,28,0.18)] p-7 sm:p-8">
+        <div className="bg-white rounded-3xl border border-[#f0e9df] shadow-[0_24px_60px_-24px_rgba(35,32,28,0.18)] p-5 sm:p-6">
 
           {/* Tab switcher — only login/register */}
           {activeTab !== 'forgot' && (
-            <div className="flex gap-1 mb-7 bg-[#f4efe7] rounded-2xl p-1">
+            <div className="flex gap-1 mb-4 bg-[#f4efe7] rounded-2xl p-1">
               <button onClick={() => switchTab('login')}
-                className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${activeTab === 'login' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all ${activeTab === 'login' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
                 Нэвтрэх
               </button>
               <button onClick={() => switchTab('register')}
-                className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${activeTab === 'register' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all ${activeTab === 'register' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
                 Бүртгүүлэх
               </button>
             </div>
@@ -589,7 +579,7 @@ export default function AccountClient() {
 
           {/* ── LOGIN ── */}
           {activeTab === 'login' && (
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-3">
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">{phoneIcon}</span>
                 <input type="tel" value={loginPhone} onChange={e => setLoginPhone(e.target.value)}
@@ -605,7 +595,7 @@ export default function AccountClient() {
                   className="text-xs text-primary hover:underline">Нууц үг мартсан?</button>
               </div>
               <button type="submit" disabled={loading}
-                className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 rounded-2xl transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 disabled:opacity-60">
+                className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-2xl transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 disabled:opacity-60">
                 {loading ? <span className="flex items-center justify-center gap-2"><Spinner />Нэвтэрж байна...</span> : 'Нэвтрэх'}
               </button>
             </form>
@@ -615,7 +605,7 @@ export default function AccountClient() {
           {activeTab === 'register' && (
             <>
               {!regOtpSent ? (
-                <form onSubmit={handleSendRegisterOtp} className="space-y-4">
+                <form onSubmit={handleSendRegisterOtp} className="space-y-3">
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">{phoneIcon}</span>
                     <input type="tel" value={regPhone} onChange={e => setRegPhone(e.target.value)}
@@ -632,12 +622,12 @@ export default function AccountClient() {
                       className={inputCls} placeholder="Нууц үг давтах" />
                   </div>
                   <button type="submit" disabled={loading}
-                    className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 rounded-2xl transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 disabled:opacity-60">
+                    className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-2xl transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 disabled:opacity-60">
                     {loading ? <span className="flex items-center justify-center gap-2"><Spinner />Илгээж байна...</span> : 'Код авах'}
                   </button>
                 </form>
               ) : (
-                <form onSubmit={handleVerifyRegisterOtp} className="space-y-4">
+                <form onSubmit={handleVerifyRegisterOtp} className="space-y-3">
                   <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-700 flex items-center justify-center gap-1.5 text-center">
                     <Smartphone className="w-4 h-4 shrink-0" strokeWidth={2} /> <span className="font-semibold">{regPhone}</span>-д баталгаажуулах код илгээлээ
                   </div>
@@ -714,39 +704,25 @@ export default function AccountClient() {
           {/* Social login (Google / Facebook) — login & register tabs */}
           {activeTab !== 'forgot' && (
             <>
-              <div className="flex items-center gap-3 my-6">
+              <div className="flex items-center gap-3 my-4">
                 <div className="flex-1 h-px bg-gray-100" />
                 <span className="text-[11px] font-medium text-gray-400 tracking-wide uppercase">эсвэл</span>
                 <div className="flex-1 h-px bg-gray-100" />
               </div>
-              <div className="space-y-2.5">
-                <button
-                  type="button"
-                  disabled
-                  title="Тун удахгүй"
-                  className="w-full flex items-center gap-2.5 border border-gray-200 rounded-2xl pl-4 pr-3 py-2.5 text-sm font-semibold text-gray-400 bg-[#faf8f5] cursor-not-allowed"
+              <div className="grid gap-2.5">
+                <a
+                  href={`/api/auth/oauth/google?redirect=${encodeURIComponent('/account')}`}
+                  className="flex items-center justify-center gap-2 border border-gray-200 rounded-2xl px-3 py-2.5 text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-colors"
                 >
-                  <svg className="w-5 h-5 shrink-0 opacity-60" viewBox="0 0 48 48">
+                  <svg className="w-4.5 h-4.5 shrink-0" viewBox="0 0 48 48">
                     <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" />
                     <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z" />
                     <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z" />
                     <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z" />
                   </svg>
-                  <span className="flex-1 min-w-0 truncate text-center">Google-ээр нэвтрэх</span>
-                  <span className="shrink-0 text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">Тун удахгүй</span>
-                </button>
-                <button
-                  type="button"
-                  disabled
-                  title="Тун удахгүй"
-                  className="w-full flex items-center gap-2.5 border border-gray-200 rounded-2xl pl-4 pr-3 py-2.5 text-sm font-semibold text-gray-400 bg-[#faf8f5] cursor-not-allowed"
-                >
-                  <svg className="w-5 h-5 shrink-0 opacity-60" fill="#1877F2" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                  </svg>
-                  <span className="flex-1 min-w-0 truncate text-center">Facebook-ээр нэвтрэх</span>
-                  <span className="shrink-0 text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">Тун удахгүй</span>
-                </button>
+                  Google
+                </a>
+                
               </div>
             </>
           )}

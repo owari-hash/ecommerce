@@ -259,7 +259,7 @@ export default function Header() {
           {/* Mobile: search icon triggers full-screen modal */}
           <button
             onClick={() => setShowMobileSearch(true)}
-            className={`sm:hidden flex-1 min-w-0 flex items-center gap-2 border rounded-lg px-3 py-2 text-sm transition-colors duration-300 ${transparent ? 'border-white/40 text-white/80 bg-white/10 backdrop-blur-sm' : 'border-gray-300 text-gray-400 bg-gray-50'}`}
+            className={`sm:hidden flex-1 min-w-0 flex items-center gap-2 border rounded-lg px-3 py-2 text-sm transition-colors duration-300 ${transparent ? 'border-transparent text-white/80 bg-white/10 backdrop-blur-sm' : 'border-gray-300 text-gray-400 bg-gray-50'}`}
           >
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -276,7 +276,7 @@ export default function Header() {
                 onChange={handleSearchChange}
                 onFocus={() => setShowSuggestions(true)}
                 placeholder="Бараа хайх..."
-                className={`flex-1 min-w-0 border rounded-l-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors duration-300 ${transparent ? 'bg-white/95 backdrop-blur-sm border-white/40 shadow-sm' : 'border-gray-300'}`}
+                className={`flex-1 min-w-0 border rounded-l-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors duration-300 ${transparent ? 'bg-white/10 backdrop-blur-sm border-transparent text-white placeholder-white/70' : 'border-gray-300'}`}
               />
               <button
                 type="submit"
