@@ -1,8 +1,9 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Package, ShoppingCart, Check, User as UserIcon, Heart, LogOut, Shirt, Laptop, Sparkles, Home as HomeIcon } from 'lucide-react';
 import { getCartCount, addToCart } from '../lib/cartStore';
 import { readAuth, logout, type User } from '../lib/authStore';
 import { formatPrice } from '../lib/mockCatalog';
@@ -26,6 +27,10 @@ export default function Header() {
   const { branding, contact, tenantId } = useTenant();
   const tenantHref = useTenantHref();
   const router = useRouter();
+  const pathname = usePathname();
+  const isHome = pathname === '/';
+  const [pastHero, setPastHero] = useState(!isHome);
+  const transparent = isHome && !pastHero;
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -54,6 +59,16 @@ export default function Header() {
       window.removeEventListener('auth:changed', onAuthChange);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isHome) return;
+    const hero = document.getElementById('hero-banner');
+    const threshold = hero ? hero.offsetHeight - 96 : window.innerHeight * 0.7;
+    const onScroll = () => setPastHero(window.scrollY > threshold);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [isHome]);
 
 
   useEffect(() => {
@@ -169,7 +184,7 @@ export default function Header() {
       name: product.name,
       price: product.price,
       oldPrice: product.oldPrice,
-      icon: '📦',
+      icon: 'product',
       brand: product.brand,
     });
     setShowToast(true);
@@ -203,29 +218,31 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 w-full z-50 shadow-md">
-      {/* Top Bar – hidden on mobile */}
-      <div className="hidden sm:block bg-[#0a1628] text-white text-xs py-2">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <a href={`tel:${contact?.phone}`} className="hover:text-primary-light transition-colors flex items-center gap-1">
-              <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" /></svg>
-              {contact?.phone}
-            </a>
-            <a href={`mailto:${contact?.email}`} className="hover:text-primary-light transition-colors flex items-center gap-1">
-              <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-              {contact?.email}
-            </a>
+    <header className={`fixed top-0 left-0 right-0 w-full z-50 transition-shadow duration-300 ${transparent ? '' : 'shadow-md'}`}>
+      {/* Top Bar – hidden on mobile, and hidden while transparent over the hero */}
+      {!transparent && (
+        <div className="hidden sm:block bg-[#0a1628] text-white text-xs py-2">
+          <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <a href={`tel:${contact?.phone}`} className="hover:text-primary-light transition-colors flex items-center gap-1">
+                <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" /></svg>
+                {contact?.phone}
+              </a>
+              <a href={`mailto:${contact?.email}`} className="hover:text-primary-light transition-colors flex items-center gap-1">
+                <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                {contact?.email}
+              </a>
+            </div>
+            <span className="text-gray-300 flex items-center gap-1">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" /></svg>
+              Өдөр бүр 10:00 - 20:00
+            </span>
           </div>
-          <span className="text-gray-300 flex items-center gap-1">
-            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" /></svg>
-            Өдөр бүр 10:00 - 20:00
-          </span>
         </div>
-      </div>
+      )}
 
       {/* Main Header */}
-      <div className="bg-white border-b border-gray-100 py-2">
+      <div className={`py-2 transition-colors duration-300 ${transparent ? 'bg-transparent border-b border-transparent' : 'bg-white border-b border-gray-100'}`}>
         <div className="max-w-7xl mx-auto px-3 flex items-center gap-2">
           {/* Logo — single mark (image only) */}
           <Link href={tenantHref('/')} className="shrink-0 flex items-center">
@@ -234,7 +251,7 @@ export default function Header() {
               alt={branding.name || 'Logo'}
               width={200}
               height={40}
-              className="h-7 sm:h-10 w-auto object-contain max-w-[104px] sm:max-w-[200px]"
+              className={`h-7 sm:h-10 w-auto object-contain max-w-[104px] sm:max-w-[200px] transition-[filter] duration-300 ${transparent ? 'drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)]' : ''}`}
               style={{ width: 'auto' }}
             />
           </Link>
@@ -242,7 +259,7 @@ export default function Header() {
           {/* Mobile: search icon triggers full-screen modal */}
           <button
             onClick={() => setShowMobileSearch(true)}
-            className="sm:hidden flex-1 min-w-0 flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-400 bg-gray-50"
+            className={`sm:hidden flex-1 min-w-0 flex items-center gap-2 border rounded-lg px-3 py-2 text-sm transition-colors duration-300 ${transparent ? 'border-white/40 text-white/80 bg-white/10 backdrop-blur-sm' : 'border-gray-300 text-gray-400 bg-gray-50'}`}
           >
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -259,7 +276,7 @@ export default function Header() {
                 onChange={handleSearchChange}
                 onFocus={() => setShowSuggestions(true)}
                 placeholder="Бараа хайх..."
-                className="flex-1 min-w-0 border border-gray-300 rounded-l-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                className={`flex-1 min-w-0 border rounded-l-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors duration-300 ${transparent ? 'bg-white/95 backdrop-blur-sm border-white/40 shadow-sm' : 'border-gray-300'}`}
               />
               <button
                 type="submit"
@@ -296,7 +313,7 @@ export default function Header() {
                               <div className="relative aspect-square bg-gray-50 rounded-md flex items-center justify-center mb-2 overflow-hidden">
                                 {product.image
                                   ? <Image src={product.image} alt={product.name} fill className={`object-cover ${product.stock === 0 ? 'grayscale opacity-60' : ''}`} sizes="120px" unoptimized />
-                                  : <div className="text-2xl">📦</div>
+                                  : <Package className="w-6 h-6 text-gray-300" strokeWidth={1.5} />
                                 }
                                 {product.stock === 0 && (
                                   <span className="absolute top-1 left-1 bg-gray-800 text-white text-[8px] font-black px-1 py-0.5 rounded leading-none shadow uppercase">
@@ -344,13 +361,13 @@ export default function Header() {
           </div>
 
           {/* Nav Icons */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <Link href="/compare" className="hidden md:flex flex-col items-center text-gray-500 hover:text-primary transition-colors">
+          <div className={`flex items-center gap-2 sm:gap-3 shrink-0 transition-colors duration-300 ${transparent ? 'text-white' : ''}`}>
+            <Link href="/compare" className={`hidden md:flex flex-col items-center transition-colors ${transparent ? 'text-white hover:text-white/70' : 'text-gray-500 hover:text-primary'}`}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
               <span className="text-[10px] mt-0.5">Харьцуулах</span>
             </Link>
 
-            <Link href="/checkout" className="flex flex-col items-center text-gray-500 hover:text-primary transition-colors relative">
+            <Link href="/checkout" className={`flex flex-col items-center transition-colors relative ${transparent ? 'text-white hover:text-white/70' : 'text-gray-500 hover:text-primary'}`}>
               <div className="relative">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                 {cartCount > 0 ? (
@@ -366,17 +383,19 @@ export default function Header() {
             {showToast && (
               <div className="fixed bottom-20 left-1/2 -translate-x-1/2 md:bottom-6 md:left-auto md:right-6 md:translate-x-0 z-[100] w-[min(90vw,340px)] pointer-events-none">
                 <div className="bg-gray-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3">
-                  <span className="shrink-0 w-7 h-7 bg-white/10 rounded-full flex items-center justify-center text-base">🛒</span>
+                  <span className="shrink-0 w-7 h-7 bg-white/10 rounded-full flex items-center justify-center">
+                    <ShoppingCart className="w-3.5 h-3.5" strokeWidth={2} />
+                  </span>
                   <span className="text-sm font-semibold flex-1 truncate">Сагсанд нэмэгдлээ!</span>
-                  <span className="text-green-400 shrink-0">✓</span>
+                  <Check className="w-4 h-4 text-green-400 shrink-0" strokeWidth={2.5} />
                 </div>
               </div>
             )}
 
             {user ? (
               <div className="relative hidden md:block">
-                <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex flex-col items-center text-primary transition-colors">
-                  <span className="w-8 h-8 rounded-full bg-primary/10 ring-1 ring-primary/20 flex items-center justify-center">
+                <button onClick={() => setUserMenuOpen(!userMenuOpen)} className={`flex flex-col items-center transition-colors ${transparent ? 'text-white' : 'text-primary'}`}>
+                  <span className={`w-8 h-8 rounded-full flex items-center justify-center ${transparent ? 'bg-white/15 ring-1 ring-white/30 backdrop-blur-sm' : 'bg-primary/10 ring-1 ring-primary/20'}`}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
@@ -391,18 +410,18 @@ export default function Header() {
                         <p className="font-bold text-gray-900">{user.lastName} {user.firstName}</p>
                         <p className="text-xs text-gray-500">{user.phone}</p>
                       </div>
-                      <Link href="/account" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary">👤 Хувийн мэдээлэл</Link>
-                      <Link href="/account/wishlists" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary">❤️ Хадгалсан</Link>
-                      <Link href="/checkout" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary">🛒 Миний сагс</Link>
+                      <Link href="/account" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary"><UserIcon className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Хувийн мэдээлэл</Link>
+                      <Link href="/account/wishlists" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary"><Heart className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Хадгалсан</Link>
+                      <Link href="/checkout" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary"><ShoppingCart className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Миний сагс</Link>
                       <div className="border-t border-gray-100 mt-1 pt-1">
-                        <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">🚪 Гарах</button>
+                        <button onClick={handleLogout} className="flex items-center gap-2.5 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"><LogOut className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Гарах</button>
                       </div>
                     </div>
                   </>
                 )}
               </div>
             ) : (
-              <Link href="/account" className="hidden md:flex flex-col items-center text-gray-500 hover:text-primary transition-colors">
+              <Link href="/account" className={`hidden md:flex flex-col items-center transition-colors ${transparent ? 'text-white hover:text-white/70' : 'text-gray-500 hover:text-primary'}`}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                 <span className="text-[10px] mt-0.5">Бүртгэл</span>
               </Link>
@@ -411,7 +430,7 @@ export default function Header() {
             {/* Mobile hamburger */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="lg:hidden flex items-center justify-center w-10 h-10 text-gray-700"
+              className={`lg:hidden flex items-center justify-center w-10 h-10 transition-colors ${transparent ? 'text-white' : 'text-gray-700'}`}
               aria-label="Цэс нээх"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
@@ -420,22 +439,26 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mega Menu — desktop only */}
-      <div className="hidden lg:block">
-        <MegaMenu />
-      </div>
-
-      {/* Mobile category nav strip */}
-      <div className="lg:hidden bg-primary text-white">
-        <div className="flex overflow-x-auto scrollbar-hide px-2">
-          {categories.map(cat => (
-            <Link key={cat.href} href={cat.href}
-              className="shrink-0 px-3 py-2 text-xs font-medium whitespace-nowrap hover:bg-primary-dark transition-colors">
-              {cat.label}
-            </Link>
-          ))}
+      {/* Mega Menu — desktop only, hidden while transparent over the hero */}
+      {!transparent && (
+        <div className="hidden lg:block">
+          <MegaMenu />
         </div>
-      </div>
+      )}
+
+      {/* Mobile category nav strip — hidden while transparent over the hero */}
+      {!transparent && (
+        <div className="lg:hidden bg-primary text-white">
+          <div className="flex overflow-x-auto scrollbar-hide px-2">
+            {categories.map(cat => (
+              <Link key={cat.href} href={cat.href}
+                className="shrink-0 px-3 py-2 text-xs font-medium whitespace-nowrap hover:bg-primary-dark transition-colors">
+                {cat.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Mobile drawer menu */}
       {menuOpen && (
@@ -458,14 +481,14 @@ export default function Header() {
               </Link>
             ))}
             <div className="p-2 bg-gray-50 text-xs text-gray-500 font-medium">Онцлох ангилал</div>
-            <Link href="/grocery" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><span>🛒</span> Grocery &amp; Supermarket</Link>
-            <Link href="/fashion" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><span>👕</span> Fashion &amp; Clothing</Link>
-            <Link href="/electronics" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><span>💻</span> Electronics</Link>
-            <Link href="/beauty" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><span>💄</span> Beauty &amp; Personal Care</Link>
-            <Link href="/home-living" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><span>🏠</span> Home &amp; Living</Link>
+            <Link href="/grocery" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><ShoppingCart className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Grocery &amp; Supermarket</Link>
+            <Link href="/fashion" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><Shirt className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Fashion &amp; Clothing</Link>
+            <Link href="/electronics" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><Laptop className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Electronics</Link>
+            <Link href="/beauty" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><Sparkles className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Beauty &amp; Personal Care</Link>
+            <Link href="/home-living" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><HomeIcon className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Home &amp; Living</Link>
             <div className="p-2 bg-gray-50 text-xs text-gray-500 font-medium mt-2">Бүртгэл</div>
-            <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><span>👤</span> Хувийн мэдээлэл</Link>
-            <Link href="/account/wishlists" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><span>❤️</span> Хадгалсан</Link>
+            <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><UserIcon className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Хувийн мэдээлэл</Link>
+            <Link href="/account/wishlists" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><Heart className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Хадгалсан</Link>
           </div>
         </>
       )}
@@ -580,7 +603,7 @@ export default function Header() {
                             {product.image ? (
                               <Image src={product.image} alt={product.name} fill className={`object-cover ${product.stock === 0 ? 'grayscale opacity-60' : ''}`} sizes="144px" unoptimized />
                             ) : (
-                              <span className="text-4xl">📦</span>
+                              <Package className="w-9 h-9 text-gray-300" strokeWidth={1.4} />
                             )}
                             <div className="absolute top-1.5 left-1.5 bg-white/90 rounded px-1 py-0.5">
                               <span className="text-[9px] font-black text-gray-700">{product.brand}</span>

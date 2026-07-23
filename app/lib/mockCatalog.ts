@@ -1,3 +1,9 @@
+import {
+  Laptop, Monitor, Smartphone, Gamepad2, Headphones, Home as HomeIcon, Mouse,
+  ShoppingCart, Apple, Beef, Milk, Fish, Carrot, Croissant, CupSoda, Cookie,
+  type LucideIcon,
+} from 'lucide-react';
+
 export type CatalogCategoryKey =
   | 'laptop'
   | 'computer'
@@ -49,23 +55,23 @@ export const CATEGORY_LABELS: Record<CatalogCategoryKey, string> = {
   snacks: 'Зууш, амттан',
 };
 
-export const CATEGORY_ICONS: Record<CatalogCategoryKey, string> = {
-  laptop: '💻',
-  computer: '🖥️',
-  'smartphone-and-tablet': '📱',
-  console: '🎮',
-  'audio-equipment': '🎧',
-  home: '🏠',
-  accessories: '🖱️',
-  grocery: '🛒',
-  'fresh-fruits': '🍎',
-  'meat-poultry': '🥩',
-  'dairy-eggs': '🥛',
-  seafood: '🐟',
-  vegetables: '🥦',
-  bakery: '🥐',
-  beverages: '🥤',
-  snacks: '🥨',
+export const CATEGORY_ICONS: Record<CatalogCategoryKey, LucideIcon> = {
+  laptop: Laptop,
+  computer: Monitor,
+  'smartphone-and-tablet': Smartphone,
+  console: Gamepad2,
+  'audio-equipment': Headphones,
+  home: HomeIcon,
+  accessories: Mouse,
+  grocery: ShoppingCart,
+  'fresh-fruits': Apple,
+  'meat-poultry': Beef,
+  'dairy-eggs': Milk,
+  seafood: Fish,
+  vegetables: Carrot,
+  bakery: Croissant,
+  beverages: CupSoda,
+  snacks: Cookie,
 };
 
 export function formatPrice(n: number) {

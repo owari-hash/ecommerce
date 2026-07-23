@@ -1,7 +1,15 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { Package, Calendar, Receipt, CreditCard, type LucideIcon } from 'lucide-react';
 
 export const metadata: Metadata = { title: 'Төлбөр буцаах хүсэлт' };
+
+const CONDITIONS: { Icon: LucideIcon; title: string; desc: string }[] = [
+  { Icon: Package, title: 'Барааны нөхцөл', desc: 'Бараа эх байдлаараа, гэмтэлгүй, бүрэн савлагаатай байх ёстой.' },
+  { Icon: Calendar, title: 'Хугацаа', desc: 'Бараа авснаас хойш 7 хоногийн дотор буцаах хүсэлт гаргана.' },
+  { Icon: Receipt, title: 'Баримт', desc: 'Худалдан авалтын баримт, гэрчилгээ бүрэн байх шаардлагатай.' },
+  { Icon: CreditCard, title: 'Буцаалтын хугацаа', desc: 'Хүсэлтийг хүлээн авснаас хойш 3-5 ажлын өдрийн дотор буцаана.' },
+];
 
 export default function RefundPage() {
   return (
@@ -13,14 +21,11 @@ export default function RefundPage() {
       </nav>
       <h1 className="text-2xl font-black text-gray-800 mb-8">Төлбөр буцаах хүсэлт</h1>
       <div className="grid md:grid-cols-2 gap-6 mb-8">
-        {[
-          { icon: '📦', title: 'Барааны нөхцөл', desc: 'Бараа эх байдлаараа, гэмтэлгүй, бүрэн савлагаатай байх ёстой.' },
-          { icon: '📅', title: 'Хугацаа', desc: 'Бараа авснаас хойш 7 хоногийн дотор буцаах хүсэлт гаргана.' },
-          { icon: '🧾', title: 'Баримт', desc: 'Худалдан авалтын баримт, гэрчилгээ бүрэн байх шаардлагатай.' },
-          { icon: '💳', title: 'Буцаалтын хугацаа', desc: 'Хүсэлтийг хүлээн авснаас хойш 3-5 ажлын өдрийн дотор буцаана.' },
-        ].map(c => (
+        {CONDITIONS.map(c => (
           <div key={c.title} className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm flex gap-4 items-start">
-            <div className="text-3xl">{c.icon}</div>
+            <div className="w-10 h-10 rounded-lg bg-blue-50 text-[#1565C0] flex items-center justify-center shrink-0">
+              <c.Icon className="w-5 h-5" strokeWidth={1.8} />
+            </div>
             <div>
               <div className="font-bold text-gray-800 mb-1 text-sm">{c.title}</div>
               <p className="text-sm text-gray-500">{c.desc}</p>

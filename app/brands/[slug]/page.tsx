@@ -3,6 +3,7 @@ import Image from 'next/image';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
+import { Package } from 'lucide-react';
 import { fetchTenantConfig } from '../../lib/tenantConfig';
 import { resolveUploadUrl } from '../../lib/apiClient';
 import { formatPrice } from '../../lib/mockCatalog';
@@ -138,7 +139,7 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
 
       {brandProducts.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-          <div className="text-7xl mb-4 opacity-40">📦</div>
+          <Package className="w-16 h-16 mx-auto mb-4 text-gray-300" strokeWidth={1.4} />
           <h2 className="text-xl font-bold text-gray-700 mb-2">{brandName} брэндийн бараанууд</h2>
           <p className="text-gray-400 mb-6 text-sm">Одоогоор бараа байхгүй байна.</p>
           <Link href={`/brands${tenantQs}`} className="inline-block font-bold px-8 py-3 rounded-xl transition-colors text-white" style={{ backgroundColor: primaryColor }}>
@@ -168,7 +169,7 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
                       sizes="(max-width:640px) 50vw, 25vw"
                     />
                   ) : (
-                    <span className="text-4xl">📦</span>
+                    <Package className="w-9 h-9 text-gray-300" strokeWidth={1.4} />
                   )}
                   {isOnSale && (
                     <span className="absolute top-2 left-2 text-[10px] font-black text-white px-1.5 py-0.5 rounded-full" style={{ backgroundColor: primaryColor }}>

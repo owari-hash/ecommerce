@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { SearchX, Ticket } from 'lucide-react';
 import { useTenant } from '../../lib/TenantContext';
 import { ORDER_FLOW, orderStatusMeta, paymentStatusMeta } from '../../lib/orderStatus';
 
@@ -80,7 +81,7 @@ export default function OrderTrackPage() {
   if (error || !order) {
     return (
       <div className="max-w-lg mx-auto px-4 py-16 text-center">
-        <div className="text-6xl mb-4 opacity-40">🔍</div>
+        <SearchX className="w-14 h-14 mx-auto mb-4 text-gray-300" strokeWidth={1.3} />
         <h1 className="text-xl font-bold text-gray-800 mb-2">Захиалга олдсонгүй</h1>
         <p className="text-sm text-gray-500 mb-6">{error || `#${orderNumber} дугаартай захиалга олдсонгүй.`}</p>
         <Link href="/" className="inline-block bg-primary hover:bg-primary-dark text-white font-bold px-8 py-3 rounded-xl transition-colors">
@@ -187,7 +188,7 @@ export default function OrderTrackPage() {
           {eb?.ebarimtBillId && (
             <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-4 border border-emerald-100/50">
               <div className="flex justify-between items-center text-xs font-bold text-emerald-800 mb-2 border-b border-emerald-100/40 pb-2">
-                <span>🎫 И-Баримт</span>
+                <span className="flex items-center gap-1.5"><Ticket className="w-3.5 h-3.5" strokeWidth={2} /> И-Баримт</span>
                 <span className="text-[10px] bg-emerald-600 text-white font-extrabold px-2 py-0.5 rounded-full">E-BARIMT</span>
               </div>
               <div className="text-xs flex justify-between items-center mb-2">

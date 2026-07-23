@@ -1,15 +1,16 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { Landmark, Check } from 'lucide-react';
 
 export const metadata: Metadata = { title: 'Лизинг үйлчилгээ' };
 
 const banks = [
-  { name: 'Хаан банк', logo: '🏦', rate: '0%', term: '12 сар хүртэл' },
-  { name: 'Голомт банк', logo: '🏦', rate: '0%', term: '18 сар хүртэл' },
-  { name: 'ХХБ', logo: '🏦', rate: '0%', term: '12 сар хүртэл' },
-  { name: 'Төрийн банк', logo: '🏦', rate: '0%', term: '24 сар хүртэл' },
-  { name: 'Капитал банк', logo: '🏦', rate: '0%', term: '12 сар хүртэл' },
-  { name: 'Богд банк', logo: '🏦', rate: '0%', term: '18 сар хүртэл' },
+  { name: 'Хаан банк', rate: '0%', term: '12 сар хүртэл' },
+  { name: 'Голомт банк', rate: '0%', term: '18 сар хүртэл' },
+  { name: 'ХХБ', rate: '0%', term: '12 сар хүртэл' },
+  { name: 'Төрийн банк', rate: '0%', term: '24 сар хүртэл' },
+  { name: 'Капитал банк', rate: '0%', term: '12 сар хүртэл' },
+  { name: 'Богд банк', rate: '0%', term: '18 сар хүртэл' },
 ];
 
 export default function LeasingAllPage() {
@@ -30,7 +31,7 @@ export default function LeasingAllPage() {
             <p className="text-blue-200 text-lg">Лизинг үйлчилгээ</p>
             <p className="text-blue-300 text-sm mt-2">Хамтрагч банкуудаар дамжуулан хялбар болгосон</p>
           </div>
-          <div className="text-8xl opacity-20">🏦</div>
+          <Landmark className="w-24 h-24 opacity-20" strokeWidth={1.2} />
         </div>
       </div>
 
@@ -38,7 +39,7 @@ export default function LeasingAllPage() {
         {banks.map(bank => (
           <div key={bank.name} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-xl">{bank.logo}</div>
+              <div className="w-10 h-10 rounded-lg bg-blue-50 text-[#1565C0] flex items-center justify-center"><Landmark className="w-5 h-5" strokeWidth={1.8} /></div>
               <div className="font-bold text-gray-800">{bank.name}</div>
             </div>
             <div className="flex justify-between text-sm">
@@ -66,7 +67,7 @@ export default function LeasingAllPage() {
             'Шийдвэрлэх хугацаа: 1-3 ажлын өдөр',
           ].map(item => (
             <li key={item} className="flex items-start gap-2 text-sm text-gray-600">
-              <span className="text-green-500 mt-0.5">✓</span>
+              <Check className="w-4 h-4 text-green-500 mt-0.5 shrink-0" strokeWidth={2.5} />
               {item}
             </li>
           ))}

@@ -1,9 +1,15 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { Truck, Package, MapPin, HelpCircle, type LucideIcon } from 'lucide-react';
 
 export const metadata: Metadata = { title: 'Хүргэлтийн нөхцөл' };
 
 export default function DeliveryPage() {
+  const perks: { Icon: LucideIcon; title: string; desc: string }[] = [
+    { Icon: Truck, title: 'Хурдан хүргэлт', desc: 'Улаанбаатар хотын дотор 1-3 ажлын өдөрт' },
+    { Icon: Package, title: 'Аюулгүй савлагаа', desc: 'Бүтээгдэхүүнийг хамгаалалттай савлана' },
+    { Icon: MapPin, title: 'Хаягаар хүргэнэ', desc: 'Таны заасан хаягт хүргэнэ' },
+  ];
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <nav className="text-sm text-gray-500 mb-6 flex items-center gap-1">
@@ -14,13 +20,9 @@ export default function DeliveryPage() {
       <h1 className="text-2xl font-black text-gray-800 mb-8">Хүргэлтийн нөхцөл</h1>
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 space-y-8">
         <div className="grid md:grid-cols-3 gap-6">
-          {[
-            { icon: '🚚', title: 'Хурдан хүргэлт', desc: 'Улаанбаатар хотын дотор 1-3 ажлын өдөрт' },
-            { icon: '📦', title: 'Аюулгүй савлагаа', desc: 'Бүтээгдэхүүнийг хамгаалалттай савлана' },
-            { icon: '📍', title: 'Хаягаар хүргэнэ', desc: 'Таны заасан хаягт хүргэнэ' },
-          ].map(c => (
+          {perks.map(c => (
             <div key={c.title} className="text-center p-4 rounded-xl bg-blue-50">
-              <div className="text-4xl mb-3">{c.icon}</div>
+              <c.Icon className="w-9 h-9 mx-auto mb-3 text-[#1565C0]" strokeWidth={1.6} />
               <div className="font-bold text-gray-800 mb-1">{c.title}</div>
               <p className="text-sm text-gray-500">{c.desc}</p>
             </div>
@@ -34,7 +36,10 @@ export default function DeliveryPage() {
             { q: 'Хүргэлтийг хянах боломжтой юу?', a: 'Тийм. Захиалгын дугаараараа вэбсайтаас захиалгынхаа байдлыг шалгаж болно.' },
           ].map(faq => (
             <div key={faq.q} className="border border-gray-100 rounded-xl p-5">
-              <div className="font-semibold text-gray-800 mb-2 text-sm">❓ {faq.q}</div>
+              <div className="font-semibold text-gray-800 mb-2 text-sm flex items-center gap-1.5">
+                <HelpCircle className="w-4 h-4 text-[#1565C0] shrink-0" strokeWidth={1.8} />
+                {faq.q}
+              </div>
               <p className="text-sm text-gray-600">{faq.a}</p>
             </div>
           ))}

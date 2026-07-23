@@ -7,7 +7,7 @@ import {
   Laptop, Monitor, Smartphone, Gamepad2, Headphones, Mouse, Cpu,
   Apple, Carrot, Beef, Milk, Fish, Croissant, CupSoda, Cookie, UtensilsCrossed,
   Sofa, CookingPot, Lightbulb, Baby, DoorOpen, Bath, Briefcase, Sprout, Tv,
-  Tag, ShoppingBag, type LucideIcon,
+  Tag, ShoppingBag, ArrowRight, type LucideIcon,
 } from 'lucide-react'
 import { useTenant } from '../lib/TenantContext'
 import { useTenantHref } from '../lib/useTenantHref'
@@ -132,10 +132,11 @@ export default function CategoryList({ showBrands = true }: { showBrands?: boole
 
   return (
     <section className="max-w-7xl mx-auto px-4 mt-12 mb-8">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-black text-gray-900 tracking-tight">Ангилал</h2>
-        <Link href={tenantHref('/categories')} className="text-sm font-bold text-primary hover:underline">
-          Бүгдийг харах →
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-6">
+        <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Ангилал</h2>
+        <Link href={tenantHref('/categories')} className="shrink-0 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline">
+          Бүгдийг харах
+          <ArrowRight className="w-4 h-4" strokeWidth={2.2} />
         </Link>
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">

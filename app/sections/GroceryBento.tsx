@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { ShoppingCart } from 'lucide-react'
 import GroceryBentoMobile from '../components/GroceryBentoMobile'
 import ImagePlaceholder from '../components/ImagePlaceholder'
 
@@ -67,12 +68,13 @@ export default function GroceryBento({ tiles, sectionTitle }: GroceryBentoProps)
   return (
     <section className="bg-[#0d1117] py-8 sm:py-10 mt-8">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide">
-            {sectionTitle && sectionTitle.trim() ? sectionTitle : '🛒 Хүнсний ангилал'}
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-6">
+          <h2 className="flex items-center gap-2 text-xl sm:text-2xl font-black text-white tracking-wide min-w-0 truncate">
+            {!(sectionTitle && sectionTitle.trim()) && <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" strokeWidth={2} />}
+            <span className="truncate">{sectionTitle && sectionTitle.trim() ? sectionTitle : 'Хүнсний ангилал'}</span>
           </h2>
-          <Link href={t[0]?.href ?? '/grocery'} className="text-sm font-bold text-primary hover:text-primary-light transition-colors">
-            Бүгдийг харах 
+          <Link href={t[0]?.href ?? '/grocery'} className="shrink-0 text-sm font-bold text-primary hover:text-primary-light transition-colors">
+            Бүгдийг харах
           </Link>
         </div>
 

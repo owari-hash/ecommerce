@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { PackageX } from 'lucide-react';
 import {
-  CATEGORY_ICONS,
   CATEGORY_LABELS,
   type CatalogCategoryKey,
   formatPrice,
@@ -23,7 +23,6 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
   const { category } = await params;
   const key = category as CatalogCategoryKey;
   const label = CATEGORY_LABELS[key] ?? 'Бүтээгдэхүүний хайлтын үр дүн';
-  const icon = CATEGORY_ICONS[key] ?? '📦';
   const products = CATEGORY_LABELS[key] ? getProductsByCategory(key) : [];
 
   return (
@@ -52,7 +51,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 
       {products.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-          <div className="text-7xl mb-4 opacity-40">📦</div>
+          <PackageX className="w-16 h-16 mx-auto mb-4 text-gray-300" strokeWidth={1.3} />
           <h2 className="text-xl font-bold text-gray-700 mb-2">Бараа байхгүй байна</h2>
           <p className="text-gray-400 mb-6 text-sm">Энэ ангилалд одоогоор бараа байхгүй байна</p>
           <Link href="/" className="inline-block bg-primary text-white font-bold px-8 py-3 rounded-xl">
@@ -61,7 +60,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         </div>
       ) : (
         <CategoryListingClient
-          category={{ key, label, icon }}
+          category={{ key, label }}
           products={products.map((p) => ({
             id: p.id,
             slug: p.slug,

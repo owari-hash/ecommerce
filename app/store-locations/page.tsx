@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import { Store, MapPin, Phone, Clock, Map } from 'lucide-react';
 import { fetchTenantConfig, type TenantLocation } from '../lib/tenantConfig';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -31,7 +32,7 @@ export default async function StoreLocationsPage() {
 
       {locations.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-          <div className="text-6xl mb-4 opacity-30">🏪</div>
+          <Store className="w-14 h-14 mx-auto mb-4 text-gray-300" strokeWidth={1.4} />
           <p className="text-gray-400 text-sm">Салбар дэлгүүрийн мэдээлэл удахгүй нэмэгдэнэ.</p>
         </div>
       ) : (
@@ -40,10 +41,10 @@ export default async function StoreLocationsPage() {
             <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
               <div className="flex items-start gap-4">
                 <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xl"
+                  className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
                   style={{ backgroundColor: primaryColor }}
                 >
-                  🏪
+                  <Store className="w-6 h-6" strokeWidth={1.8} />
                 </div>
                 <div className="min-w-0">
                   <h2 className="font-bold text-gray-800 mb-1">{store.name}</h2>
@@ -55,13 +56,13 @@ export default async function StoreLocationsPage() {
                   <div className="space-y-2 text-sm text-gray-600">
                     {store.address && (
                       <div className="flex items-start gap-2">
-                        <span className="text-base mt-0.5 shrink-0">📍</span>
+                        <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-gray-400" strokeWidth={1.8} />
                         <span>{store.address}</span>
                       </div>
                     )}
                     {store.phone && (
                       <div className="flex items-center gap-2">
-                        <span className="text-base shrink-0">📞</span>
+                        <Phone className="w-4 h-4 shrink-0 text-gray-400" strokeWidth={1.8} />
                         <a
                           href={`tel:${store.phone.replace(/[\s-]/g, '')}`}
                           className="font-medium hover:underline"
@@ -73,7 +74,7 @@ export default async function StoreLocationsPage() {
                     )}
                     {store.hours && (
                       <div className="flex items-center gap-2">
-                        <span className="text-base shrink-0">🕐</span>
+                        <Clock className="w-4 h-4 shrink-0 text-gray-400" strokeWidth={1.8} />
                         <span>{store.hours}</span>
                       </div>
                     )}
@@ -88,7 +89,7 @@ export default async function StoreLocationsPage() {
       {/* Map placeholder — uses first location's address as label */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="bg-gradient-to-br from-primary/5 to-primary/10 h-64 flex flex-col items-center justify-center gap-3">
-          <span className="text-6xl">🗺️</span>
+          <Map className="w-14 h-14 text-primary/40" strokeWidth={1.4} />
           {locations[0] ? (
             <>
               <p className="text-gray-500 font-medium">{locations[0].district || locations[0].address}</p>

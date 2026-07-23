@@ -1,10 +1,11 @@
 import Link from 'next/link';
+import { SearchX } from 'lucide-react';
 
 export default function NotFound() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="text-center">
-        <div className="text-8xl mb-6 opacity-30">😕</div>
+        <SearchX className="w-20 h-20 mx-auto mb-6 text-gray-300" strokeWidth={1.4} />
         <h1 className="text-6xl font-black text-[#1565C0] mb-3">404</h1>
         <h2 className="text-2xl font-bold text-gray-800 mb-3">Хуудас олдсонгүй</h2>
         <p className="text-gray-400 mb-8 max-w-md mx-auto">

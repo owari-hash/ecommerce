@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import { SearchX } from 'lucide-react';
 import { fetchTenantConfig } from '../../lib/tenantConfig';
-import { CATEGORY_ICONS, formatPrice } from '../../lib/mockCatalog';
+import { formatPrice } from '../../lib/mockCatalog';
 import ProductDetailClient from './productDetailClient';
 import Carousel from '../../components/Carousel';
 import ProductCard from '../../components/ProductCard';
@@ -65,7 +66,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const notFound = (
     <div className="max-w-7xl mx-auto px-4 py-10">
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-        <div className="text-7xl mb-4 opacity-40">🔎</div>
+        <SearchX className="w-16 h-16 mx-auto mb-4 text-gray-300" strokeWidth={1.3} />
         <h1 className="text-xl font-bold text-gray-700 mb-2">Бүтээгдэхүүн олдсонгүй</h1>
         <p className="text-gray-400 mb-6 text-sm">Илүү дэлгэрэнгүй хайлт хийнэ үү</p>
         <Link href="/" className="inline-block bg-primary hover:bg-primary-dark text-white font-bold px-8 py-3 rounded-xl">
@@ -95,7 +96,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const category = categories.find((c: any) => c.id === p.categoryId);
   const categorySlug = category?.slug ?? '';
   const categoryLabel = category?.name ?? 'Ангилал';
-  const icon = CATEGORY_ICONS[categorySlug as keyof typeof CATEGORY_ICONS] ?? '📦';
 
   const specs: Array<{ k: string; v: string }> = p.specifications
     ? Object.entries(p.specifications as Record<string, unknown>).map(([k, v]) => ({ k, v: String(v) }))
@@ -146,7 +146,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             brand: (p.brandId && p.brandId !== 'br1') ? p.brandId : (config?.branding?.name ?? ''),
             category: categorySlug,
             categoryLabel,
-            icon,
             image: resolveUploadUrl(p.images?.[0]),
             images: (p.images || []).map(resolveUploadUrl),
             price: formatPrice(p.salePrice ?? p.price),

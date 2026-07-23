@@ -2,6 +2,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Fragment, useEffect, useRef, useState } from 'react'
+import { Check } from 'lucide-react'
 import { useTenant } from '../lib/TenantContext'
 import { useTenantHref } from '../lib/useTenantHref'
 import { resolveUploadUrl } from '../lib/apiClient'
@@ -145,10 +146,10 @@ function CategoryRow({
   return (
     <section>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 sm:mb-5">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-y-1 mb-4 sm:mb-5">
+        <div className="flex items-center gap-3 min-w-0">
           <span className="w-1.5 h-6 sm:h-7 rounded-full shrink-0" style={{ backgroundColor: primaryColor }} />
-          <h2 className="text-lg sm:text-2xl font-black text-gray-900 tracking-tight">{cat.name}</h2>
+          <h2 className="text-lg sm:text-2xl font-black text-gray-900 tracking-tight truncate">{cat.name}</h2>
         </div>
         <Link
           href={tenantHref(`/${cat.slug}`)}
@@ -363,7 +364,7 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
   function handleAddToCart(e: React.MouseEvent, p: Product, brand: string) {
     e.preventDefault()
     e.stopPropagation()
-    addToCart({ id: p.id, slug: p.slug || p.id, name: p.name, price: p.salePrice ?? p.price, icon: '📦', brand })
+    addToCart({ id: p.id, slug: p.slug || p.id, name: p.name, price: p.salePrice ?? p.price, icon: p.categoryId ?? 'product', brand })
     setAddingId(p.id)
     setTimeout(() => setAddingId(null), 600)
     if (toastTimer.current) clearTimeout(toastTimer.current)
@@ -552,7 +553,7 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
                     type="button"
                     disabled={qv.stock === 0}
                     onClick={() => {
-                      addToCart({ id: qv.id, slug: qv.slug || qv.id, name: qv.name, price: displayPrice, icon: '📦', brand })
+                      addToCart({ id: qv.id, slug: qv.slug || qv.id, name: qv.name, price: displayPrice, icon: qv.categoryId ?? 'product', brand })
                       if (toastTimer.current) clearTimeout(toastTimer.current)
                       setToast({ name: qv.name })
                       toastTimer.current = setTimeout(() => setToast(null), 2500)
@@ -583,7 +584,7 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
               </svg>
             </span>
             <p className="text-sm font-semibold leading-snug truncate flex-1">{toast.name} сагсанд нэмэгдлээ!</p>
-            <span className="text-green-400 shrink-0">✓</span>
+            <Check className="w-4 h-4 text-green-400 shrink-0" strokeWidth={2.5} />
           </div>
         </div>
       )}

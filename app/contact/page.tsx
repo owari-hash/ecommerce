@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { Phone, Mail, Clock, MapPin } from 'lucide-react';
 
 export const metadata: Metadata = { title: 'Холбоо барих' };
 
@@ -16,13 +17,15 @@ export default function ContactPage() {
         {/* Contact Info */}
         <div className="space-y-6">
           {[
-            { icon: '📞', title: 'Утас', lines: ['7709 1155', '7777-7754'] },
-            { icon: '✉️', title: 'И-мэйл', lines: ['info@ikhnayd.mn'] },
-            { icon: '🕐', title: 'Цагийн хуваарь', lines: ['Өдөр бүр 10:00 - 20:00'] },
-            { icon: '📍', title: 'Хаяг', lines: ['Улаанбаатар хот, Хан-Уул дүүрэг,', '15-р хороо, Их Наяд худалдааны төв,', 'Зүүн өндөр 3 давхарт 309 тоот'] },
+            { Icon: Phone, title: 'Утас', lines: ['7709 1155', '7777-7754'] },
+            { Icon: Mail, title: 'И-мэйл', lines: ['info@ikhnayd.mn'] },
+            { Icon: Clock, title: 'Цагийн хуваарь', lines: ['Өдөр бүр 10:00 - 20:00'] },
+            { Icon: MapPin, title: 'Хаяг', lines: ['Улаанбаатар хот, Хан-Уул дүүрэг,', '15-р хороо, Их Наяд худалдааны төв,', 'Зүүн өндөр 3 давхарт 309 тоот'] },
           ].map(c => (
             <div key={c.title} className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm flex items-start gap-4">
-              <div className="text-2xl mt-0.5">{c.icon}</div>
+              <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <c.Icon className="w-5 h-5" strokeWidth={1.8} />
+              </div>
               <div>
                 <div className="font-bold text-gray-700 text-sm mb-1">{c.title}</div>
                 {c.lines.map(l => <p key={l} className="text-gray-600 text-sm">{l}</p>)}

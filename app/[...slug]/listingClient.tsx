@@ -2,12 +2,13 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { Package, Heart } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 import { addToCart, readCart, updateQuantity, removeFromCart } from '../lib/cartStore';
 import { useTenantHref } from '../lib/useTenantHref';
 import { useTenant } from '../lib/TenantContext';
 import { readCompare, toggleCompare, writeCompare } from '../lib/compareStore';
-import { formatPrice } from '../lib/mockCatalog';
+import { formatPrice, CATEGORY_ICONS, type CatalogCategoryKey } from '../lib/mockCatalog';
 import { resolveUploadUrl } from '../lib/apiClient';
 import Pagination from '../components/Pagination';
 import ImagePlaceholder from '../components/ImagePlaceholder';
@@ -26,7 +27,7 @@ type ProductVM = {
 };
 
 type Props = {
-  category: { key: string; label: string; icon: string; id?: string };
+  category: { key: string; label: string; id?: string };
   products: ProductVM[];
   categories: any[];
   allProducts: any[];
@@ -105,9 +106,9 @@ function FiltersPanel({
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-5">
-      <div className="flex items-center justify-between pb-2 border-b border-gray-50">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 pb-2 border-b border-gray-50">
         <h2 className="font-black text-gray-900 text-sm">Шүүлтүүр</h2>
-        <button type="button" onClick={onClearAll} className="text-xs font-bold text-gray-500 hover:text-primary">
+        <button type="button" onClick={onClearAll} className="shrink-0 text-xs font-bold text-gray-500 hover:text-primary">
           Цэвэрлэх
         </button>
       </div>
@@ -147,7 +148,7 @@ function FiltersPanel({
                         ) : iconResolved.emoji ? (
                           <span className="text-sm select-none leading-none">{iconResolved.emoji}</span>
                         ) : (
-                          <span className="text-xs text-gray-400 select-none">📦</span>
+                          <Package className="w-3.5 h-3.5 text-gray-400" strokeWidth={1.8} />
                         )}
                       </div>
                       <span className={`text-xs sm:text-sm truncate select-none tracking-tight ${isActive ? 'font-black text-black' : 'font-semibold text-gray-700'}`}>
@@ -325,6 +326,7 @@ export default function CategoryListingClient({
   const { branding } = useTenant();
   const logoFallback = resolveLogoUrl(branding.logo);
   const primaryColor = branding?.primaryColor ?? '#D32F2F';
+  const CategoryIcon = CATEGORY_ICONS[category.key as CatalogCategoryKey] ?? Package;
   const [brandQuery, setBrandQuery] = useState('');
   const [selectedBrands, setSelectedBrands] = useState<Record<string, boolean>>({});
   const [selectedStatuses, setSelectedStatuses] = useState<Record<string, boolean>>({});
@@ -692,12 +694,12 @@ export default function CategoryListingClient({
                   ) : null}
                   <button
                     type="button"
-                    className="absolute top-1.5 md:top-2 right-1.5 md:right-2 text-gray-300 hover:text-red-400 text-lg md:text-xl"
+                    className="absolute top-1.5 md:top-2 right-1.5 md:right-2 text-gray-300 hover:text-red-400"
                     onClick={(e) => {
                       e.preventDefault();
                     }}
                   >
-                    ♡
+                    <Heart className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2} />
                   </button>
                 </div>
                 <div className="p-2 md:p-3 pb-0">
@@ -806,7 +808,7 @@ export default function CategoryListingClient({
                         price,
                         oldPrice,
                         brand: p.brand,
-                        icon: category.icon,
+                        icon: category.key,
                       });
                       setToastMsg('Бүтээгдэхүүнийг сагсанд нэмлээ!');
                       setShowToast(true);
@@ -885,7 +887,7 @@ export default function CategoryListingClient({
                       <div className={`relative w-9 h-9 rounded-lg ring-2 ${rings[idx%4]} bg-white shrink-0 overflow-hidden flex items-center justify-center`}>
                         {p.images?.[0]
                           ? <Image src={resolveUploadUrl(p.images[0])} alt={p.name} fill className="object-cover" sizes="36px" unoptimized />
-                          : <span className="text-sm">📦</span>
+                          : <Package className="w-4 h-4 text-gray-400" strokeWidth={1.8} />
                         }
                       </div>
                       <div className="flex-1 min-w-0">
@@ -1013,7 +1015,7 @@ export default function CategoryListingClient({
                 {quickImages[quickImg] ? (
                   <Image src={quickImages[quickImg]} alt={quickView.name} fill className="object-contain p-4" sizes="(max-width:640px) 100vw, 384px" unoptimized />
                 ) : (
-                  <span className="text-6xl opacity-30">{category.icon}</span>
+                  <CategoryIcon className="w-16 h-16 text-gray-300" strokeWidth={1.3} />
                 )}
               </div>
               {quickImages.length > 1 && (
@@ -1059,7 +1061,7 @@ export default function CategoryListingClient({
                       name: quickView.name,
                       price: parsePrice(quickView.price),
                       oldPrice: quickView.oldPrice ? parsePrice(quickView.oldPrice) : undefined,
-                      icon: category.icon || '📦',
+                      icon: category.key,
                       brand: quickView.brand,
                     });
                     setToastMsg('Сагсанд нэмэгдлээ');

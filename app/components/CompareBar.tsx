@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { Package } from 'lucide-react';
 import { readCompare, writeCompare, type CompareItem } from '../lib/compareStore';
 import { useTenantHref } from '../lib/useTenantHref';
 
@@ -46,7 +47,7 @@ export default function CompareBar() {
                     {item.image ? (
                       <Image src={item.image} alt={item.title} fill className="object-cover" sizes="48px" unoptimized={true} />
                     ) : (
-                      <span className="text-xl">📦</span>
+                      <Package className="w-5 h-5 text-gray-300" strokeWidth={1.4} />
                     )}
                   </div>
                   <button

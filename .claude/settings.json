@@ -1,0 +1,47 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo \"exit:$?\")",
+      "Skill(artifact-design)",
+      "Skill(artifact-design:*)",
+      "Bash(open \"/private/tmp/claude-501/-Users-macbookairm4-ecommerce/a6d2033b-024f-44a8-b676-415ef43e3dc9/scratchpad/homepage-directions.html\")",
+      "Bash(npx tsc *)",
+      "Bash(USE_MOCK_DATA=true nohup npm run dev)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:7000/)",
+      "Bash(USE_MOCK_DATA=true nohup npx next dev --port 7050)",
+      "Bash(disown)",
+      "Bash(curl -s -o /tmp/account.html -w \"account status:%{http_code}\\\\n\" http://localhost:7050/account)",
+      "Bash(curl -s -o /tmp/orders.html -w \"orders status:%{http_code}\\\\n\" http://localhost:7050/account/orders)",
+      "Bash(curl -s -o /tmp/checkout.html -w \"checkout status:%{http_code}\\\\n\" http://localhost:7050/checkout)",
+      "Bash(curl -s -o /tmp/account2.html -w \"status:%{http_code}\\\\n\" http://localhost:7050/account)",
+      "Bash(curl -s -o /dev/null -w \"account:%{http_code}\\\\n\" http://localhost:7050/account)",
+      "Bash(curl -s http://localhost:7050/)",
+      "Bash(curl -s http://localhost:7050/account)",
+      "Bash(curl -s http://localhost:7050/account -o /tmp/acc3.html)",
+      "WebFetch(domain:dribbble.com)",
+      "Bash(curl -s -o /tmp/home3.html -w \"status:%{http_code}\\\\n\" http://localhost:7050/)",
+      "Bash(ls /Users/macbookairm4/ 2>&1 | head -50)",
+      "Read(//Users/macbookairm4/**)",
+      "Bash(ls /Users/macbookairm4/ecommerce-client 2>&1 | head -30 *)",
+      "Read(//Users/macbookairm4/ecommerce-client/**)",
+      "Bash(find /Users/macbookairm4/ecommerce-client/app -type f -name \"*.tsx\" | xargs grep -liE \"banner|hero|slide\" 2>/dev/null)",
+      "Read(//Users/macbookairm4/ecommerce-client/app/**)",
+      "Bash(wc -l \"/Users/macbookairm4/ecommerce-client/app/\\(dashboard\\)/homepage/page.tsx\")",
+      "Read(//Users/macbookairm4/ecommerce-client/app/\\\\\\(dashboard\\\\\\)/homepage/**)",
+      "Bash(grep -n \"bannerSlidesBig\\\\|bannerSlidesSmall\\\\|bannerTitle\\\\|bannerSubtitle\\\\|featuredProduct\\\\|smallSlides\\\\|bigSlides\" \"/Users/macbookairm4/ecommerce-client/app/\\(dashboard\\)/homepage/page.tsx\")",
+      "Bash(cd /Users/macbookairm4/ecommerce-client && ls node_modules >/dev/null 2>&1 && echo \"node_modules present\" || echo \"need install\")",
+      "Bash(/Users/macbookairm4/ecommerce-client/node_modules/.bin/tsc --noEmit -p /Users/macbookairm4/ecommerce-client/tsconfig.json)",
+      "Bash(grep -n \"BannerSlide\" -A 10 /Users/macbookairm4/ecommerce-client/app/lib/types.ts | head -20)",
+      "Read(//Users/macbookairm4/ecommerce-client/app/lib/**)",
+      "Bash(npx --prefix . tsc --noEmit)",
+      "Read(//Users/macbookairm4/ecommerce-client/node_modules/**)",
+      "Bash(grep -E \"^d.*next$|next \")",
+      "Read(//Users/macbookairm4/ecommerce-client/node_modules/next/**)",
+      "Bash(/bin/pwd)"
+    ],
+    "additionalDirectories": [
+      "/Users/macbookairm4/ecommerce-client/app/(dashboard)/homepage",
+      "/Users/macbookairm4/ecommerce-client/app/lib"
+    ]
+  }
+}

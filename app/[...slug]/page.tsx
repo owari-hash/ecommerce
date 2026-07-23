@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import { PackageX } from 'lucide-react';
 import { fetchTenantConfig } from '../lib/tenantConfig';
 import { formatPrice } from '../lib/mockCatalog';
 import { resolveUploadUrl } from '../lib/apiClient';
@@ -184,7 +185,7 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
 
         {filteredProducts.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-            <div className="text-7xl mb-4 opacity-40">📦</div>
+            <PackageX className="w-16 h-16 mx-auto mb-4 text-gray-300" strokeWidth={1.3} />
             <h2 className="text-xl font-bold text-gray-700 mb-2">Бараа байхгүй байна</h2>
             <p className="text-gray-400 mb-6 text-sm">Энэ ангилалд одоогоор бараа байхгүй байна</p>
             <Link href="/" className="inline-block bg-primary hover:bg-primary-dark text-white font-bold px-8 py-3 rounded-xl transition-colors">
@@ -193,7 +194,7 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
           </div>
         ) : (
           <CategoryListingClient
-            category={{ key: categoryKey, label, icon: '📦', id: matchedCategoryId }}
+            category={{ key: categoryKey, label, id: matchedCategoryId }}
             products={filteredProducts.map((p: any) => ({
               id: p.id,
               slug: p.slug || p.id,

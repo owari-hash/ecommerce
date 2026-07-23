@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { User as UserIcon, Package, Heart, ShoppingCart, LogOut, Receipt, Smartphone, ArrowLeft } from 'lucide-react';
 import { readAuth, logout, loginWithPhone, register, sendRegisterOtp, verifyOtp, forgotPasswordSend, forgotPasswordReset, restoreSession, fetchWithAuth, type User } from '../lib/authStore';
 
 // ── Types ────────────────────────────────────────────────────────────────────-
@@ -57,7 +58,7 @@ function EbarimtBadge({ item }: { item: OrderItem }) {
         onClick={() => setOpen((o) => !o)}
         className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
       >
-        <span>🧾</span>
+        <Receipt className="w-3.5 h-3.5" strokeWidth={2} />
         {open ? 'Хаах' : 'И-Баримт харах'}
       </button>
       {open && (
@@ -97,7 +98,7 @@ function OrderCard({ order, expanded, onToggle }: { order: Order; expanded: bool
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <button onClick={onToggle} className="w-full text-left px-5 py-4 flex flex-wrap items-center gap-3 hover:bg-gray-50 transition-colors">
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-gray-900 text-sm">#{order.orderNumber}</p>
+          <p className="font-bold text-gray-900 text-sm truncate">#{order.orderNumber}</p>
           <p className="text-xs text-gray-400 mt-0.5">{fmtDate(order.createdAt)}</p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -371,8 +372,8 @@ export default function AccountClient() {
             {/* Nav */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               {[
-                { id: 'profile', icon: '👤', label: 'Хувийн мэдээлэл' },
-                { id: 'orders', icon: '📦', label: 'Захиалгын түүх' },
+                { id: 'profile', icon: UserIcon, label: 'Хувийн мэдээлэл' },
+                { id: 'orders', icon: Package, label: 'Захиалгын түүх' },
               ].map(item => (
                 <button
                   key={item.id}
@@ -381,17 +382,17 @@ export default function AccountClient() {
                     section === item.id ? 'bg-primary/5 text-primary font-semibold border-l-[3px] border-primary' : 'text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  <span>{item.icon}</span>{item.label}
+                  <item.icon className="w-4 h-4 shrink-0" strokeWidth={1.8} />{item.label}
                 </button>
               ))}
               <Link href="/account/wishlists" className="w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-                <span>❤️</span>Хадгалсан бараа
+                <Heart className="w-4 h-4 shrink-0" strokeWidth={1.8} />Хадгалсан бараа
               </Link>
               <Link href="/checkout" className="w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-                <span>🛒</span>Миний сагс
+                <ShoppingCart className="w-4 h-4 shrink-0" strokeWidth={1.8} />Миний сагс
               </Link>
               <button onClick={handleLogout} className="w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
-                <span>🚪</span>Гарах
+                <LogOut className="w-4 h-4 shrink-0" strokeWidth={1.8} />Гарах
               </button>
             </div>
           </aside>
@@ -481,10 +482,10 @@ export default function AccountClient() {
             {/* Orders section */}
             {section === 'orders' && (
               <div>
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-4">
                   <h2 className="text-lg font-bold text-gray-900">Захиалгын түүх</h2>
-                  <button onClick={fetchOrders} className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <button onClick={fetchOrders} className="shrink-0 text-xs font-medium text-primary hover:underline flex items-center gap-1">
+                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                     Шинэчлэх
                   </button>
                 </div>
@@ -505,7 +506,7 @@ export default function AccountClient() {
 
                 {!ordersLoading && !ordersError && orders.length === 0 && (
                   <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-                    <div className="text-5xl mb-4">📦</div>
+                    <Package className="w-12 h-12 mx-auto mb-4 text-gray-300" strokeWidth={1.3} />
                     <h3 className="text-lg font-bold text-gray-800 mb-2">Захиалга байхгүй</h3>
                     <p className="text-gray-500 text-sm mb-6">Та одоогоор ямар ч захиалга өгөөгүй байна.</p>
                     <Link href="/" className="inline-block px-6 py-2.5 rounded-xl font-bold text-sm text-white bg-primary">Дэлгүүр хэсэх</Link>
@@ -538,20 +539,23 @@ export default function AccountClient() {
   // ── Not logged in ──────────────────────────────────────────────────────────
   const phoneIcon = <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>;
   const lockIcon  = <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>;
-  const inputCls = "w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-gray-50";
+  const inputCls = "w-full border border-gray-200 rounded-2xl pl-11 pr-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 bg-[#faf8f5] transition-colors";
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-6">
-          <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/30">
-            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        <div className="text-center mb-7">
+          <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center mx-auto mb-4 shadow-md shadow-primary/20">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-black text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
             {activeTab === 'login' ? 'Нэвтрэх' : activeTab === 'register' ? 'Бүртгүүлэх' : 'Нууц үг сэргээх'}
           </h1>
+          <p className="text-[13px] text-gray-400 mt-1">
+            {activeTab === 'login' ? 'Дахин тавтай морил' : activeTab === 'register' ? 'Шинэ бүртгэл үүсгэх' : 'Утасны дугаараа баталгаажуулна уу'}
+          </p>
         </div>
 
         {error && (
@@ -567,17 +571,17 @@ export default function AccountClient() {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-xl p-7">
+        <div className="bg-white rounded-3xl border border-[#f0e9df] shadow-[0_24px_60px_-24px_rgba(35,32,28,0.18)] p-7 sm:p-8">
 
           {/* Tab switcher — only login/register */}
           {activeTab !== 'forgot' && (
-            <div className="flex gap-1 mb-6 bg-gray-100 rounded-xl p-1">
+            <div className="flex gap-1 mb-7 bg-[#f4efe7] rounded-2xl p-1">
               <button onClick={() => switchTab('login')}
-                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${activeTab === 'login' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${activeTab === 'login' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
                 Нэвтрэх
               </button>
               <button onClick={() => switchTab('register')}
-                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${activeTab === 'register' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${activeTab === 'register' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
                 Бүртгүүлэх
               </button>
             </div>
@@ -587,12 +591,12 @@ export default function AccountClient() {
           {activeTab === 'login' && (
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{phoneIcon}</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">{phoneIcon}</span>
                 <input type="tel" value={loginPhone} onChange={e => setLoginPhone(e.target.value)}
                   className={inputCls} placeholder="Утасны дугаар" maxLength={12} autoFocus />
               </div>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{lockIcon}</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">{lockIcon}</span>
                 <input type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)}
                   className={inputCls} placeholder="Нууц үг" />
               </div>
@@ -601,7 +605,7 @@ export default function AccountClient() {
                   className="text-xs text-primary hover:underline">Нууц үг мартсан?</button>
               </div>
               <button type="submit" disabled={loading}
-                className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/25 disabled:opacity-60">
+                className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 rounded-2xl transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 disabled:opacity-60">
                 {loading ? <span className="flex items-center justify-center gap-2"><Spinner />Нэвтэрж байна...</span> : 'Нэвтрэх'}
               </button>
             </form>
@@ -613,29 +617,29 @@ export default function AccountClient() {
               {!regOtpSent ? (
                 <form onSubmit={handleSendRegisterOtp} className="space-y-4">
                   <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{phoneIcon}</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">{phoneIcon}</span>
                     <input type="tel" value={regPhone} onChange={e => setRegPhone(e.target.value)}
                       className={inputCls} placeholder="Утасны дугаар" maxLength={12} autoFocus />
                   </div>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{lockIcon}</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">{lockIcon}</span>
                     <input type="password" value={regPassword} onChange={e => setRegPassword(e.target.value)}
                       className={inputCls} placeholder="Нууц үг (6+ тэмдэгт)" />
                   </div>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{lockIcon}</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">{lockIcon}</span>
                     <input type="password" value={regConfirm} onChange={e => setRegConfirm(e.target.value)}
                       className={inputCls} placeholder="Нууц үг давтах" />
                   </div>
                   <button type="submit" disabled={loading}
-                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/25 disabled:opacity-60">
+                    className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 rounded-2xl transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 disabled:opacity-60">
                     {loading ? <span className="flex items-center justify-center gap-2"><Spinner />Илгээж байна...</span> : 'Код авах'}
                   </button>
                 </form>
               ) : (
                 <form onSubmit={handleVerifyRegisterOtp} className="space-y-4">
-                  <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-700 text-center">
-                    📱 <span className="font-semibold">{regPhone}</span>-д баталгаажуулах код илгээлээ
+                  <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-700 flex items-center justify-center gap-1.5 text-center">
+                    <Smartphone className="w-4 h-4 shrink-0" strokeWidth={2} /> <span className="font-semibold">{regPhone}</span>-д баталгаажуулах код илгээлээ
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1.5 text-center">Баталгаажуулах код</label>
@@ -645,12 +649,12 @@ export default function AccountClient() {
                       placeholder="──────" maxLength={6} autoFocus />
                   </div>
                   <button type="submit" disabled={loading || regOtpCode.length !== 6}
-                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/25 disabled:opacity-50">
+                    className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 rounded-2xl transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 disabled:opacity-50">
                     {loading ? <span className="flex items-center justify-center gap-2"><Spinner />Шалгаж байна...</span> : 'Бүртгүүлэх'}
                   </button>
                   <div className="flex items-center justify-between">
                     <button type="button" onClick={() => { setRegOtpSent(false); setRegOtpCode(''); setError(''); }}
-                      className="text-sm text-gray-400 hover:text-gray-600 py-1">← Буцах</button>
+                      className="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 py-1"><ArrowLeft className="w-3.5 h-3.5" strokeWidth={2} /> Буцах</button>
                     <button type="button" disabled={loading} onClick={handleSendRegisterOtp}
                       className="text-sm font-semibold text-primary hover:underline py-1 disabled:opacity-50">Код дахин илгээх</button>
                   </div>
@@ -666,42 +670,42 @@ export default function AccountClient() {
                 <form onSubmit={handleSendForgotOtp} className="space-y-4">
                   <p className="text-sm text-gray-500 text-center mb-2">Бүртгэлтэй утасны дугаараа оруулна уу</p>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{phoneIcon}</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">{phoneIcon}</span>
                     <input type="tel" value={forgotPhone} onChange={e => setForgotPhone(e.target.value)}
                       className={inputCls} placeholder="Утасны дугаар" maxLength={12} autoFocus />
                   </div>
                   <button type="submit" disabled={loading}
-                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/25 disabled:opacity-60">
+                    className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 rounded-2xl transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 disabled:opacity-60">
                     {loading ? <span className="flex items-center justify-center gap-2"><Spinner />Илгээж байна...</span> : 'Код авах'}
                   </button>
                   <button type="button" onClick={() => switchTab('login')}
-                    className="w-full text-sm text-gray-400 hover:text-gray-600 py-1">← Буцах</button>
+                    className="w-full inline-flex items-center justify-center gap-1 text-sm text-gray-400 hover:text-gray-600 py-1"><ArrowLeft className="w-3.5 h-3.5" strokeWidth={2} /> Буцах</button>
                 </form>
               ) : (
                 <form onSubmit={handleResetPassword} className="space-y-4">
-                  <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-700 text-center">
-                    📱 <span className="font-semibold">{forgotPhone}</span>-д код илгээлээ
+                  <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-700 flex items-center justify-center gap-1.5 text-center">
+                    <Smartphone className="w-4 h-4 shrink-0" strokeWidth={2} /> <span className="font-semibold">{forgotPhone}</span>-д код илгээлээ
                   </div>
                   <input type="text" inputMode="numeric" value={forgotOtpCode}
                     onChange={e => setForgotOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     className="w-full border border-gray-200 rounded-xl px-4 py-3.5 text-center text-2xl font-bold tracking-[0.5em] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-gray-50"
                     placeholder="──────" maxLength={6} autoFocus />
                   <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{lockIcon}</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">{lockIcon}</span>
                     <input type="password" value={forgotNewPw} onChange={e => setForgotNewPw(e.target.value)}
                       className={inputCls} placeholder="Шинэ нууц үг (6+ тэмдэгт)" />
                   </div>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{lockIcon}</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">{lockIcon}</span>
                     <input type="password" value={forgotConfirmPw} onChange={e => setForgotConfirmPw(e.target.value)}
                       className={inputCls} placeholder="Нууц үг давтах" />
                   </div>
                   <button type="submit" disabled={loading || forgotOtpCode.length !== 6}
-                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/25 disabled:opacity-50">
+                    className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 rounded-2xl transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 disabled:opacity-50">
                     {loading ? <span className="flex items-center justify-center gap-2"><Spinner />Хадгалж байна...</span> : 'Нууц үг солих'}
                   </button>
                   <button type="button" onClick={() => { setForgotOtpSent(false); setForgotOtpCode(''); setError(''); }}
-                    className="w-full text-sm text-gray-400 hover:text-gray-600 py-1">← Буцах</button>
+                    className="w-full inline-flex items-center justify-center gap-1 text-sm text-gray-400 hover:text-gray-600 py-1"><ArrowLeft className="w-3.5 h-3.5" strokeWidth={2} /> Буцах</button>
                 </form>
               )}
             </>
@@ -710,38 +714,38 @@ export default function AccountClient() {
           {/* Social login (Google / Facebook) — login & register tabs */}
           {activeTab !== 'forgot' && (
             <>
-              <div className="flex items-center gap-3 my-5">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-xs text-gray-400">эсвэл</span>
-                <div className="flex-1 h-px bg-gray-200" />
+              <div className="flex items-center gap-3 my-6">
+                <div className="flex-1 h-px bg-gray-100" />
+                <span className="text-[11px] font-medium text-gray-400 tracking-wide uppercase">эсвэл</span>
+                <div className="flex-1 h-px bg-gray-100" />
               </div>
               <div className="space-y-2.5">
                 <button
                   type="button"
                   disabled
                   title="Тун удахгүй"
-                  className="relative w-full flex items-center justify-center gap-2.5 border border-gray-200 rounded-xl py-2.5 text-sm font-semibold text-gray-400 bg-gray-50 cursor-not-allowed"
+                  className="w-full flex items-center gap-2.5 border border-gray-200 rounded-2xl pl-4 pr-3 py-2.5 text-sm font-semibold text-gray-400 bg-[#faf8f5] cursor-not-allowed"
                 >
-                  <svg className="w-5 h-5 opacity-60" viewBox="0 0 48 48">
+                  <svg className="w-5 h-5 shrink-0 opacity-60" viewBox="0 0 48 48">
                     <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" />
                     <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z" />
                     <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z" />
                     <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z" />
                   </svg>
-                  Google-ээр нэвтрэх
-                  <span className="absolute right-2.5 text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Тун удахгүй</span>
+                  <span className="flex-1 min-w-0 truncate text-center">Google-ээр нэвтрэх</span>
+                  <span className="shrink-0 text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">Тун удахгүй</span>
                 </button>
                 <button
                   type="button"
                   disabled
                   title="Тун удахгүй"
-                  className="relative w-full flex items-center justify-center gap-2.5 border border-gray-200 rounded-xl py-2.5 text-sm font-semibold text-gray-400 bg-gray-50 cursor-not-allowed"
+                  className="w-full flex items-center gap-2.5 border border-gray-200 rounded-2xl pl-4 pr-3 py-2.5 text-sm font-semibold text-gray-400 bg-[#faf8f5] cursor-not-allowed"
                 >
-                  <svg className="w-5 h-5 opacity-60" fill="#1877F2" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 shrink-0 opacity-60" fill="#1877F2" viewBox="0 0 24 24">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                   </svg>
-                  Facebook-ээр нэвтрэх
-                  <span className="absolute right-2.5 text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Тун удахгүй</span>
+                  <span className="flex-1 min-w-0 truncate text-center">Facebook-ээр нэвтрэх</span>
+                  <span className="shrink-0 text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">Тун удахгүй</span>
                 </button>
               </div>
             </>

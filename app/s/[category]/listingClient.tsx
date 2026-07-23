@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { Package, Heart } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 import { addToCart, readCart, updateQuantity, removeFromCart } from '../../lib/cartStore';
 import { useTenantHref } from '../../lib/useTenantHref';
 import { useTenant } from '../../lib/TenantContext';
+import { CATEGORY_ICONS, type CatalogCategoryKey } from '../../lib/mockCatalog';
 
 type ProductVM = {
   id: string;
@@ -17,7 +19,7 @@ type ProductVM = {
 };
 
 type Props = {
-  category: { key: string; label: string; icon: string };
+  category: { key: string; label: string };
   products: ProductVM[];
 };
 
@@ -44,9 +46,9 @@ function FiltersPanel({
 }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-3">
         <h2 className="font-black text-gray-900 text-sm">Шүүлтүүр</h2>
-        <button type="button" onClick={onClearAll} className="text-xs font-bold text-gray-500 hover:text-primary">
+        <button type="button" onClick={onClearAll} className="shrink-0 text-xs font-bold text-gray-500 hover:text-primary">
           Цэвэрлэх
         </button>
       </div>
@@ -141,6 +143,7 @@ export default function CategoryListingClient({ category, products }: Props) {
   const tenantHref = useTenantHref();
   const { branding } = useTenant();
   const primaryColor = branding?.primaryColor ?? '#D32F2F';
+  const CategoryIcon = CATEGORY_ICONS[category.key as CatalogCategoryKey] ?? Package;
   const [brandQuery, setBrandQuery] = useState('');
   const [selectedBrands, setSelectedBrands] = useState<Record<string, boolean>>({});
   const [sections, setSections] = useState<{ status: boolean; brand: boolean; price: boolean }>({
@@ -333,7 +336,7 @@ export default function CategoryListingClient({ category, products }: Props) {
               className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden"
             >
               <div className="relative h-44 bg-gray-50 flex items-center justify-center">
-                <div className="text-6xl opacity-60">{category.icon}</div>
+                <CategoryIcon className="w-16 h-16 text-gray-400" strokeWidth={1.3} />
                 {p.badge && (
                   <div className={`absolute top-2 left-2 text-xs font-black px-2 py-1 rounded-lg text-white ${p.badge === 'Шинэ' ? 'bg-emerald-500' : 'bg-primary'}`}>
                     {p.badge}
@@ -341,12 +344,12 @@ export default function CategoryListingClient({ category, products }: Props) {
                 )}
                 <button
                   type="button"
-                  className="absolute top-2 right-2 text-gray-300 hover:text-red-400 text-xl"
+                  className="absolute top-2 right-2 text-gray-300 hover:text-red-400"
                   onClick={(e) => {
                     e.preventDefault();
                   }}
                 >
-                  ♡
+                  <Heart className="w-5 h-5" strokeWidth={2} />
                 </button>
               </div>
               <div className="p-3">
@@ -404,7 +407,7 @@ export default function CategoryListingClient({ category, products }: Props) {
                         slug: p.slug,
                         price,
                         oldPrice,
-                        icon: category.icon,
+                        icon: category.key,
                         brand: p.brand,
                       });
                       setToastMsg(`${p.name} сагсанд нэмэгдлээ`);

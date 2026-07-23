@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { Newspaper } from 'lucide-react';
 
 export const metadata: Metadata = { title: 'Мэдээ' };
 
@@ -24,8 +25,8 @@ export default function NewsPage() {
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {news.map(item => (
           <div key={item.id} className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden group cursor-pointer">
-            <div className="bg-gradient-to-br from-primary/5 to-primary/10 h-40 flex items-center justify-center text-6xl opacity-60 group-hover:opacity-80 transition-opacity">
-              📰
+            <div className="bg-gradient-to-br from-primary/5 to-primary/10 h-40 flex items-center justify-center text-primary opacity-60 group-hover:opacity-80 transition-opacity">
+              <Newspaper className="w-14 h-14" strokeWidth={1.3} />
             </div>
             <div className="p-5">
               <div className="flex items-center gap-2 mb-2">

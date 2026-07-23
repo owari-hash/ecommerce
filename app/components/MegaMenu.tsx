@@ -104,8 +104,6 @@ export default function MegaMenu() {
     setTimeout(() => setIsOpen(false), 200);
   };
 
-  if (megaCategories.length === 0) return null;
-
   return (
     <div
       className="relative"

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { Heart } from 'lucide-react';
 
 export const metadata: Metadata = { title: 'Хадгалсан | Turbotech' };
 
@@ -13,7 +14,7 @@ export default function WishlistsPage() {
       </nav>
       <h1 className="text-2xl font-black text-gray-800 mb-8">Хадгалсан бараанууд</h1>
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-        <div className="text-7xl mb-4 opacity-40">❤️</div>
+        <Heart className="w-16 h-16 mx-auto mb-4 text-gray-300" strokeWidth={1.4} />
         <h2 className="text-xl font-bold text-gray-700 mb-2">Хадгалсан бараа байхгүй байна</h2>
         <p className="text-gray-400 mb-6 text-sm">Барааны хуудаснаас дуртай барааг хадгалаарай</p>
         <Link href="/" className="inline-block bg-[#1565C0] hover:bg-[#0D47A1] text-white font-bold px-8 py-3 rounded-xl transition-colors">

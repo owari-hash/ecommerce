@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { ShoppingCart, Ticket } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   readCart,
@@ -337,7 +338,7 @@ export default function CheckoutClient() {
         </nav>
         <h1 className="text-2xl font-black text-gray-800 mb-8">Худалдан авалтын сагс</h1>
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-          <div className="text-7xl mb-4 opacity-40">🛒</div>
+          <ShoppingCart className="w-16 h-16 mx-auto mb-4 text-gray-300" strokeWidth={1.3} />
           <h2 className="text-xl font-bold text-gray-700 mb-2">Таны сагс хоосон байна</h2>
           <p className="text-gray-400 mb-6 text-sm">Барааны жагсаалтаас хүссэн барааг сагсанд нэмнэ үү</p>
           <Link href="/s" className="inline-block bg-primary hover:bg-primary-dark text-white font-bold px-8 py-3 rounded-xl transition-colors">
@@ -379,10 +380,10 @@ export default function CheckoutClient() {
           {/* Step 0 — Сагс */}
           {step === 0 && (
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+              <div className="p-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                 <h2 className="font-bold text-gray-900">Бараа ({items.length})</h2>
                 {items.length > 0 && (
-                  <button onClick={handleClear} className="text-sm text-gray-500 hover:text-primary transition-colors">
+                  <button onClick={handleClear} className="shrink-0 text-sm text-gray-500 hover:text-primary transition-colors">
                     Бүгдийг устгах
                   </button>
                 )}
@@ -672,7 +673,7 @@ export default function CheckoutClient() {
             {successOrder?.items?.[0]?.ebarimtBillId && (
               <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-5 mb-6 border border-emerald-100/50 text-left relative overflow-hidden">
                 <div className="flex justify-between items-center text-xs font-bold text-emerald-800 mb-3 border-b border-emerald-100/40 pb-2">
-                  <span className="flex items-center gap-1">🎫 Цахим төлбөрийн баримт</span>
+                  <span className="flex items-center gap-1.5"><Ticket className="w-3.5 h-3.5" strokeWidth={2} /> Цахим төлбөрийн баримт</span>
                   <span className="text-[10px] bg-emerald-600 text-white font-extrabold px-2 py-0.5 rounded-full">E-BARIMT</span>
                 </div>
                 <div className="space-y-2 text-xs">

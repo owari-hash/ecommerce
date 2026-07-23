@@ -4,52 +4,53 @@ import Image from 'next/image';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { ClipboardList, Truck, Phone, Wrench, Monitor, Lock, type LucideIcon } from 'lucide-react';
 
 function cn(...classes: (string | undefined | null | false)[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-const SERVICES = [
+const SERVICES: { href: string; label: string; sub: string; Icon: LucideIcon; image: string }[] = [
   {
     href: '/leasing-form',
     label: 'Лизинг хүсэлт',
     sub: 'Хурдан, хялбар лизинг',
-    emoji: '📋',
+    Icon: ClipboardList,
     image: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&auto=format&fit=crop',
   },
   {
     href: '/delivery',
     label: 'Хүргэлт',
     sub: 'Хаана ч хүргэнэ',
-    emoji: '🚚',
+    Icon: Truck,
     image: 'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=800&auto=format&fit=crop',
   },
   {
     href: '/contact',
     label: 'Холбоо барих',
     sub: 'Бидэнтэй холбогдох',
-    emoji: '📞',
+    Icon: Phone,
     image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop',
   },
   {
     href: '/warranty',
     label: 'Засвар & Баталгаа',
     sub: 'Албан ёсны засварын үйлчилгээ',
-    emoji: '🔧',
+    Icon: Wrench,
     image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop',
   },
   {
     href: '/installation',
     label: 'Суурилуулалт',
     sub: 'Мэргэжлийн тохиргоо',
-    emoji: '🖥️',
+    Icon: Monitor,
     image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=800&auto=format&fit=crop',
   },
   {
     href: '/payment',
     label: 'Аюулгүй төлбөр',
     sub: 'Олон төрлийн төлбөрийн хэрэгсэл',
-    emoji: '🔒',
+    Icon: Lock,
     image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&auto=format&fit=crop',
   },
 ];
@@ -73,8 +74,8 @@ function ServiceCard({ svc }: { svc: typeof SERVICES[number] }) {
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/5" />
       <div className="absolute inset-0 flex flex-col justify-between p-3">
-        <div className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-base shadow">
-          {svc.emoji}
+        <div className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow">
+          <svc.Icon className="w-4 h-4 text-white" strokeWidth={1.8} />
         </div>
         <div>
           <p className="text-white/60 text-[9px] font-black tracking-widest uppercase mb-0.5">Үйлчилгээ</p>
@@ -143,8 +144,8 @@ export default function ServiceBento() {
                 isActive ? 'opacity-70' : 'opacity-90'
               )} />
               <div className="absolute inset-0 flex flex-col justify-between p-4">
-                <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-lg shadow">
-                  {svc.emoji}
+                <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow">
+                  <svc.Icon className="w-5 h-5 text-white" strokeWidth={1.8} />
                 </div>
                 <div className={cn(
                   'transition-all duration-300',

@@ -3,6 +3,7 @@
 import { Suspense } from 'react'
 import { getSection } from './componentRegistry'
 import type { SectionConfig } from './tenantConfig'
+import Reveal from '../components/Reveal'
 
 function SectionSkeleton() {
   return (
@@ -29,9 +30,22 @@ export function PageRenderer({ sections, tenantId }: PageRendererProps) {
     <>
       {sections.map((section, i) => {
         const Section = getSection(section.type)
+        const content = <Section {...((section.props ?? {}) as Record<string, unknown>)} tenantId={tenantId} />
+        // HeroBanner uses an internal `position: sticky` pinned-scroll effect — a `transform`
+        // on any ancestor (which Reveal applies for its fade-in) breaks sticky positioning,
+        // so it must render without the Reveal wrapper.
+        if (section.type === 'HeroBanner') {
+          return (
+            <Suspense key={`${section.type}_${i}`} fallback={<SectionSkeleton />}>
+              {content}
+            </Suspense>
+          )
+        }
         return (
           <Suspense key={`${section.type}_${i}`} fallback={<SectionSkeleton />}>
-            <Section {...((section.props ?? {}) as Record<string, unknown>)} tenantId={tenantId} />
+            <Reveal delay={i === 0 ? 0 : 60}>
+              {content}
+            </Reveal>
           </Suspense>
         )
       })}

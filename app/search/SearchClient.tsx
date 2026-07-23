@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useMemo, useState, useEffect } from 'react';
+import { Package, SearchX } from 'lucide-react';
 import { formatPrice, CATEGORY_LABELS } from '../lib/mockCatalog';
 import { useTenant } from '../lib/TenantContext';
 import { resolveUploadUrl } from '../lib/apiClient';
@@ -123,8 +124,8 @@ export default function SearchClient() {
                     unoptimized
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-4xl">
-                    📦
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Package className="w-9 h-9 text-gray-300" strokeWidth={1.4} />
                   </div>
                 )}
                 {product.stock === 0 ? (
@@ -175,7 +176,7 @@ export default function SearchClient() {
       ) : query ? (
         /* No Results */
         <div className="text-center py-16">
-          <div className="text-7xl mb-4">🔍</div>
+          <SearchX className="w-16 h-16 mx-auto mb-4 text-gray-300" strokeWidth={1.4} />
           <h2 className="text-xl font-bold text-gray-700 mb-2">
             "{query}" хайлтад тохирох бараа олдсонгүй
           </h2>

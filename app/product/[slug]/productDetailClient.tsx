@@ -3,11 +3,13 @@
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { Package, RotateCw, FlipHorizontal, FlipVertical } from 'lucide-react';
 import { toggleCompare, readCompare } from '../../lib/compareStore';
 import { addToCart } from '../../lib/cartStore';
 import { Lens } from '../../components/Lens';
 import { useTenant } from '../../lib/TenantContext';
 import { resolveUploadUrl } from '../../lib/apiClient';
+import { CATEGORY_ICONS, type CatalogCategoryKey } from '../../lib/mockCatalog';
 
 type Props = {
   product: {
@@ -18,7 +20,6 @@ type Props = {
     brand: string;
     category: string;
     categoryLabel: string;
-    icon: string;
     image?: string;
     images?: string[];
     price: string;
@@ -55,6 +56,7 @@ export default function ProductDetailClient({ product }: Props) {
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
   const [inCompare, setInCompare] = useState(false);
+  const CategoryIcon = CATEGORY_ICONS[product.category as CatalogCategoryKey] ?? Package;
 
   useEffect(() => {
     const update = () => setInCompare(readCompare().some((x) => x.id === product.id));
@@ -101,7 +103,7 @@ export default function ProductDetailClient({ product }: Props) {
         isLogo: true,
       }];
     }
-    // Last resort: emoji icon
+    // Last resort: category icon placeholder
     return [{
       id: 'img-0',
       src: '',
@@ -127,7 +129,7 @@ export default function ProductDetailClient({ product }: Props) {
     if (product.stock === 0) return;
     const price = parsePrice(product.price);
     const oldPrice = product.oldPrice ? parsePrice(product.oldPrice) : undefined;
-    addToCart({ id: product.id, name: product.name, slug: product.slug, price, oldPrice, icon: product.icon, brand: product.brand });
+    addToCart({ id: product.id, name: product.name, slug: product.slug, price, oldPrice, icon: product.category, brand: product.brand });
     setToastMsg(`${product.name} сагсанд нэмэгдлээ`);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 2000);
@@ -158,7 +160,7 @@ export default function ProductDetailClient({ product }: Props) {
                     unoptimized={true}
                   />
                 ) : (
-                  <div className="text-7xl sm:text-8xl opacity-50 select-none">{product.icon}</div>
+                  <div className="select-none"><CategoryIcon className="w-24 h-24 sm:w-28 sm:h-28 text-gray-300" strokeWidth={1.2} /></div>
                 )}
               </div>
             </Lens>
@@ -232,7 +234,7 @@ export default function ProductDetailClient({ product }: Props) {
                     {img.isImage ? (
                       <Image src={img.src} alt={img.alt} fill className={`object-contain p-1 ${img.isLogo ? 'opacity-20' : ''}`} sizes="64px" unoptimized={true} />
                     ) : (
-                      <div className="text-xl opacity-60">{product.icon}</div>
+                      <CategoryIcon className="w-6 h-6 text-gray-400" strokeWidth={1.4} />
                     )}
                   </div>
                 </button>
@@ -282,9 +284,9 @@ export default function ProductDetailClient({ product }: Props) {
                       <Image src={images[imgIdx].src} alt={images[imgIdx].alt} fill className={`object-contain ${images[imgIdx].isLogo ? 'opacity-20' : ''}`} sizes="95vw" unoptimized={true} />
                     </div>
                   ) : (
-                    <div className="text-[180px] opacity-50"
+                    <div
                       style={{ transform: `scale(${zoom.scale}) rotate(${zoom.rot}deg) scaleX(${zoom.flipX ? -1 : 1}) scaleY(${zoom.flipY ? -1 : 1})`, transition: 'transform 120ms ease-out' }}>
-                      {product.icon}
+                      <CategoryIcon className="w-44 h-44 text-gray-300" strokeWidth={1} />
                     </div>
                   )}
                 </div>
@@ -296,11 +298,11 @@ export default function ProductDetailClient({ product }: Props) {
                   <button onClick={() => setZoom(z => ({ ...z, scale: Math.min(3, +(z.scale + 0.2).toFixed(2)) }))}
                     className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-50">+ Zoom</button>
                   <button onClick={() => setZoom(z => ({ ...z, rot: z.rot - 90 }))}
-                    className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-50">↺ Эргүүлэх</button>
+                    className="flex items-center gap-1.5 border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-50"><RotateCw className="w-3.5 h-3.5" strokeWidth={2} /> Эргүүлэх</button>
                   <button onClick={() => setZoom(z => ({ ...z, flipX: !z.flipX }))}
-                    className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-50">↔ Flip X</button>
+                    className="flex items-center gap-1.5 border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-50"><FlipHorizontal className="w-3.5 h-3.5" strokeWidth={2} /> Flip X</button>
                   <button onClick={() => setZoom(z => ({ ...z, flipY: !z.flipY }))}
-                    className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-50">↕ Flip Y</button>
+                    className="flex items-center gap-1.5 border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-50"><FlipVertical className="w-3.5 h-3.5" strokeWidth={2} /> Flip Y</button>
                 </div>
               </div>
             </div>

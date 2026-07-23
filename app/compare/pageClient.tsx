@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { Scale, Package } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { readCompare, writeCompare, type CompareItem } from '../lib/compareStore';
 import { formatPrice } from '../lib/mockCatalog';
@@ -98,7 +99,7 @@ export default function ComparePageClient({ tenantId }: { tenantId: string }) {
           <span className="text-gray-800 font-medium">Харьцуулах</span>
         </nav>
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-          <div className="text-7xl mb-4 opacity-40">⚖️</div>
+          <Scale className="w-16 h-16 mx-auto mb-4 text-gray-300" strokeWidth={1.3} />
           <h2 className="text-xl font-bold text-gray-700 mb-2">Харьцуулах бараа байхгүй байна</h2>
           <p className="text-gray-400 mb-6 text-sm">Барааны картнаас харьцуулах дүрсийг дарж нэмнэ үү</p>
           <Link
@@ -121,14 +122,14 @@ export default function ComparePageClient({ tenantId }: { tenantId: string }) {
         <span>/</span>
         <span className="text-gray-800 font-medium">Харьцуулах</span>
       </nav>
-      <div className="flex items-center justify-between gap-3 mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h1 className="text-2xl font-black text-gray-900">
           Харьцуулах
           <span className="ml-2 text-base font-bold text-gray-400">({items.length} бараа)</span>
         </h1>
         <button
           type="button"
-          className="text-sm font-bold text-gray-500 hover:text-red-600 transition-colors"
+          className="shrink-0 text-sm font-bold text-gray-500 hover:text-red-600 transition-colors"
           onClick={() => writeCompare([])}
         >
           Бүгдийг устгах
@@ -164,7 +165,7 @@ export default function ComparePageClient({ tenantId }: { tenantId: string }) {
                         {image ? (
                           <Image src={image} alt={title} fill className="object-cover" sizes="220px" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-5xl opacity-30">📦</div>
+                          <div className="w-full h-full flex items-center justify-center"><Package className="w-10 h-10 text-gray-300" strokeWidth={1.4} /></div>
                         )}
                         {discountPct != null && (
                           <span className="absolute top-2 left-2 bg-primary text-white text-[10px] font-black px-1.5 py-0.5 rounded leading-none">
@@ -216,7 +217,7 @@ export default function ComparePageClient({ tenantId }: { tenantId: string }) {
                             slug,
                             price: price ?? 0,
                             oldPrice: oldPrice ?? undefined,
-                            icon: '📦',
+                            icon: 'product',
                             brand: brand || 'Дэлгүүр',
                           });
                         }}

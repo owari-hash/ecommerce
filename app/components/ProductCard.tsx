@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Package } from 'lucide-react';
 import { CATEGORY_ICONS, type CatalogCategoryKey, formatPrice } from '../lib/mockCatalog';
 import { toggleCompare, readCompare } from '../lib/compareStore';
 import { addToCart } from '../lib/cartStore';
@@ -40,6 +41,7 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
   const resolvedImage = resolveProductImageUrl(image);
   const fallbackImage = resolveProductImageUrl(branding.logo);
   const previewImage = resolvedImage ?? fallbackImage;
+  const CategoryIcon = CATEGORY_ICONS[category] ?? Package;
 
   useEffect(() => setMounted(true), []);
 
@@ -78,7 +80,7 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({ id, slug, name, price, oldPrice, icon: CATEGORY_ICONS[category] ?? '📦', brand });
+    addToCart({ id, slug, name, price, oldPrice, icon: category, brand });
     window.dispatchEvent(new Event('cart:changed'));
   };
 
@@ -214,7 +216,7 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
               {previewImage ? (
                 <Image src={previewImage} alt={name} fill className="object-contain p-6" sizes="(max-width:640px) 100vw, 320px" unoptimized />
               ) : (
-                <span className="text-6xl opacity-30">{CATEGORY_ICONS[category]}</span>
+                <CategoryIcon className="w-16 h-16 text-gray-300" strokeWidth={1.4} />
               )}
               {discountPct ? (
                 <span className="absolute top-3 left-3 bg-primary text-white text-xs font-black px-2 py-0.5 rounded shadow">-{discountPct}%</span>

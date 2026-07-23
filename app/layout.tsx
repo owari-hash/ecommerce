@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Roboto } from "next/font/google";
 import { headers } from "next/headers";
+import { SearchX } from "lucide-react";
 import "./globals.css";
 import Header from "./components/Header";
+import HeaderSpacer from "./components/HeaderSpacer";
 import Footer from "./components/Footer";
 import MobileBottomNav from "./components/MobileBottomNav";
 import ScrollToTop from "./components/ScrollToTop";
@@ -10,10 +12,10 @@ import NavigationProgress from "./components/NavigationProgress";
 import { TenantProvider } from "./lib/TenantContext";
 import { fetchTenantConfig } from "./lib/tenantConfig";
 
-const inter = Inter({
+const roboto = Roboto({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-  variable: "--font-inter",
+  weight: ["100", "300", "400", "500", "700", "900"],
+  variable: "--font-roboto",
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -85,13 +87,13 @@ export default async function RootLayout({
 
   if (!config) {
     return (
-      <html lang="mn" className={inter.variable}>
+      <html lang="mn" className={roboto.variable} data-scroll-behavior="smooth">
         <head>
           <title>Суваг олдсонгүй | Их Наяд Плаза</title>
           <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
           <style>{`
             body {
-              font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+              font-family: var(--font-roboto), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
               margin: 0;
               padding: 0;
             }
@@ -99,7 +101,7 @@ export default async function RootLayout({
         </head>
         <body className="min-h-screen flex items-center justify-center bg-[#f8fafc] px-4">
           <div className="max-w-md w-full text-center bg-white p-10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-100/80 transition-all">
-            <div className="text-8xl mb-6 select-none animate-bounce" style={{ display: 'inline-block', animationDuration: '3s' }}>🔍</div>
+            <SearchX className="w-20 h-20 mx-auto mb-6 text-rose-300 select-none animate-bounce" strokeWidth={1.4} style={{ animationDuration: '3s' }} />
             <h1 className="text-6xl font-black text-rose-600 mb-4 tracking-tight">404</h1>
             <h2 className="text-2xl font-bold text-slate-800 mb-3 tracking-wide">Сайт олдсонгүй</h2>
             <p className="text-slate-400 mb-8 leading-relaxed text-sm">
@@ -127,16 +129,15 @@ export default async function RootLayout({
   `;
 
   return (
-    <html lang="mn" className={inter.variable}>
+    <html lang="mn" className={roboto.variable}>
       <head>
         <style>{`:root { ${cssVars} }`}</style>
       </head>
-      <body className="min-h-screen flex flex-col bg-[#f5f6f8] overflow-x-hidden">
+      <body className="min-h-screen flex flex-col bg-[#faf8f5] overflow-x-clip">
         <TenantProvider config={config}>
           <NavigationProgress />
           <Header />
-          {/* Spacer to offset fixed header height: main row + mobile category strip (~90px) mobile, ~132px desktop */}
-          <div className="h-[90px] sm:h-[132px] shrink-0" aria-hidden="true" />
+          <HeaderSpacer />
           <main className="flex-1 pb-24 md:pb-0">{children}</main>
           <Footer />
           <MobileBottomNav />

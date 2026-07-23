@@ -6,19 +6,34 @@
   --color-primary-light: #E53935;
   --color-accent: #FF6F00;
   --color-sale: #D32F2F;
-  --color-bg: #f5f6f8;
+  --color-bg: #faf8f5;
   --color-footer: #0a1628;
+
+  /* Warm, brand-neutral palette — the "refined premium" ground the accent color sits on */
+  --color-ink: #23201c;
+  --color-paper: #faf8f5;
+  --color-hairline: #eee7dd;
+  --color-muted: #8a8078;
 }
 
 html {
-  overflow-x: hidden;
+  /* `clip` (not `hidden`) — `hidden` forces the paired overflow-y to compute as
+     `auto`, which silently turns html/body into a scroll container and breaks
+     `position: sticky` for any descendant (e.g. the pinned-scroll hero). */
+  overflow-x: clip;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
-  background-color: #f5f6f8;
+  background-color: #faf8f5;
   color: #1a1a2e;
-  font-family: 'Inter', 'Segoe UI', sans-serif;
-  overflow-x: hidden;
+  font-family: var(--font-roboto), 'Roboto', 'Segoe UI', sans-serif;
+  overflow-x: clip;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -60,7 +75,7 @@ body {
   100% { background-position:  200% 0; }
 }
 .skeleton {
-  background: linear-gradient(90deg, #e5e7eb 25%, #f1f3f5 50%, #e5e7eb 75%);
+  background: linear-gradient(90deg, #ece6dd 25%, #f4efe7 50%, #ece6dd 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s ease-in-out infinite;
   border-radius: 0.75rem;

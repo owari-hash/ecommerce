@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { User as UserIcon, Heart, ShoppingCart, Package } from 'lucide-react';
 import { readAuth, restoreSession, type User } from '../../lib/authStore';
 import { ORDER_STATUS, PAYMENT_STATUS } from '../../lib/orderStatus';
 import Pagination from '../../components/Pagination';
@@ -230,25 +231,25 @@ export default function OrdersClient() {
           </div>
 
           <Link href="/account"
-            className="block px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium text-sm transition-colors"
+            className="flex items-center gap-2.5 px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium text-sm transition-colors"
           >
-            👤 Хувийн мэдээлэл
+            <UserIcon className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Хувийн мэдээлэл
           </Link>
           <Link href="/account/wishlists"
-            className="block px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium text-sm transition-colors"
+            className="flex items-center gap-2.5 px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium text-sm transition-colors"
           >
-            ❤️ Хадгалсан бараа
+            <Heart className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Хадгалсан бараа
           </Link>
           <Link href="/checkout"
-            className="block px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium text-sm transition-colors"
+            className="flex items-center gap-2.5 px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium text-sm transition-colors"
           >
-            🛒 Миний сагс
+            <ShoppingCart className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Миний сагс
           </Link>
           <Link href="/account/orders"
-            className="block px-4 py-3 rounded-xl bg-primary/5 font-medium text-sm transition-colors"
+            className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-primary/5 font-medium text-sm transition-colors"
             style={{ color: 'var(--color-primary, #D32F2F)' }}
           >
-            📦 Захиалгын түүх
+            <Package className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Захиалгын түүх
           </Link>
         </div>
 
@@ -279,7 +280,7 @@ export default function OrdersClient() {
 
           {!loading && !error && orders.length === 0 && (
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
-              <div className="text-6xl mb-4">📦</div>
+              <Package className="w-14 h-14 mx-auto mb-4 text-gray-300" strokeWidth={1.3} />
               <h2 className="text-xl font-bold text-gray-800 mb-2">Захиалга байхгүй байна</h2>
               <p className="text-gray-500 text-sm mb-6">Та одоогоор ямар ч захиалга өгөөгүй байна.</p>
               <Link
@@ -295,16 +296,16 @@ export default function OrdersClient() {
           {!loading && !error && orders.length > 0 && (
             <div className="space-y-3">
               {/* Summary */}
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-2">
                 <p className="text-sm text-gray-500">
                   Нийт <span className="font-bold text-gray-800">{orders.length}</span> захиалга
                 </p>
                 <button
                   onClick={fetchOrders}
-                  className="text-xs font-medium flex items-center gap-1 transition-colors"
+                  className="shrink-0 text-xs font-medium flex items-center gap-1 transition-colors"
                   style={{ color: 'var(--color-primary, #D32F2F)' }}
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                       d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
