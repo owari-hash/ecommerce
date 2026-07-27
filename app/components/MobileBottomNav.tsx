@@ -1,9 +1,11 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getCartCount } from '../lib/cartStore';
+import { readAuth, type User } from '../lib/authStore';
 
 function Item({
   href,
@@ -41,12 +43,18 @@ function Item({
 
 export default function MobileBottomNav() {
   const [cartCount, setCartCount] = useState(0);
+  const [user, setUser] = useState<User | null>(() => readAuth());
 
   useEffect(() => {
     setCartCount(getCartCount());
     const onCartChange = () => setCartCount(getCartCount());
     window.addEventListener('cart:changed', onCartChange);
-    return () => window.removeEventListener('cart:changed', onCartChange);
+    const onAuthChange = () => setUser(readAuth());
+    window.addEventListener('auth:changed', onAuthChange);
+    return () => {
+      window.removeEventListener('cart:changed', onCartChange);
+      window.removeEventListener('auth:changed', onAuthChange);
+    };
   }, []);
 
   return (
@@ -111,16 +119,20 @@ export default function MobileBottomNav() {
           />
           <Item
             href="/account"
-            label="Бүртгэл"
+            label={user ? 'Профайл' : 'Бүртгэл'}
             icon={
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path
-                  strokeWidth="1.7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M20 21a8 8 0 1 0-16 0m8-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"
-                />
-              </svg>
+              user?.avatar ? (
+                <Image src={user.avatar} alt="" width={20} height={20} className="w-full h-full rounded-full object-cover" unoptimized referrerPolicy="no-referrer" />
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M20 21a8 8 0 1 0-16 0m8-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"
+                  />
+                </svg>
+              )
             }
           />
       </div>

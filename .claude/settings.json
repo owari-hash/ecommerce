@@ -37,7 +37,12 @@
       "Read(//Users/macbookairm4/ecommerce-client/node_modules/**)",
       "Bash(grep -E \"^d.*next$|next \")",
       "Read(//Users/macbookairm4/ecommerce-client/node_modules/next/**)",
-      "Bash(/bin/pwd)"
+      "Bash(/bin/pwd)",
+      "Bash(./node_modules/.bin/tsc --noEmit -p .)",
+      "Bash(node -e ' *)",
+      "WebSearch",
+      "WebFetch(domain:unsplash.com)",
+      "WebFetch(domain:images.unsplash.com)"
     ],
     "additionalDirectories": [
       "/Users/macbookairm4/ecommerce-client/app/(dashboard)/homepage",

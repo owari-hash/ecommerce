@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     const upRes = await fetch(`${apiUrl}/api/users/oauth`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(tenantId ? { 'x-tenant-id': tenantId } : {}) },
-      body: JSON.stringify({ email: info.email, firstName: info.given_name, lastName: info.family_name, provider: 'google' }),
+      body: JSON.stringify({ email: info.email, firstName: info.given_name, lastName: info.family_name, avatar: info.picture, provider: 'google' }),
     });
     const data = await upRes.json();
     if (!upRes.ok || !data.accessToken) throw new Error(data.error || 'upsert failed');

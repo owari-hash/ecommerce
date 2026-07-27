@@ -69,7 +69,11 @@ function CategoryRow({
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
-  const isSlider = items.length > 10
+  // Fixed 2-row layout on every breakpoint: with a wrapping grid, mobile's 2 columns
+  // would spread the same item count across far more rows than desktop's 4-5 columns.
+  // Switching to the horizontal-scroll slider past 2 mobile rows' worth of items keeps
+  // "2 rows, then the next category" consistent across all screen sizes.
+  const isSlider = items.length > 4
 
   function checkScroll() {
     const el = scrollRef.current

@@ -395,10 +395,14 @@ export default function Header() {
             {user ? (
               <div className="relative hidden md:block">
                 <button onClick={() => setUserMenuOpen(!userMenuOpen)} className={`flex flex-col items-center transition-colors ${transparent ? 'text-white' : 'text-primary'}`}>
-                  <span className={`w-8 h-8 rounded-full flex items-center justify-center ${transparent ? 'bg-white/15 ring-1 ring-white/30 backdrop-blur-sm' : 'bg-primary/10 ring-1 ring-primary/20'}`}>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
+                  <span className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center ${transparent ? 'bg-white/15 ring-1 ring-white/30 backdrop-blur-sm' : 'bg-primary/10 ring-1 ring-primary/20'}`}>
+                    {user.avatar ? (
+                      <Image src={user.avatar} alt="" width={32} height={32} className="w-full h-full object-cover" unoptimized referrerPolicy="no-referrer" />
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    )}
                   </span>
                   <span className="text-[10px] mt-0.5">Профайл</span>
                 </button>

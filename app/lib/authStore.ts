@@ -5,6 +5,7 @@ export type User = {
   firstName: string
   lastName: string
   phone?: string
+  avatar?: string
 }
 
 // In-memory auth state (set after API login, cleared on logout)
@@ -194,7 +195,7 @@ export async function restoreSession(): Promise<void> {
 
     if (res.ok) {
       const user = await res.json()
-      _currentUser = { email: user.email, firstName: user.firstName, lastName: user.lastName, phone: user.phone }
+      _currentUser = { email: user.email, firstName: user.firstName, lastName: user.lastName, phone: user.phone, avatar: user.avatar }
       dispatchChange()
     }
   } catch {
