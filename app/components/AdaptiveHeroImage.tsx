@@ -36,18 +36,26 @@ export default function AdaptiveHeroImage({
 }: AdaptiveHeroImageProps) {
   const [native, setNative] = useState<{ w: number; h: number } | null>(null)
 
+  // Probe the source file's true intrinsic size directly (bypassing Next's responsive
+  // `srcSet` negotiation). Reading naturalWidth/Height off the rendered `fill` image instead
+  // would report whatever downscaled variant the browser picked for the current viewport/DPR
+  // — e.g. a legitimately 3420px-wide source still resolves to a ~1920px variant on a normal
+  // (non-Retina) desktop window, which would misclassify a perfectly high-res source as low-res.
   useEffect(() => {
     setNative(null)
+    if (!src) return
+    let cancelled = false
+    const probe = new window.Image()
+    probe.onload = () => {
+      if (!cancelled && probe.naturalWidth && probe.naturalHeight) {
+        setNative({ w: probe.naturalWidth, h: probe.naturalHeight })
+      }
+    }
+    probe.src = src
+    return () => { cancelled = true }
   }, [src])
 
   const isLowRes = !!native && (native.w < HD_MIN_WIDTH || native.h < HD_MIN_HEIGHT)
-
-  function handleLoad(e: React.SyntheticEvent<HTMLImageElement>) {
-    const img = e.currentTarget
-    if (img.naturalWidth && img.naturalHeight) {
-      setNative({ w: img.naturalWidth, h: img.naturalHeight })
-    }
-  }
 
   return (
     <>
@@ -71,7 +79,6 @@ export default function AdaptiveHeroImage({
           priority={priority}
           quality={quality}
           sizes={`${native.w}px`}
-          onLoad={handleLoad}
           className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 object-contain ${className}`}
           style={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto' }}
         />
@@ -83,7 +90,6 @@ export default function AdaptiveHeroImage({
           priority={priority}
           quality={quality}
           sizes="100vw"
-          onLoad={handleLoad}
           className={`object-${fit} ${className}`}
         />
       )}
