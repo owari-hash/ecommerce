@@ -8,6 +8,7 @@ import { X, ArrowUpRight, Package } from 'lucide-react'
 import { formatPrice } from '../lib/mockCatalog'
 import { resolveUploadUrl } from '../lib/apiClient'
 import { useTenantHref } from '../lib/useTenantHref'
+import AdaptiveHeroImage from './AdaptiveHeroImage'
 
 interface Slide {
   href: string
@@ -92,14 +93,12 @@ export default function HeroDetailModal({ slide, tenantId, onClose }: HeroDetail
               transition={{ duration: 0.9, ease: 'easeOut' }}
               className="absolute inset-0"
             >
-              <Image
+              <AdaptiveHeroImage
                 src={src}
                 alt={slide.subtitle}
-                fill
                 priority={i === 0}
                 quality={92}
-                className="object-contain"
-                sizes="100vw"
+                fit="contain"
               />
             </motion.div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />

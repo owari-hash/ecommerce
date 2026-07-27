@@ -1,11 +1,11 @@
 'use client'
 
-import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion'
 import { ArrowUpRight, Truck, ShieldCheck, RotateCcw, Headphones } from 'lucide-react'
 import { useTenant } from '../lib/TenantContext'
 import HeroDetailModal from '../components/HeroDetailModal'
+import AdaptiveHeroImage from '../components/AdaptiveHeroImage'
 
 interface Slide {
   href: string
@@ -97,7 +97,7 @@ export default function HeroBanner({ bigSlides, tenantId }: HeroBannerProps) {
               transition={{ opacity: { duration: 1, ease: 'easeInOut' }, scale: { duration: 3.4, ease: 'linear' } }}
               className="absolute inset-0"
             >
-              <Image src={slide.image} alt={slide.subtitle} fill priority quality={90} className="object-cover" sizes="100vw" />
+              <AdaptiveHeroImage src={slide.image} alt={slide.subtitle} priority quality={90} fit="cover" blurredBackdrop />
             </motion.div>
           </AnimatePresence>
           <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/15 to-black/60" />
