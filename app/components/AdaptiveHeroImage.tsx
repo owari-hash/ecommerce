@@ -19,8 +19,11 @@ interface AdaptiveHeroImageProps {
 // Below this, a `fill` image would be stretched past its native pixels on a full-bleed
 // banner and read as visibly soft/blurry. Once detected, we stop upscaling it and instead
 // render it at its true resolution, centered, so it stays crisp no matter the source size.
-const HD_MIN_WIDTH = 1400
-const HD_MIN_HEIGHT = 700
+// The banner renders edge-to-edge across the viewport (up to ~1920px CSS-wide), and on
+// any 2x/Retina display the browser needs ~2x that many *physical* pixels to stay crisp —
+// so the floor has to sit well above 1080p, not just above it.
+const HD_MIN_WIDTH = 2560
+const HD_MIN_HEIGHT = 1440
 
 export default function AdaptiveHeroImage({
   src,
