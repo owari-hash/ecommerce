@@ -112,7 +112,7 @@ export default function HeroDetailModal({ slide, tenantId, onClose }: HeroDetail
                 transition={{ duration: 0.7, ease: 'easeOut', delay: 0.15 }}
                 className="absolute inset-x-0 top-[14%] sm:top-[18%] flex flex-col items-center px-4 text-center pointer-events-none"
               >
-                {slide.title && (
+                {slide.title && slide.title !== slide.subtitle && (
                   <p className="text-[11px] sm:text-xs font-bold uppercase tracking-[3px] text-white/70 mb-3">{slide.title}</p>
                 )}
                 <h1
