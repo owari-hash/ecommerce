@@ -12,6 +12,7 @@ import {
 import { useTenant } from '../lib/TenantContext'
 import { useTenantHref } from '../lib/useTenantHref'
 import { resolveUploadUrl } from '../lib/apiClient'
+import { getCategorySlug } from '../lib/categoryUtils'
 
 interface Category {
   id: string
@@ -121,7 +122,7 @@ export default function CategoryList({ showBrands = true }: { showBrands?: boole
       if (!imageUrl && catImageById[c.id]) imageUrl = resolveImageUrl(catImageById[c.id])
       return {
         key: c.id,
-        href: tenantHref(`/${c.slug}`),
+        href: tenantHref(`/${getCategorySlug(c)}`),
         imageUrl,
         Icon: getCategoryIcon(c.slug, c.name),
         label: c.name,

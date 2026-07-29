@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useTenant } from '../lib/TenantContext'
+import { useTenantHref } from '../lib/useTenantHref'
+import { getCategorySlug } from '../lib/categoryUtils'
 
 interface Category {
   id: string
@@ -14,6 +16,7 @@ interface Category {
 
 export default function CategoriesPage() {
   const { tenantId } = useTenant()
+  const tenantHref = useTenantHref()
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -54,7 +57,7 @@ export default function CategoriesPage() {
             {categories.map((c) => (
               <li key={c.id}>
                 <Link
-                  href={`/${c.slug}`}
+                  href={tenantHref(`/${getCategorySlug(c)}`)}
                   className="flex items-center justify-between px-5 py-4 hover:bg-blue-50 hover:text-[#1565C0] transition-colors"
                 >
                   <span className="font-medium text-sm">{c.name}</span>

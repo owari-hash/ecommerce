@@ -25,6 +25,21 @@ export function isLoggedIn(): boolean {
   return _currentUser !== null
 }
 
+export function extractErrorMessage(err: unknown, fallback = 'Алдаа гарлаа'): string {
+  if (!err) return fallback;
+  if (typeof err === 'string') return err;
+  if (typeof err === 'object' && err !== null) {
+    const obj = err as Record<string, unknown>;
+    if (typeof obj.message === 'string' && obj.message) return obj.message;
+    if (typeof obj.error === 'string' && obj.error) return obj.error;
+    if (typeof obj.error === 'object' && obj.error !== null) {
+      const nested = obj.error as Record<string, unknown>;
+      if (typeof nested.message === 'string' && nested.message) return nested.message;
+    }
+  }
+  return fallback;
+}
+
 export async function login(email: string, password: string): Promise<{ success: boolean; error?: string }> {
   try {
     const res = await fetch('/api/auth/login', {
@@ -33,7 +48,7 @@ export async function login(email: string, password: string): Promise<{ success:
       body: JSON.stringify({ email, password }),
     })
     const data = await res.json()
-    if (!res.ok) return { success: false, error: data.error ?? 'Нэвтрэх амжилтгүй боллоо' }
+    if (!res.ok) return { success: false, error: extractErrorMessage(data.error, 'Нэвтрэх амжилтгүй боллоо') }
     _currentUser = data.user
     dispatchChange()
     return { success: true }
@@ -50,7 +65,7 @@ export async function loginWithPhone(phone: string, password: string): Promise<{
       body: JSON.stringify({ phone, password }),
     })
     const data = await res.json()
-    if (!res.ok) return { success: false, error: data.error ?? 'Нэвтрэх амжилтгүй боллоо' }
+    if (!res.ok) return { success: false, error: extractErrorMessage(data.error, 'Нэвтрэх амжилтгүй боллоо') }
     _currentUser = data.user
     dispatchChange()
     return { success: true }
@@ -73,7 +88,7 @@ export async function register(data: {
       body: JSON.stringify(data),
     })
     const json = await res.json()
-    if (!res.ok) return { success: false, error: json.error ?? 'Бүртгэл амжилтгүй боллоо' }
+    if (!res.ok) return { success: false, error: extractErrorMessage(json.error, 'Бүртгэл амжилтгүй боллоо') }
     _currentUser = json.user
     dispatchChange()
     return { success: true }
@@ -96,7 +111,7 @@ export async function sendRegisterOtp(phone: string): Promise<{ success: boolean
       body: JSON.stringify({ phone }),
     })
     const data = await res.json()
-    if (!res.ok) return { success: false, error: data.error ?? 'OTP илгээхэд алдаа гарлаа' }
+    if (!res.ok) return { success: false, error: extractErrorMessage(data.error, 'OTP илгээхэд алдаа гарлаа') }
     return { success: true }
   } catch {
     return { success: false, error: 'Сервертэй холбогдох боломжгүй байна' }
@@ -111,7 +126,7 @@ export async function forgotPasswordSend(phone: string): Promise<{ success: bool
       body: JSON.stringify({ phone }),
     })
     const data = await res.json()
-    if (!res.ok) return { success: false, error: data.error ?? 'OTP илгээхэд алдаа гарлаа' }
+    if (!res.ok) return { success: false, error: extractErrorMessage(data.error, 'OTP илгээхэд алдаа гарлаа') }
     return { success: true }
   } catch {
     return { success: false, error: 'Сервертэй холбогдох боломжгүй байна' }
@@ -126,7 +141,7 @@ export async function forgotPasswordReset(phone: string, otpCode: string, newPas
       body: JSON.stringify({ phone, otpCode, newPassword }),
     })
     const data = await res.json()
-    if (!res.ok) return { success: false, error: data.error ?? 'Нууц үг сэргээхэд алдаа гарлаа' }
+    if (!res.ok) return { success: false, error: extractErrorMessage(data.error, 'Нууц үг сэргээхэд алдаа гарлаа') }
     return { success: true }
   } catch {
     return { success: false, error: 'Сервертэй холбогдох боломжгүй байна' }
@@ -141,7 +156,7 @@ export async function sendOtp(phone: string): Promise<{ success: boolean; error?
       body: JSON.stringify({ phone }),
     })
     const data = await res.json()
-    if (!res.ok) return { success: false, error: data.error ?? 'OTP илгээхэд алдаа гарлаа' }
+    if (!res.ok) return { success: false, error: extractErrorMessage(data.error, 'OTP илгээхэд алдаа гарлаа') }
     return { success: true }
   } catch {
     return { success: false, error: 'Сервертэй холбогдох боломжгүй байна' }
@@ -161,7 +176,7 @@ export async function verifyOtp(
       body: JSON.stringify({ phone, code, firstName, lastName }),
     })
     const data = await res.json()
-    if (!res.ok) return { success: false, error: data.error ?? 'OTP баталгаажуулахад алдаа гарлаа' }
+    if (!res.ok) return { success: false, error: extractErrorMessage(data.error, 'OTP баталгаажуулахад алдаа гарлаа') }
     _currentUser = data.user
     dispatchChange()
     return { success: true }

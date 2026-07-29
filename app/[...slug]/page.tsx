@@ -9,6 +9,22 @@ import { resolveUploadUrl } from '../lib/apiClient';
 import CategoryListingClient from './listingClient';
 import React from 'react';
 
+import { getCategorySlug, slugify } from '../lib/categoryUtils';
+
+function findMatchingCategory(categories: any[], categoryKey: string) {
+  if (!categories || !categories.length || !categoryKey) return null;
+  const decoded = decodeURIComponent(categoryKey);
+  return categories.find((c: any) => {
+    if (!c) return false;
+    if (c.id === categoryKey || c.id === decoded || c._id === categoryKey || c._id === decoded) return true;
+    if (c.slug && c.slug !== '-' && (c.slug === categoryKey || c.slug === decoded)) return true;
+    if (c.name && slugify(c.name) === categoryKey) return true;
+    if (c.name && (c.name === categoryKey || c.name === decoded)) return true;
+    if (categoryKey === '-' && c.slug === '-') return true;
+    return false;
+  }) || null;
+}
+
 const CATEGORY_BANNER_IMAGES: Record<string, string> = {
   laptop:                 'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=1400&h=400&fit=crop',
   computer:               'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=1400&h=400&fit=crop',
@@ -40,7 +56,7 @@ export async function generateMetadata({
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
       const catRes = await fetch(`${apiUrl}/api/categories/public?tenantId=${config.tenantId}`, { cache: 'no-store' });
       const catBody = await catRes.json();
-      const matchedCat = catBody?.data?.find((c: any) => c.slug === categoryKey);
+      const matchedCat = findMatchingCategory(catBody?.data || [], categoryKey);
       if (matchedCat) label = matchedCat.name;
     } catch (e) {
       console.error(e);
@@ -78,7 +94,7 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
     if (catRes.ok) {
       const catBody = await catRes.json();
       categories = catBody?.data || [];
-      const matchedCat = categories.find((c: any) => c.slug === categoryKey);
+      const matchedCat = findMatchingCategory(categories, categoryKey);
       if (matchedCat) {
         label = matchedCat.name;
         matchedCategoryId = matchedCat.id;
@@ -110,10 +126,10 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
     : new Set<string>();
 
   const filteredProducts = rawProducts.filter(
-    (p: any) => categoryIds.has(p.categoryId) || p.categoryId === categoryKey
+    (p: any) => categoryIds.has(p.categoryId) || p.categoryId === categoryKey || p.categoryId === matchedCategoryId
   );
 
-  const matchedCat = categories.find((c: any) => c.slug === categoryKey);
+  const matchedCat = findMatchingCategory(categories, categoryKey);
   let bannerImage = CATEGORY_BANNER_IMAGES[categoryKey] || DEFAULT_BANNER;
   if (matchedCat) {
     let catBanner = matchedCat.banner;
@@ -141,7 +157,11 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
     }
   }
 
-  const categoryNameMap = new Map(categories.map((c) => [c.slug, c.name]));
+  const categoryNameMap = new Map();
+  categories.forEach((c) => {
+    if (c.slug) categoryNameMap.set(c.slug, c.name);
+    if (c.id) categoryNameMap.set(c.id, c.name);
+  });
 
   return (
     <div className="pb-8">

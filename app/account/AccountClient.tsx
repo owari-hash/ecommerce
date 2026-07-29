@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { User as UserIcon, Package, Heart, ShoppingCart, LogOut, Receipt, Smartphone, ArrowLeft } from 'lucide-react';
-import { readAuth, logout, loginWithPhone, register, sendRegisterOtp, verifyOtp, forgotPasswordSend, forgotPasswordReset, restoreSession, fetchWithAuth, type User } from '../lib/authStore';
+import { readAuth, logout, loginWithPhone, register, sendRegisterOtp, verifyOtp, forgotPasswordSend, forgotPasswordReset, restoreSession, fetchWithAuth, extractErrorMessage, type User } from '../lib/authStore';
 
 // ── Types ────────────────────────────────────────────────────────────────────-
 
@@ -239,7 +239,7 @@ export default function AccountClient() {
       const res = await fetchWithAuth('/api/users/orders');
       if (res.status === 401) { router.replace('/account?redirect=/account'); return; }
       const data = await res.json();
-      if (!res.ok) { setOrdersError(data.error ?? 'Захиалга татаж чадсангүй'); return; }
+      if (!res.ok) { setOrdersError(extractErrorMessage(data.error, 'Захиалга татаж чадсангүй')); return; }
       setOrders(Array.isArray(data.data) ? data.data : []);
     } catch { setOrdersError('Сервертэй холбогдох боломжгүй байна'); }
     finally { setOrdersLoading(false); }
@@ -256,7 +256,7 @@ export default function AccountClient() {
         body: JSON.stringify({ firstName: editFirstName, lastName: editLastName, email: editEmail || undefined, phone: editPhone }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error ?? 'Хадгалахад алдаа гарлаа'); }
+      if (!res.ok) { setError(extractErrorMessage(data.error, 'Хадгалахад алдаа гарлаа')); }
       else {
         setUser(data);
         setSuccess('Мэдээлэл амжилттай хадгалагдлаа');

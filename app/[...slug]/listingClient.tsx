@@ -10,6 +10,7 @@ import { useTenant } from '../lib/TenantContext';
 import { readCompare, toggleCompare, writeCompare } from '../lib/compareStore';
 import { formatPrice, CATEGORY_ICONS, type CatalogCategoryKey } from '../lib/mockCatalog';
 import { resolveUploadUrl } from '../lib/apiClient';
+import { getCategorySlug } from '../lib/categoryUtils';
 import Pagination from '../components/Pagination';
 import ImagePlaceholder from '../components/ImagePlaceholder';
 
@@ -125,11 +126,12 @@ function FiltersPanel({
               const count = categoryCounts[root.id] || 0;
               const iconResolved = resolveCategoryIcon(root.image);
               const subCats = categories.filter((c) => c.parentId === root.id);
+              const rootSlug = getCategorySlug(root);
 
               return (
                 <div key={root.id} className="space-y-2">
                   <Link
-                    href={tenantHref(`/${root.slug}`)}
+                    href={tenantHref(`/${rootSlug}`)}
                     className={`flex items-center justify-between group py-0.5 ${
                       isActive ? 'text-primary font-bold' : 'text-gray-700 hover:text-primary'
                     }`}
@@ -165,10 +167,11 @@ function FiltersPanel({
                       {subCats.map((sub) => {
                         const isSubActive = sub.id === currentCategoryId;
                         const subCount = categoryCounts[sub.id] || 0;
+                        const subSlug = getCategorySlug(sub);
                         return (
                           <Link
                             key={sub.id}
-                            href={tenantHref(`/${root.slug}/${sub.slug}`)}
+                            href={tenantHref(`/${rootSlug}/${subSlug}`)}
                             className={`flex items-center justify-between py-0.5 group text-xs ${
                               isSubActive
                                 ? 'text-primary font-bold'

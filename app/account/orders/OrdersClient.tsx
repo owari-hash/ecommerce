@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { User as UserIcon, Heart, ShoppingCart, Package } from 'lucide-react';
-import { readAuth, restoreSession, type User } from '../../lib/authStore';
+import { readAuth, restoreSession, extractErrorMessage, type User } from '../../lib/authStore';
 import { ORDER_STATUS, PAYMENT_STATUS } from '../../lib/orderStatus';
 import Pagination from '../../components/Pagination';
 
@@ -198,7 +198,7 @@ export default function OrdersClient() {
       }
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? 'Захиалга татаж чадсангүй');
+        setError(extractErrorMessage(data.error, 'Захиалга татаж чадсангүй'));
         return;
       }
       setOrders(Array.isArray(data.data) ? data.data : []);

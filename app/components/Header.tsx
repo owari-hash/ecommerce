@@ -11,6 +11,7 @@ import MegaMenu from './MegaMenu';
 import { useTenant } from '../lib/TenantContext';
 import { useTenantHref } from '../lib/useTenantHref';
 import { resolveUploadUrl } from '../lib/apiClient';
+import { getCategorySlug } from '../lib/categoryUtils';
 
 type SearchProduct = {
   id: string;
@@ -70,15 +71,14 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll);
   }, [isHome]);
 
-
   useEffect(() => {
     fetch(`/api/categories/public?tenantId=${tenantId}`)
       .then((r) => r.json())
       .then((body) => {
         if (!body?.data?.length) return;
-        const roots = (body.data as { name: string; slug: string; parentId: string | null }[])
+        const roots = (body.data as { id?: string; name: string; slug: string; parentId: string | null }[])
           .filter((c) => !c.parentId)
-          .map((c) => ({ label: c.name, href: tenantHref(`/${c.slug}`) }));
+          .map((c) => ({ label: c.name, href: tenantHref(`/${getCategorySlug(c)}`) }));
         setCategories(roots);
       })
       .catch(console.error);

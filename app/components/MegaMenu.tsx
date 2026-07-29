@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { useTenant } from '../lib/TenantContext';
 import { useTenantHref } from '../lib/useTenantHref';
 import { resolveUploadUrl } from '../lib/apiClient';
+import { getCategorySlug } from '../lib/categoryUtils';
 
 export type SubCategory = {
   label: string;
@@ -68,19 +69,23 @@ export default function MegaMenu() {
         setMegaCategories(
           roots.map((root) => {
             const iconResolved = resolveCategoryIcon(root.image);
+            const rootSlug = getCategorySlug(root);
             return {
               imageUrl: iconResolved.imageUrl,
               emoji: iconResolved.emoji,
               label: root.name,
-              href: tenantHref(`/${root.slug}`),
+              href: tenantHref(`/${rootSlug}`),
               subcategories: all
                 .filter((c) => c.parentId === root.id)
-                .map((child) => ({
-                  label: child.name,
-                  href: tenantHref(`/${root.slug}/${child.slug}`),
-                })),
+                .map((child) => {
+                  const childSlug = getCategorySlug(child);
+                  return {
+                    label: child.name,
+                    href: tenantHref(`/${rootSlug}/${childSlug}`),
+                  };
+                }),
               featured: root.image
-                ? { image: resolveUploadUrl(root.image), title: root.name, href: tenantHref(`/${root.slug}`) }
+                ? { image: resolveUploadUrl(root.image), title: root.name, href: tenantHref(`/${rootSlug}`) }
                 : undefined,
             };
           })

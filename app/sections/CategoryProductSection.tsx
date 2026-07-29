@@ -9,6 +9,7 @@ import { resolveUploadUrl } from '../lib/apiClient'
 import { formatPrice } from '../lib/mockCatalog'
 import { addToCart, readCart, updateQuantity, removeFromCart } from '../lib/cartStore'
 import ImagePlaceholder from '../components/ImagePlaceholder'
+import { getCategorySlug } from '../lib/categoryUtils'
 import Reveal from '../components/Reveal'
 
 // Curated, high-quality banner photos used for the promo big-slides.
@@ -156,7 +157,7 @@ function CategoryRow({
           <h2 className="text-lg sm:text-2xl font-black text-gray-900 tracking-tight truncate">{cat.name}</h2>
         </div>
         <Link
-          href={tenantHref(`/${cat.slug}`)}
+          href={tenantHref(`/${getCategorySlug(cat)}`)}
           className="text-xs sm:text-sm font-bold flex items-center gap-1 hover:gap-2 px-3 py-1.5 rounded-full hover:bg-primary/5 transition-all shrink-0"
           style={{ color: primaryColor }}
         >
@@ -468,7 +469,7 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
           {(idx + 1) % 2 === 0 && idx < categoriesWithProducts.length - 1 && (
             <Reveal>
             <Link
-              href={tenantHref(`/${categoriesWithProducts[(idx + 1) % categoriesWithProducts.length]?.cat.slug ?? ''}`)}
+              href={tenantHref(`/${getCategorySlug(categoriesWithProducts[(idx + 1) % categoriesWithProducts.length]?.cat)}`)}
               className="group block relative overflow-hidden rounded-2xl sm:rounded-3xl shadow-lg h-40 sm:h-56"
             >
               <Image

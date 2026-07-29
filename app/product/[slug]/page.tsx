@@ -8,6 +8,7 @@ import ProductDetailClient from './productDetailClient';
 import Carousel from '../../components/Carousel';
 import ProductCard from '../../components/ProductCard';
 import { resolveUploadUrl } from '../../lib/apiClient';
+import { getCategorySlug } from '../../lib/categoryUtils';
 
 function chunk<T>(arr: T[], size: number) {
   const out: T[][] = [];
@@ -94,7 +95,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (!p) return notFound;
 
   const category = categories.find((c: any) => c.id === p.categoryId);
-  const categorySlug = category?.slug ?? '';
+  const categorySlug = getCategorySlug(category);
   const categoryLabel = category?.name ?? 'Ангилал';
 
   const specs: Array<{ k: string; v: string }> = p.specifications
