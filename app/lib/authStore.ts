@@ -13,6 +13,37 @@ let _currentUser: User | null = null
 let _accessToken: string | null = null
 let _refreshToken: string | null = null
 
+function getStoredAccessToken(): string | null {
+  if (typeof window === 'undefined') return null
+  return _accessToken || localStorage.getItem('access_token') || null
+}
+
+function getStoredRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null
+  return _refreshToken || localStorage.getItem('refresh_token') || null
+}
+
+function saveTokens(accessToken?: string, refreshToken?: string) {
+  if (accessToken) {
+    _accessToken = accessToken
+    if (typeof window !== 'undefined') localStorage.setItem('access_token', accessToken)
+  }
+  if (refreshToken) {
+    _refreshToken = refreshToken
+    if (typeof window !== 'undefined') localStorage.setItem('refresh_token', refreshToken)
+  }
+}
+
+function clearTokens() {
+  _currentUser = null
+  _accessToken = null
+  _refreshToken = null
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+  }
+}
+
 function dispatchChange() {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('auth:changed'))
@@ -52,8 +83,7 @@ export async function login(email: string, password: string): Promise<{ success:
     const data = await res.json()
     if (!res.ok) return { success: false, error: extractErrorMessage(data.error, 'Нэвтрэх амжилтгүй боллоо') }
     _currentUser = data.user
-    if (data.accessToken) _accessToken = data.accessToken
-    if (data.refreshToken) _refreshToken = data.refreshToken
+    saveTokens(data.accessToken, data.refreshToken)
     dispatchChange()
     return { success: true }
   } catch {
@@ -71,8 +101,7 @@ export async function loginWithPhone(phone: string, password: string): Promise<{
     const data = await res.json()
     if (!res.ok) return { success: false, error: extractErrorMessage(data.error, 'Нэвтрэх амжилтгүй боллоо') }
     _currentUser = data.user
-    if (data.accessToken) _accessToken = data.accessToken
-    if (data.refreshToken) _refreshToken = data.refreshToken
+    saveTokens(data.accessToken, data.refreshToken)
     dispatchChange()
     return { success: true }
   } catch {
@@ -96,8 +125,7 @@ export async function register(data: {
     const json = await res.json()
     if (!res.ok) return { success: false, error: extractErrorMessage(json.error, 'Бүртгэл амжилтгүй боллоо') }
     _currentUser = json.user
-    if (json.accessToken) _accessToken = json.accessToken
-    if (json.refreshToken) _refreshToken = json.refreshToken
+    saveTokens(json.accessToken, json.refreshToken)
     dispatchChange()
     return { success: true }
   } catch {
@@ -107,9 +135,7 @@ export async function register(data: {
 
 export async function logout(): Promise<void> {
   await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
-  _currentUser = null
-  _accessToken = null
-  _refreshToken = null
+  clearTokens()
   dispatchChange()
 }
 
@@ -188,8 +214,7 @@ export async function verifyOtp(
     const data = await res.json()
     if (!res.ok) return { success: false, error: extractErrorMessage(data.error, 'OTP баталгаажуулахад алдаа гарлаа') }
     _currentUser = data.user
-    if (data.accessToken) _accessToken = data.accessToken
-    if (data.refreshToken) _refreshToken = data.refreshToken
+    saveTokens(data.accessToken, data.refreshToken)
     dispatchChange()
     return { success: true }
   } catch {
@@ -200,50 +225,55 @@ export async function verifyOtp(
 // Fetch wrapper that auto-refreshes access token on 401 then retries once
 export async function fetchWithAuth(input: string, init?: RequestInit): Promise<Response> {
   const headers = new Headers(init?.headers)
-  if (_accessToken && !headers.has('Authorization')) {
-    headers.set('Authorization', `Bearer ${_accessToken}`)
+  const token = getStoredAccessToken()
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`)
   }
   const res = await fetch(input, { credentials: 'include', ...init, headers })
   if (res.status !== 401) return res
+
   // Try refresh
+  const rToken = getStoredRefreshToken()
   const refreshRes = await fetch('/api/auth/refresh', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ refreshToken: _refreshToken }),
+    body: JSON.stringify({ refreshToken: rToken }),
   })
   if (!refreshRes.ok) return res
   const refreshData = await refreshRes.json().catch(() => ({}))
-  if (refreshData.accessToken) _accessToken = refreshData.accessToken
-  if (refreshData.refreshToken) _refreshToken = refreshData.refreshToken
+  saveTokens(refreshData.accessToken, refreshData.refreshToken)
 
   const retryHeaders = new Headers(init?.headers)
-  if (_accessToken) retryHeaders.set('Authorization', `Bearer ${_accessToken}`)
+  const newToken = getStoredAccessToken()
+  if (newToken) retryHeaders.set('Authorization', `Bearer ${newToken}`)
   return fetch(input, { credentials: 'include', ...init, headers: retryHeaders })
 }
 
-// Call on app init to restore session from cookie (asks server to validate)
+// Call on app init to restore session from cookie or stored token
 export async function restoreSession(): Promise<void> {
   try {
     const headers = new Headers()
-    if (_accessToken) headers.set('Authorization', `Bearer ${_accessToken}`)
+    const token = getStoredAccessToken()
+    if (token) headers.set('Authorization', `Bearer ${token}`)
     let res = await fetch('/api/users/me', { credentials: 'include', headers })
 
     // Access token expired — try refresh
     if (res.status === 401) {
+      const rToken = getStoredRefreshToken()
       const refreshRes = await fetch('/api/auth/refresh', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ refreshToken: _refreshToken }),
+        body: JSON.stringify({ refreshToken: rToken }),
       })
       if (!refreshRes.ok) return
       const refreshData = await refreshRes.json().catch(() => ({}))
-      if (refreshData.accessToken) _accessToken = refreshData.accessToken
-      if (refreshData.refreshToken) _refreshToken = refreshData.refreshToken
+      saveTokens(refreshData.accessToken, refreshData.refreshToken)
 
       const retryHeaders = new Headers()
-      if (_accessToken) retryHeaders.set('Authorization', `Bearer ${_accessToken}`)
+      const newToken = getStoredAccessToken()
+      if (newToken) retryHeaders.set('Authorization', `Bearer ${newToken}`)
       res = await fetch('/api/users/me', { credentials: 'include', headers: retryHeaders })
     }
 
