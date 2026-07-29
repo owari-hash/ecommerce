@@ -7,14 +7,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log('[Front QPay Invoice] Received request body:', JSON.stringify(body, null, 2));
 
-    const { tenantId, ...rest } = body;
+    const { tenantId } = body;
     const url = tenantId ? `${API}/api/qpay/invoice?tenantId=${tenantId}` : `${API}/api/qpay/invoice`;
-    console.log('[Front QPay Invoice] Forwarding to URL:', url, 'with body:', JSON.stringify(rest, null, 2));
+    console.log('[Front QPay Invoice] Forwarding to URL:', url);
 
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(rest),
+      headers: {
+        'Content-Type': 'application/json',
+        ...(tenantId ? { 'x-tenant-id': tenantId } : {}),
+      },
+      body: JSON.stringify(body),
     });
 
     console.log('[Front QPay Invoice] Downstream response status:', res.status);
