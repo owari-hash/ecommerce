@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Phone, Mail, MapPin, ArrowRight } from 'lucide-react';
 import { useTenant } from '../lib/TenantContext';
 import { useTenantHref } from '../lib/useTenantHref';
+import { resolveUploadUrl } from '../lib/apiClient';
 
 const footerSections = [
   {
@@ -41,7 +42,7 @@ export default function Footer() {
           <div className="lg:col-span-4 flex flex-col items-center sm:items-start">
             {branding.logo ? (
               <span className="inline-flex items-center bg-white rounded-xl px-3 py-2 shadow-sm mb-4">
-                <Image src={branding.logo} alt={branding.name || 'Logo'} width={140} height={28} className="h-6 w-auto object-contain max-w-[120px]" style={{ width: 'auto' }} />
+                <Image src={resolveUploadUrl(branding.logo)} alt={branding.name || 'Logo'} width={140} height={28} className="h-6 w-auto object-contain max-w-[120px]" style={{ width: 'auto' }} />
               </span>
             ) : (
               <span className="font-black text-xl text-white block mb-4">{branding.name}</span>

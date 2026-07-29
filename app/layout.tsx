@@ -12,6 +12,8 @@ import NavigationProgress from "./components/NavigationProgress";
 import { TenantProvider } from "./lib/TenantContext";
 import { fetchTenantConfig } from "./lib/tenantConfig";
 
+import { resolveUploadUrl } from "./lib/apiClient";
+
 const roboto = Roboto({
   subsets: ["latin"],
   weight: ["100", "300", "400", "500", "700", "900"],
@@ -26,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const config = await fetchTenantConfig(host, tenantSlug);
 
   const tenantName = config?.branding?.name || "Дэлгүүр";
-  const logo = config?.branding?.logo || "/logo.png";
+  const logo = resolveUploadUrl(config?.branding?.logo) || "/logo.png";
 
   return {
     // `%s | <tenant>` so each route's own title shows with the tenant name;

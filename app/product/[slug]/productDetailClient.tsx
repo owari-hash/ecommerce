@@ -32,11 +32,11 @@ type Props = {
 
 const paymentOptions = [
   { key: 'qpay', label: 'QPay' },
-  { key: 'socialpay', label: 'SocialPay' },
-  { key: 'monpay', label: 'MonPay' },
-  { key: 'lendmn', label: 'LendMN' },
-  { key: 'pocket', label: 'Pocket' },
-  { key: 'cash', label: 'Бэлэн мөнгө' },
+  // { key: 'socialpay', label: 'SocialPay' },
+  // { key: 'monpay', label: 'MonPay' },
+  // { key: 'lendmn', label: 'LendMN' },
+  // { key: 'pocket', label: 'Pocket' },
+  // { key: 'cash', label: 'Бэлэн мөнгө' },
 ];
 
 function parsePrice(price: string): number {
@@ -531,7 +531,7 @@ export default function ProductDetailClient({ product }: Props) {
       </div>
 
       {/* Sticky bottom bar — mobile only */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 sm:hidden bg-white border-t border-gray-200 px-4 py-3 flex items-center gap-3">
+      <div className="fixed bottom-[52px] left-0 right-0 z-40 sm:hidden bg-white border-t border-gray-200 px-4 py-3 flex items-center gap-3 shadow-lg">
         <div className="min-w-0">
           <div className="text-[10px] text-gray-400 font-semibold leading-none mb-0.5">Үнэ</div>
           <div className="text-lg font-black text-gray-900 leading-none">{product.price}</div>

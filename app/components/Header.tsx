@@ -247,7 +247,7 @@ export default function Header() {
           {/* Logo — single mark (image only) */}
           <Link href={tenantHref('/')} className="shrink-0 flex items-center">
             <Image
-              src={branding.logo || '/logo.png'}
+              src={resolveUploadUrl(branding.logo) || '/logo.png'}
               alt={branding.name || 'Logo'}
               width={200}
               height={40}
