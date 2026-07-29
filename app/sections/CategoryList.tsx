@@ -90,7 +90,7 @@ export default function CategoryList({ showBrands = true }: { showBrands?: boole
       .finally(() => setLoading(false))
 
     // Representative product image per category (fallback for categories without their own image)
-    fetch(`/api/products/public?tenantId=${tenantId}`)
+    fetch(`/api/products/public?tenantId=${tenantId}&limit=1000`)
       .then((res) => res.json())
       .then((body) => {
         const map: Record<string, string> = {}

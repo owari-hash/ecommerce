@@ -36,7 +36,7 @@ export default function ProductGrid({
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/products/public?tenantId=${tenantId}`)
+    fetch(`/api/products/public?tenantId=${tenantId}&limit=1000`)
       .then((res) => res.json())
       .then((body) => {
         if (body && body.data) {
