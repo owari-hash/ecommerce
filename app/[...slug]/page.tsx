@@ -86,7 +86,10 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
 
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
-    const catRes = await fetch(`${apiUrl}/api/categories/public?tenantId=${config.tenantId}`, { cache: 'no-store' });
+    const [catRes, prodRes] = await Promise.all([
+      fetch(`${apiUrl}/api/categories/public?tenantId=${config.tenantId}`, { cache: 'no-store' }),
+      fetch(`${apiUrl}/api/products/public?tenantId=${config.tenantId}`, { cache: 'no-store' })
+    ]);
 
     if (catRes.ok) {
       const catBody = await catRes.json();
@@ -97,10 +100,6 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
         matchedCategoryId = matchedCat.id;
       }
     }
-
-    const descendantIds = matchedCategoryId ? collectDescendantIds(matchedCategoryId, categories) : [];
-    const catParam = descendantIds.length > 0 ? `&categoryIds=${descendantIds.join(',')}` : (matchedCategoryId ? `&categoryId=${matchedCategoryId}` : '&limit=1000');
-    const prodRes = await fetch(`${apiUrl}/api/products/public?tenantId=${config.tenantId}${catParam}`, { cache: 'no-store' });
 
     if (prodRes.ok) {
       const prodBody = await prodRes.json();

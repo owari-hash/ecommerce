@@ -390,13 +390,9 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
   }
 
   useEffect(() => {
-    const prodUrl = categoryId 
-      ? `/api/products/public?tenantId=${tenantId}&categoryId=${categoryId}&limit=100`
-      : `/api/products/public?tenantId=${tenantId}&limit=1000`;
-
     Promise.all([
       fetch(`/api/categories/public?tenantId=${tenantId}`).then((r) => r.json()),
-      fetch(prodUrl).then((r) => r.json()),
+      fetch(`/api/products/public?tenantId=${tenantId}`).then((r) => r.json()),
     ])
       .then(([catBody, prodBody]) => {
         if (catBody?.data) {
