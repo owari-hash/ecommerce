@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Package, ShoppingCart, Check, User as UserIcon, Heart, LogOut, Shirt, Laptop, Sparkles, Home as HomeIcon } from 'lucide-react';
+import { Package, ShoppingCart, Check, User as UserIcon, LogOut, Shirt, Laptop, Sparkles, Home as HomeIcon } from 'lucide-react';
 import { getCartCount, addToCart } from '../lib/cartStore';
 import { readAuth, logout, type User } from '../lib/authStore';
 import { formatPrice } from '../lib/mockCatalog';
@@ -415,7 +415,8 @@ export default function Header() {
                         <p className="text-xs text-gray-500">{user.phone}</p>
                       </div>
                       <Link href="/account" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary"><UserIcon className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Хувийн мэдээлэл</Link>
-                      <Link href="/account/wishlists" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary"><Heart className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Хадгалсан</Link>
+                      {/* Wishlist ("Хадгалсан") disabled for now — feature isn't implemented yet */}
+                      {/* <Link href="/account/wishlists" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary"><Heart className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Хадгалсан</Link> */}
                       <Link href="/checkout" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary"><ShoppingCart className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Миний сагс</Link>
                       <div className="border-t border-gray-100 mt-1 pt-1">
                         <button onClick={handleLogout} className="flex items-center gap-2.5 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"><LogOut className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Гарах</button>
@@ -492,7 +493,8 @@ export default function Header() {
             <Link href="/home-living" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><HomeIcon className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Home &amp; Living</Link>
             <div className="p-2 bg-gray-50 text-xs text-gray-500 font-medium mt-2">Бүртгэл</div>
             <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><UserIcon className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Хувийн мэдээлэл</Link>
-            <Link href="/account/wishlists" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><Heart className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Хадгалсан</Link>
+            {/* Wishlist ("Хадгалсан") disabled for now — feature isn't implemented yet */}
+            {/* <Link href="/account/wishlists" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary border-b border-gray-100"><Heart className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Хадгалсан</Link> */}
           </div>
         </>
       )}

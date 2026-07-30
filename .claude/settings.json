@@ -42,7 +42,9 @@
       "Bash(node -e ' *)",
       "WebSearch",
       "WebFetch(domain:unsplash.com)",
-      "WebFetch(domain:images.unsplash.com)"
+      "WebFetch(domain:images.unsplash.com)",
+      "Bash(grep -rn '`/api/auth' src --include=\"*.ts\")",
+      "Bash(grep -rn \"auth/me\\\\|/me\\\\`\\\\|'/me'\\\\|\\\\\"/me\\\\\"\\\\|requireAdminAuth\\\\|verifySession\\\\|checkAuth\" --include=\"*.ts\" --include=\"*.tsx\" .)"
     ],
     "additionalDirectories": [
       "/Users/macbookairm4/ecommerce-client/app/(dashboard)/homepage",

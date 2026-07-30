@@ -88,7 +88,8 @@ export default function MobileBottomNav() {
               </svg>
             }
           />
-          <Item
+          {/* Wishlist ("Хадгалсан") disabled for now — feature isn't implemented yet */}
+          {/* <Item
             href="/account/wishlists"
             label="Хадгалсан"
             icon={
@@ -101,7 +102,7 @@ export default function MobileBottomNav() {
                 />
               </svg>
             }
-          />
+          /> */}
           <Item
             href="/checkout"
             label="Сагс"

@@ -125,6 +125,26 @@ export default function ProductDetailClient({ product }: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [zoomOpen, images.length]);
 
+  const handleShare = async () => {
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({ title: product.name, url });
+      } catch {
+        // user cancelled the share sheet — not an error
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setToastMsg('Холбоосыг хууллаа');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    } catch {
+      // clipboard unavailable — nothing more we can do
+    }
+  };
+
   const handleAddToCart = () => {
     if (product.stock === 0) return;
     const price = parsePrice(product.price);
@@ -335,13 +355,13 @@ export default function ProductDetailClient({ product }: Props) {
             </div>
 
             <div className="flex items-center gap-1.5">
-              {/* Wishlist */}
-              <button className="flex items-center gap-1 rounded-full bg-gray-50 hover:bg-gray-100 px-2.5 py-1.5 text-xs text-gray-600 hover:text-primary transition-colors">
+              {/* Wishlist ("Хадгалах") disabled for now — feature isn't implemented yet */}
+              {/* <button className="flex items-center gap-1 rounded-full bg-gray-50 hover:bg-gray-100 px-2.5 py-1.5 text-xs text-gray-600 hover:text-primary transition-colors">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
                 <span className="hidden sm:inline">Хадгалах</span>
-              </button>
+              </button> */}
               {/* Compare */}
               <button
                 onClick={() => toggleCompare({
@@ -365,7 +385,7 @@ export default function ProductDetailClient({ product }: Props) {
                 <span className="hidden sm:inline">{inCompare ? 'Харьцуулж байна' : 'Харьцуулах'}</span>
               </button>
               {/* Share */}
-              <button className="flex items-center gap-1 rounded-full bg-gray-50 hover:bg-gray-100 px-2.5 py-1.5 text-xs text-gray-600 hover:text-primary transition-colors">
+              <button onClick={handleShare} className="flex items-center gap-1 rounded-full bg-gray-50 hover:bg-gray-100 px-2.5 py-1.5 text-xs text-gray-600 hover:text-primary transition-colors">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                 </svg>
@@ -391,6 +411,11 @@ export default function ProductDetailClient({ product }: Props) {
                     <div className="text-sm text-gray-400 line-through">{product.oldPrice}</div>
                   )}
                 </div>
+                {typeof product.stock === 'number' && product.stock > 0 && (
+                  <div className={`mt-1.5 text-xs font-semibold ${product.stock <= 5 ? 'text-orange-500' : 'text-gray-400'}`}>
+                    Үлдэгдэл: {product.stock}ш
+                  </div>
+                )}
               </div>
               <button
                 onClick={handleAddToCart}

@@ -311,7 +311,7 @@ export default function CategoryListingClient({ category, products }: Props) {
                 <button
                   key={b}
                   type="button"
-                  className="px-3 py-1.5 rounded-full bg-primary/5 text-primary border border-primary/20 text-xs font-bold"
+                  className="px-3 py-1.5 rounded-full bg-primary/5 text-primary border border-primary/20 text-xs font-bold hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
                   onClick={() => setSelectedBrands((s) => ({ ...s, [b]: false }))}
                 >
                   {b} ×

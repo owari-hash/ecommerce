@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { User as UserIcon, Package, Heart, ShoppingCart, LogOut, Receipt, Smartphone, ArrowLeft } from 'lucide-react';
+import { User as UserIcon, Package, ShoppingCart, LogOut, Receipt, Smartphone, ArrowLeft } from 'lucide-react';
 import { readAuth, logout, loginWithPhone, register, sendRegisterOtp, verifyOtp, forgotPasswordSend, forgotPasswordReset, restoreSession, fetchWithAuth, extractErrorMessage, type User } from '../lib/authStore';
 
 // ── Types ────────────────────────────────────────────────────────────────────-
@@ -389,9 +389,10 @@ export default function AccountClient() {
                   <item.icon className="w-4 h-4 shrink-0" strokeWidth={1.8} />{item.label}
                 </button>
               ))}
-              <Link href="/account/wishlists" className="w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+              {/* Wishlist ("Хадгалсан бараа") disabled for now — feature isn't implemented yet */}
+              {/* <Link href="/account/wishlists" className="w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
                 <Heart className="w-4 h-4 shrink-0" strokeWidth={1.8} />Хадгалсан бараа
-              </Link>
+              </Link> */}
               <Link href="/checkout" className="w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
                 <ShoppingCart className="w-4 h-4 shrink-0" strokeWidth={1.8} />Миний сагс
               </Link>

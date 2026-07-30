@@ -70,11 +70,6 @@ function CategoryRow({
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
-  // Fixed 2-row layout on every breakpoint: with a wrapping grid, mobile's 2 columns
-  // would spread the same item count across far more rows than desktop's 4-5 columns.
-  // Switching to the horizontal-scroll slider past 2 mobile rows' worth of items keeps
-  // "2 rows, then the next category" consistent across all screen sizes.
-  const isSlider = items.length > 4
 
   function checkScroll() {
     const el = scrollRef.current
@@ -101,9 +96,12 @@ function CategoryRow({
   }
 
   // Auto-slide every 2s with a smooth eased glide (loops; pauses on hover/touch).
+  // Runs unconditionally — it's a no-op if the row doesn't actually overflow (see the
+  // scrollWidth check inside the interval below), which only happens once the category
+  // has more than 2 rows' worth of items at the current breakpoint's column count.
   useEffect(() => {
     const el = scrollRef.current
-    if (!el || !isSlider) return
+    if (!el) return
     let paused = false
     let raf = 0
     const pause = () => { paused = true }
@@ -129,7 +127,7 @@ function CategoryRow({
     const id = setInterval(() => {
       if (paused) return
       const node = scrollRef.current
-      if (!node) return
+      if (!node || node.scrollWidth <= node.clientWidth + 4) return
       const firstCard = node.querySelector('[data-card]') as HTMLElement | null
       const step = firstCard ? firstCard.offsetWidth + 12 : node.clientWidth * 0.8
       if (node.scrollLeft + node.clientWidth >= node.scrollWidth - 4) {
@@ -171,7 +169,7 @@ function CategoryRow({
       {/* Scrollable row */}
       <div className="relative group/row">
         {/* Left arrow */}
-        {isSlider && canScrollLeft && (
+        {canScrollLeft && (
           <button
             type="button"
             onClick={() => scrollBy('left')}
@@ -185,7 +183,7 @@ function CategoryRow({
         )}
 
         {/* Right arrow */}
-        {isSlider && canScrollRight && (
+        {canScrollRight && (
           <button
             type="button"
             onClick={() => scrollBy('right')}
@@ -198,12 +196,16 @@ function CategoryRow({
           </button>
         )}
 
+        {/* Always the horizontal-scroll structure, but column widths are sized as a percentage
+            matching the same 2/3/4/5-per-row breakpoints a wrapping grid would use. When a
+            category has few enough items to fit in 2 rows, this renders edge-to-edge exactly
+            like a full-width wrap grid (no scrolling); once it overflows past 2 rows, the rest
+            scrolls horizontally instead of wrapping to a 3rd+ row — same behavior at every
+            screen size, so mobile and desktop both show "2 rows, then the next category". */}
         <div
           ref={scrollRef}
-          className={isSlider
-            ? 'grid grid-flow-col grid-rows-2 gap-3 overflow-x-auto scroll-smooth pb-1 auto-cols-[9.5rem] sm:auto-cols-[11rem]'
-            : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'}
-          style={isSlider ? { scrollbarWidth: 'none', msOverflowStyle: 'none' } : undefined}
+          className="grid grid-flow-col grid-rows-2 gap-3 overflow-x-auto scroll-smooth pb-1 auto-cols-[calc(50%-0.375rem)] sm:auto-cols-[calc(33.333%-0.5rem)] md:auto-cols-[calc(25%-0.5625rem)] lg:auto-cols-[calc(20%-0.6rem)]"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {items.map((p) => {
             const img = resolveUploadUrl(p.images?.[0])
@@ -225,7 +227,7 @@ function CategoryRow({
                       alt={p.name}
                       fill
                       className={`object-cover group-hover:scale-105 transition-transform duration-300 ${p.stock === 0 ? 'grayscale opacity-60' : ''}`}
-                      sizes="176px"
+                      sizes="(min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw"
                     />
                   ) : (
                     <ImagePlaceholder />

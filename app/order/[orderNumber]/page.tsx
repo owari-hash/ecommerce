@@ -48,7 +48,7 @@ const FLOW_LABELS: Record<string, string> = {
 export default function OrderTrackPage() {
   const params = useParams();
   const orderNumber = decodeURIComponent(String(params.orderNumber ?? ''));
-  const { tenantId } = useTenant();
+  const { tenantId, branding } = useTenant();
   const [order, setOrder] = useState<TrackOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -107,18 +107,18 @@ export default function OrderTrackPage() {
       </nav>
 
       {/* Header card */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6 mb-5">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 mb-4 sm:mb-5">
+        <div className="flex items-start justify-between gap-3 sm:gap-4">
+          <div className="min-w-0">
             <p className="text-xs text-gray-400">Захиалгын дугаар</p>
-            <h1 className="text-xl font-black text-gray-900">#{order.orderNumber}</h1>
+            <h1 className="text-base sm:text-xl font-black text-gray-900 break-all">#{order.orderNumber}</h1>
             <p className="text-xs text-gray-400 mt-1">{formatDate(order.createdAt)}</p>
           </div>
-          <div className="flex flex-col items-end gap-1.5">
-            <span className="text-xs font-semibold px-3 py-1 rounded-full" style={{ color: status.color, background: status.bg }}>
+          <div className="flex flex-col items-end gap-1.5 shrink-0">
+            <span className="text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1 rounded-full whitespace-nowrap" style={{ color: status.color, background: status.bg }}>
               {status.label}
             </span>
-            <span className="text-xs font-medium" style={{ color: payment.color }}>{payment.label}</span>
+            <span className="text-[11px] sm:text-xs font-medium whitespace-nowrap" style={{ color: payment.color }}>{payment.label}</span>
           </div>
         </div>
 
@@ -128,25 +128,25 @@ export default function OrderTrackPage() {
             Энэ захиалга цуцлагдсан байна.
           </div>
         ) : (
-          <div className="mt-6 flex items-center">
+          <div className="mt-6 flex items-start">
             {ORDER_FLOW.map((s, i) => {
               const done = i <= currentIdx;
               return (
-                <div key={s} className="flex items-center flex-1 last:flex-none">
-                  <div className="flex flex-col items-center gap-1.5">
-                    <span className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold border-2 transition-colors ${
+                <div key={s} className="flex items-start flex-1 last:flex-none">
+                  <div className="flex flex-col items-center gap-1.5 w-14 sm:w-auto shrink-0">
+                    <span className={`flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full text-xs font-bold border-2 transition-colors shrink-0 ${
                       done ? 'bg-primary text-white border-primary' : 'bg-white text-gray-400 border-gray-200'
                     }`}>
                       {done ? (
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                       ) : (i + 1)}
                     </span>
-                    <span className={`text-[10px] sm:text-xs font-semibold text-center leading-tight ${done ? 'text-gray-800' : 'text-gray-400'}`}>
+                    <span className={`text-[9px] sm:text-xs font-semibold text-center leading-tight ${done ? 'text-gray-800' : 'text-gray-400'}`}>
                       {FLOW_LABELS[s]}
                     </span>
                   </div>
                   {i < ORDER_FLOW.length - 1 && (
-                    <span className={`flex-1 h-0.5 mx-1 sm:mx-2 -mt-5 ${i < currentIdx ? 'bg-primary' : 'bg-gray-200'}`} />
+                    <span className={`flex-1 h-0.5 mx-0.5 sm:mx-2 mt-3.5 sm:mt-4 ${i < currentIdx ? 'bg-primary' : 'bg-gray-200'}`} />
                   )}
                 </div>
               );
@@ -155,10 +155,10 @@ export default function OrderTrackPage() {
         )}
       </div>
 
-      <div className="grid sm:grid-cols-3 gap-5">
+      <div className="grid sm:grid-cols-3 gap-4 sm:gap-5">
         {/* Items */}
-        <div className="sm:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-          <h2 className="font-bold text-gray-900 mb-4">Захиалсан бараа</h2>
+        <div className="sm:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
+          <h2 className="font-bold text-gray-900 mb-3 sm:mb-4">Захиалсан бараа</h2>
           <div className="divide-y divide-gray-100">
             {order.items.map((it, i) => (
               <div key={i} className="py-3 flex items-center justify-between gap-3">
@@ -178,22 +178,25 @@ export default function OrderTrackPage() {
         </div>
 
         {/* Delivery + ebarimt */}
-        <div className="space-y-5">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <div className="space-y-4 sm:space-y-5">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
             <h2 className="font-bold text-gray-900 mb-3">Хүргэлт</h2>
             <p className="text-sm text-gray-700 font-medium">{order.customerInfo.firstName}</p>
-            <p className="text-xs text-gray-500 mt-1 leading-relaxed">{order.customerInfo.address}</p>
+            <p className="text-xs text-gray-500 mt-1 leading-relaxed break-words">{order.customerInfo.address}</p>
           </div>
 
           {eb?.ebarimtBillId && (
             <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-4 border border-emerald-100/50">
-              <div className="flex justify-between items-center text-xs font-bold text-emerald-800 mb-2 border-b border-emerald-100/40 pb-2">
-                <span className="flex items-center gap-1.5"><Ticket className="w-3.5 h-3.5" strokeWidth={2} /> И-Баримт</span>
-                <span className="text-[10px] bg-emerald-600 text-white font-extrabold px-2 py-0.5 rounded-full">E-BARIMT</span>
+              <div className="flex justify-between items-center gap-2 text-xs font-bold text-emerald-800 mb-2 border-b border-emerald-100/40 pb-2">
+                <span className="flex items-center gap-1.5 shrink-0"><Ticket className="w-3.5 h-3.5" strokeWidth={2} /> И-Баримт</span>
+                <span className="text-[10px] bg-emerald-600 text-white font-extrabold px-2 py-0.5 rounded-full shrink-0">E-BARIMT</span>
               </div>
-              <div className="text-xs flex justify-between items-center mb-2">
-                <span className="text-emerald-700/80">Сугалаа:</span>
-                <span className="font-black text-emerald-950 bg-white px-2 py-0.5 rounded-md">{eb.ebarimtLottery}</span>
+              {branding?.name && (
+                <p className="text-sm font-bold text-emerald-950 mb-2">{branding.name}</p>
+              )}
+              <div className="text-xs flex justify-between items-center gap-2 mb-2">
+                <span className="text-emerald-700/80 shrink-0">Сугалаа:</span>
+                <span className="font-black text-emerald-950 bg-white px-2 py-0.5 rounded-md truncate">{eb.ebarimtLottery}</span>
               </div>
               {eb.ebarimtQrData && (
                 <div className="p-3 bg-white rounded-xl flex justify-center border border-emerald-100/30">
@@ -206,7 +209,7 @@ export default function OrderTrackPage() {
         </div>
       </div>
 
-      <div className="mt-6 text-center">
+      <div className="mt-6 text-center pb-4">
         <Link href="/s" className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">
           Худалдан авалтаа үргэлжлүүлэх
         </Link>

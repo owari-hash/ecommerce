@@ -137,7 +137,10 @@ export default function ComparePageClient({ tenantId }: { tenantId: string }) {
       </div>
 
       <div className="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm bg-white">
-        <table className="w-full" style={{ minWidth: `${180 + enriched.length * 220}px` }}>
+        {/* Fixed table-layout + explicit width so a small number of compared products
+            renders at a natural card size instead of stretching to fill the full page
+            width (which was blowing product images up far past their intended 220px). */}
+        <table className="w-full" style={{ width: `${180 + enriched.length * 220}px`, tableLayout: 'fixed' }}>
           {/* Product header row */}
           <thead>
             <tr className="border-b border-gray-100">
@@ -158,7 +161,7 @@ export default function ComparePageClient({ tenantId }: { tenantId: string }) {
                   : null;
 
                 return (
-                  <th key={p.id} className="p-4 text-left align-top border-l border-gray-100 min-w-[220px]">
+                  <th key={p.id} className="p-4 text-left align-top border-l border-gray-100 w-[220px] min-w-[220px] max-w-[220px]">
                     <div className="flex flex-col gap-3">
                       {/* Image */}
                       <div className="relative w-full aspect-[4/3] bg-gray-50 rounded-xl overflow-hidden">
