@@ -697,7 +697,7 @@ export default function CheckoutClient() {
         </div>
 
         {/* RIGHT: sticky summary */}
-        <div className="lg:sticky lg:top-28 sm:lg:top-[116px] space-y-3 order-first lg:order-last min-w-0">
+        <div className="lg:sticky lg:top-28 sm:lg:top-[116px] space-y-3 order-last min-w-0">
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <h2 className="font-bold text-gray-900 mb-4">Төлбөрийн мэдээлэл</h2>
 

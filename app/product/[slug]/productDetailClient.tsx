@@ -360,7 +360,7 @@ export default function ProductDetailClient({ product }: Props) {
                 Дэлгүүрийн үлдэгдэлтэй синхрончлогдсон (Live)
               </div>
             )}
-            <div className="flex items-end justify-between gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               <div>
                 <div className="text-xs text-gray-400 font-semibold mb-1">Үнэ · НӨАТ ороогүй</div>
                 <div className="flex items-baseline gap-3">
