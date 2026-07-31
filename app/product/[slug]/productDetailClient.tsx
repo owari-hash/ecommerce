@@ -332,8 +332,8 @@ export default function ProductDetailClient({ product }: Props) {
 
         {/* ── Details ── */}
         <section className="min-w-0">
-          {/* Brand + Title */}
-          <div className="flex items-start gap-3">
+          {/* Brand + Title + Share */}
+          <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <Link href={`/search?q=${encodeURIComponent(product.brand)}`}
                 className="inline-block text-xs font-bold text-primary uppercase tracking-wide mb-1 hover:underline">
@@ -342,57 +342,14 @@ export default function ProductDetailClient({ product }: Props) {
               <h1 className="text-lg sm:text-2xl font-black text-gray-900 leading-tight">{product.name}</h1>
               <div className="mt-1 text-xs text-gray-400">{product.categoryLabel}</div>
             </div>
-          </div>
 
-          {/* Rating (Hidden) + action icons */}
-          <div className="mt-3 flex items-center justify-end gap-2">
-            {/* <div className="flex items-center gap-1">
-              {new Array(5).fill(null).map((_, i) => (
-                <svg key={i} className="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              ))}
-              <span className="ml-1 text-xs text-gray-400">(0)</span>
-            </div> */}
-
-            <div className="flex items-center gap-1.5">
-              {/* Wishlist ("Хадгалах") disabled for now — feature isn't implemented yet */}
-              {/* <button className="flex items-center gap-1 rounded-full bg-gray-50 hover:bg-gray-100 px-2.5 py-1.5 text-xs text-gray-600 hover:text-primary transition-colors">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-                <span className="hidden sm:inline">Хадгалах</span>
-              </button> */}
-              {/* Compare */}
-              <button
-                onClick={() => toggleCompare({
-                  id: product.id,
-                  title: product.name,
-                  slug: product.slug,
-                  image: product.image,
-                  brand: product.brand,
-                  price: parsePrice(product.price),
-                  oldPrice: product.oldPrice ? parsePrice(product.oldPrice) : undefined,
-                })}
-                className={`flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs transition-colors ${
-                  inCompare
-                    ? 'bg-primary text-white'
-                    : 'bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-primary'
-                }`}
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <span className="hidden sm:inline">{inCompare ? 'Харьцуулж байна' : 'Харьцуулах'}</span>
-              </button>
-              {/* Share */}
-              <button onClick={handleShare} className="flex items-center gap-1 rounded-full bg-gray-50 hover:bg-gray-100 px-2.5 py-1.5 text-xs text-gray-600 hover:text-primary transition-colors">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                </svg>
-                <span className="hidden sm:inline">Хуваалцах</span>
-              </button>
-            </div>
+            {/* Share button right-aligned with title */}
+            <button onClick={handleShare} className="shrink-0 flex items-center gap-1.5 rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:text-primary transition-colors">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+              <span>Хуваалцах</span>
+            </button>
           </div>
 
           {/* Price + Add to cart (desktop) */}
