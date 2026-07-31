@@ -184,24 +184,7 @@ export default async function CatchAllShopPage({ params }: { params: Promise<{ s
         </div>
       </div>
 
-      <div className="w-full px-4 md:px-8 max-w-none">
-        {/* Breadcrumbs */}
-        <nav aria-label="breadcrumbs" className="text-xs sm:text-sm text-gray-500 mb-6 flex items-center gap-1.5 uppercase font-bold tracking-wider">
-          <Link href="/" className="hover:text-primary transition-colors">
-            Нүүр
-          </Link>
-          {slug.map((s, i) => {
-            const decoded = decodeURIComponent(s);
-            return (
-              <React.Fragment key={i}>
-                <span className="text-gray-300">/</span>
-                <span className={i === slug.length - 1 ? "text-gray-900" : "text-gray-500"}>
-                  {categoryNameMap.get(decoded) || decoded}
-                </span>
-              </React.Fragment>
-            );
-          })}
-        </nav>
+      <div className="w-full px-4 md:px-8 max-w-none pt-4">
 
         {filteredProducts.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">

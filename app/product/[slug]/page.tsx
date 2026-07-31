@@ -123,7 +123,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-6">
-      <nav className="text-sm text-gray-500 mb-4 flex items-center gap-1 flex-wrap">
+      {/* <nav className="text-sm text-gray-500 mb-4 flex items-center gap-1 flex-wrap">
         <Link href="/" className="hover:text-primary">Нүүр</Link>
         <span>/</span>
         <Link href="/categories" className="hover:text-primary">Бүх бараа</Link>
@@ -135,7 +135,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         )}
         <span>/</span>
         <span className="text-gray-800 font-medium">{p.name}</span>
-      </nav>
+      </nav> */}
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6">
         <ProductDetailClient

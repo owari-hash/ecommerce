@@ -40,14 +40,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         </div>
       </div>
 
-      {/* Breadcrumbs like Их Наяд Плаза */}
-      <nav aria-label="breadcrumbs" className="text-sm text-gray-500 mb-4 flex items-center gap-1">
-        <Link href="/" className="hover:text-primary">
-          Нүүр
-        </Link>
-        <span>/</span>
-        <button className="hover:text-primary font-medium text-gray-700">Бүх бараа</button>
-      </nav>
+
 
       {products.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
