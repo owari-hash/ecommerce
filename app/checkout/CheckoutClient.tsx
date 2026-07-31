@@ -37,9 +37,8 @@ function BrandLogo({ id, size = 40 }: { id: string; size?: number }) {
   );
 }
 
-function formatPrice(price: number | undefined | null): string {
-  const num = typeof price === 'number' && !isNaN(price) ? price : 0;
-  return num.toLocaleString('mn-MN') + '₮';
+function formatPrice(price: number): string {
+  return price.toLocaleString('mn-MN') + '₮';
 }
 
 /** Horizontal checkout progress indicator. */
@@ -85,7 +84,7 @@ function Stepper({ current }: { current: number }) {
 
 export default function CheckoutClient() {
   const tenantHref = useTenantHref();
-  const { tenantId, shippingFee, shippingFreeThreshold, branding } = useTenant();
+  const { tenantId, shippingFee, shippingFreeThreshold } = useTenant();
   const [authChecked, setAuthChecked] = useState(false);
   const [step, setStep] = useState(0); // 0 Сагс · 1 Мэдээлэл · 2 Төлбөр
   const [items, setItems] = useState<CartItem[]>([]);
@@ -101,10 +100,6 @@ export default function CheckoutClient() {
   const [qpayLoading, setQpayLoading] = useState(false);
   const [qpayPaid, setQpayPaid] = useState(false);
   const [qpayOrderNum, setQpayOrderNum] = useState<string>('');
-  // Amount the current qpayInvoice's QR was actually generated for — the cart total can
-  // change after the user goes back a step (edits quantity, removes an item, etc.), which
-  // would otherwise leave a stale QR on screen encoding the old amount.
-  const [qpayInvoicedAmount, setQpayInvoicedAmount] = useState<number>(0);
 
   // И-Баримт inline
   const [ebarimtType, setEbarimtType] = useState<'person' | 'org'>('person');
@@ -163,36 +158,20 @@ export default function CheckoutClient() {
   });
 
   useEffect(() => {
-    restoreSession()
-      .then(() => {
-        const user = readAuth();
-        if (user) {
-          setCustomerInfo((prev) => ({
-            ...prev,
-            lastName: user.lastName ?? '',
-            firstName: user.firstName ?? '',
-            phone: user.phone ?? '',
-          }));
-        }
-      })
-      .catch(() => {
-        // ignore auth error
-      })
-      .finally(() => {
-        setAuthChecked(true);
-        try {
-          setItems(readCart());
-        } catch {
-          setItems([]);
-        }
-      });
-    const onCartChange = () => {
-      try {
-        setItems(readCart());
-      } catch {
-        setItems([]);
+    restoreSession().then(() => {
+      const user = readAuth();
+      if (user) {
+        setCustomerInfo((prev) => ({
+          ...prev,
+          lastName: user.lastName ?? '',
+          firstName: user.firstName ?? '',
+          phone: user.phone ?? '',
+        }));
       }
-    };
+      setAuthChecked(true);
+      setItems(readCart());
+    });
+    const onCartChange = () => setItems(readCart());
     window.addEventListener('cart:changed', onCartChange);
     return () => window.removeEventListener('cart:changed', onCartChange);
   }, []);
@@ -271,17 +250,15 @@ export default function CheckoutClient() {
     setErrorMessage('');
     try {
       const orderNum = `ORD-${Date.now()}`;
-      const invoicedAmount = finalTotal;
       setQpayOrderNum(orderNum);
       const res = await fetch('/api/qpay/invoice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId, zakhialgiinDugaar: orderNum, dun: invoicedAmount, tailbar: `Захиалга ${orderNum}` }),
+        body: JSON.stringify({ tenantId, zakhialgiinDugaar: orderNum, dun: finalTotal, tailbar: `Захиалга ${orderNum}` }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? 'QPay invoice үүсгэхэд алдаа гарлаа');
       setQpayInvoice(body.data);
-      setQpayInvoicedAmount(invoicedAmount);
       stopQpayPolling();
       qpayPollRef.current = setInterval(async () => {
         try {
@@ -304,23 +281,6 @@ export default function CheckoutClient() {
       setQpayLoading(false);
     }
   };
-
-  // If the user goes back a step and changes the cart (quantity, coupon, removed item),
-  // the total can drift from what the currently-displayed QR was generated for. Silently
-  // regenerate a fresh invoice once they're back on the QPay panel with the new amount.
-  useEffect(() => {
-    if (
-      step === 2 &&
-      selectedPayment === 'qpay' &&
-      qpayInvoice &&
-      !qpayLoading &&
-      !qpayPaid &&
-      qpayInvoicedAmount !== finalTotal
-    ) {
-      generateQpayInvoice();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, selectedPayment, finalTotal, qpayInvoicedAmount]);
 
   // Selecting a payment method. QPay auto-generates its invoice + banks inline.
   const handleSelectPayment = (id: string) => {
@@ -716,9 +676,6 @@ export default function CheckoutClient() {
                   <span className="flex items-center gap-1.5"><Ticket className="w-3.5 h-3.5" strokeWidth={2} /> Цахим төлбөрийн баримт</span>
                   <span className="text-[10px] bg-emerald-600 text-white font-extrabold px-2 py-0.5 rounded-full">E-BARIMT</span>
                 </div>
-                {branding?.name && (
-                  <p className="text-sm font-bold text-emerald-950 mb-2">{branding.name}</p>
-                )}
                 <div className="space-y-2 text-xs">
                   {successOrder.items[0].ebarimtLottery && (
                     <div className="flex justify-between items-center">
