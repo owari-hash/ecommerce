@@ -195,8 +195,8 @@ export default function Header() {
       slug: product.slug,
       name: product.name,
       price: product.price,
-      oldPrice: product.oldPrice,
-      icon: 'product',
+      icon: product.image || 'product',
+      image: product.image,
       brand: product.brand,
     });
     setShowToast(true);

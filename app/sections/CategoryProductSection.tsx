@@ -371,7 +371,8 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
   function handleAddToCart(e: React.MouseEvent, p: Product, brand: string) {
     e.preventDefault()
     e.stopPropagation()
-    addToCart({ id: p.id, slug: p.slug || p.id, name: p.name, price: p.salePrice ?? p.price, icon: p.categoryId ?? 'product', brand })
+    const img = resolveUploadUrl(p.images?.[0]) || resolveUploadUrl((p as any).image)
+    addToCart({ id: p.id, slug: p.slug || p.id, name: p.name, price: p.salePrice ?? p.price, icon: img || p.categoryId || 'product', image: img, brand })
     setAddingId(p.id)
     setTimeout(() => setAddingId(null), 600)
     if (toastTimer.current) clearTimeout(toastTimer.current)
@@ -560,7 +561,8 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
                     type="button"
                     disabled={qv.stock === 0}
                     onClick={() => {
-                      addToCart({ id: qv.id, slug: qv.slug || qv.id, name: qv.name, price: displayPrice, icon: qv.categoryId ?? 'product', brand })
+                      const qvImg = resolveUploadUrl(qv.images?.[0]) || resolveUploadUrl((qv as any).image)
+                      addToCart({ id: qv.id, slug: qv.slug || qv.id, name: qv.name, price: displayPrice, icon: qvImg || qv.categoryId || 'product', image: qvImg, brand })
                       if (toastTimer.current) clearTimeout(toastTimer.current)
                       setToast({ name: qv.name })
                       toastTimer.current = setTimeout(() => setToast(null), 2500)

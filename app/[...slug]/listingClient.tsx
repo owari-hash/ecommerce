@@ -811,7 +811,8 @@ export default function CategoryListingClient({
                         price,
                         oldPrice,
                         brand: p.brand,
-                        icon: category.key,
+                        icon: p.image || category.key,
+                        image: p.image,
                       });
                       setToastMsg('Бүтээгдэхүүнийг сагсанд нэмлээ!');
                       setShowToast(true);
@@ -1064,7 +1065,8 @@ export default function CategoryListingClient({
                       name: quickView.name,
                       price: parsePrice(quickView.price),
                       oldPrice: quickView.oldPrice ? parsePrice(quickView.oldPrice) : undefined,
-                      icon: category.key,
+                      icon: quickView.image || category.key,
+                      image: quickView.image,
                       brand: quickView.brand,
                     });
                     setToastMsg('Сагсанд нэмэгдлээ');

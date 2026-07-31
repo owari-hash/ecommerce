@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart, Ticket } from 'lucide-react';
+import { ShoppingCart, Ticket, Package } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   readCart,
@@ -15,7 +15,6 @@ import { useTenantHref } from '../lib/useTenantHref';
 import { useTenant } from '../lib/TenantContext';
 import { restoreSession, readAuth, isLoggedIn } from '../lib/authStore';
 import { resolveUploadUrl } from '../lib/apiClient';
-import ImagePlaceholder from '../components/ImagePlaceholder';
 
 const paymentMethods = [
   { id: 'qpay', name: 'QPay', desc: 'Банкны аппаар QR уншуулж төлнө' },
@@ -51,7 +50,11 @@ function CartItemThumbnail({ image, icon }: { image?: string; icon?: string }) {
   const isGenericTag = !raw.includes('/') && !raw.includes('.') && !raw.startsWith('http') && !raw.startsWith('data:');
 
   if (failed || !resolved || isGenericTag) {
-    return <ImagePlaceholder />;
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-gray-50 rounded-xl">
+        <Package className="w-5 h-5 text-gray-300" strokeWidth={1.5} />
+      </div>
+    );
   }
 
   return (
