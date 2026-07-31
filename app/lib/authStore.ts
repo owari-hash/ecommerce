@@ -254,9 +254,10 @@ export async function fetchWithAuth(input: string, init?: RequestInit): Promise<
 export async function restoreSession(): Promise<void> {
   try {
     const headers = new Headers()
+    headers.set('Cache-Control', 'no-cache')
     const token = getStoredAccessToken()
     if (token) headers.set('Authorization', `Bearer ${token}`)
-    let res = await fetch('/api/users/me', { credentials: 'include', headers })
+    let res = await fetch('/api/users/me', { credentials: 'include', headers, cache: 'no-store' })
 
     // Access token expired — try refresh
     if (res.status === 401) {
@@ -272,15 +273,24 @@ export async function restoreSession(): Promise<void> {
       saveTokens(refreshData.accessToken, refreshData.refreshToken)
 
       const retryHeaders = new Headers()
+      retryHeaders.set('Cache-Control', 'no-cache')
       const newToken = getStoredAccessToken()
       if (newToken) retryHeaders.set('Authorization', `Bearer ${newToken}`)
-      res = await fetch('/api/users/me', { credentials: 'include', headers: retryHeaders })
+      res = await fetch('/api/users/me', { credentials: 'include', headers: retryHeaders, cache: 'no-store' })
     }
 
-    if (res.ok) {
-      const user = await res.json()
-      _currentUser = { email: user.email, firstName: user.firstName, lastName: user.lastName, phone: user.phone, avatar: user.avatar }
-      dispatchChange()
+    if (res.status === 200) {
+      const user = await res.json().catch(() => null)
+      if (user && typeof user === 'object') {
+        _currentUser = {
+          email: user.email ?? '',
+          firstName: user.firstName ?? '',
+          lastName: user.lastName ?? '',
+          phone: user.phone ?? '',
+          avatar: user.avatar ?? '',
+        }
+        dispatchChange()
+      }
     }
   } catch {
     // no session
