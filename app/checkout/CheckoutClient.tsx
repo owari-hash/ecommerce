@@ -218,6 +218,39 @@ export default function CheckoutClient() {
     return () => window.removeEventListener('cart:changed', onCartChange);
   }, []);
 
+  // Auto-enrich legacy or missing cart item images from tenant product API
+  useEffect(() => {
+    if (!tenantId) return;
+    fetch(`/api/products/public?tenantId=${tenantId}`)
+      .then((r) => r.json())
+      .then((body) => {
+        if (!body?.data || !Array.isArray(body.data)) return;
+        const productMap = new Map<string, string>();
+        for (const p of body.data) {
+          const img = resolveUploadUrl(p.images?.[0]);
+          if (img) {
+            if (p.id) productMap.set(String(p.id), img);
+            if (p.slug) productMap.set(String(p.slug), img);
+          }
+        }
+        setItems((prevItems) => {
+          let changed = false;
+          const updated = prevItems.map((it) => {
+            const freshImg = productMap.get(it.id) || productMap.get(it.slug);
+            if (freshImg && (!it.image || !it.image.includes('/'))) {
+              changed = true;
+              return { ...it, image: freshImg };
+            }
+            return it;
+          });
+          return changed ? updated : prevItems;
+        });
+      })
+      .catch(() => {
+        // ignore fetch error
+      });
+  }, [tenantId]);
+
   const fee = typeof shippingFee === 'number' ? shippingFee : 15000;
   const threshold = typeof shippingFreeThreshold === 'number' ? shippingFreeThreshold : 500000;
   const total = useMemo(() => getCartTotal(), [items]);
