@@ -72,6 +72,29 @@ function CategoryRow({
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
 
+ 
+  const [cols, setCols] = useState(5)
+  useEffect(() => {
+    const calc = () => {
+      const w = window.innerWidth
+      setCols(w >= 1024 ? 5 : w >= 768 ? 4 : w >= 640 ? 3 : 2)
+    }
+    calc()
+    window.addEventListener('resize', calc)
+    return () => window.removeEventListener('resize', calc)
+  }, [])
+
+  
+  const GAP = 12 // gap-3
+  const rows = items.length <= cols ? 1 : 2
+  const colCount = Math.ceil(items.length / rows)
+  const track = (n: number) => `calc(${(100 / n).toFixed(4)}% - ${((GAP * (n - 1)) / n).toFixed(2)}px)`
+  // track(cols) is the breakpoint's normal card width and the floor once the row overflows and
+  // scrolls; track(colCount) is what the rendered columns need to span the full width. Capped at
+  // 3 (or 2 on small screens) per row so a category with one product doesn't blow up to a
+  // full-width card.
+  const colWidth = `max(${track(cols)}, min(${track(colCount)}, ${track(cols >= 4 ? 3 : 2)}))`
+
   function checkScroll() {
     const el = scrollRef.current
     if (!el) return
@@ -197,16 +220,16 @@ function CategoryRow({
           </button>
         )}
 
-        {/* Always the horizontal-scroll structure, but column widths are sized as a percentage
-            matching the same 2/3/4/5-per-row breakpoints a wrapping grid would use. When a
-            category has few enough items to fit in 2 rows, this renders edge-to-edge exactly
-            like a full-width wrap grid (no scrolling); once it overflows past 2 rows, the rest
-            scrolls horizontally instead of wrapping to a 3rd+ row — same behavior at every
-            screen size, so mobile and desktop both show "2 rows, then the next category". */}
+       
         <div
           ref={scrollRef}
-          className="grid grid-flow-col grid-rows-2 gap-3 overflow-x-auto scroll-smooth pb-1 auto-cols-[calc(50%-0.375rem)] sm:auto-cols-[calc(33.333%-0.5rem)] md:auto-cols-[calc(25%-0.5625rem)] lg:auto-cols-[calc(20%-0.6rem)]"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          className="grid grid-flow-col gap-3 overflow-x-auto scroll-smooth pb-1"
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
+            gridAutoColumns: colWidth,
+          }}
         >
           {items.map((p) => {
             const img = resolveUploadUrl(p.images?.[0])
