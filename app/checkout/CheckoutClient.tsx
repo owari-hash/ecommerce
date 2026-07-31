@@ -37,8 +37,9 @@ function BrandLogo({ id, size = 40 }: { id: string; size?: number }) {
   );
 }
 
-function formatPrice(price: number): string {
-  return price.toLocaleString('mn-MN') + '₮';
+function formatPrice(price: number | undefined | null): string {
+  const num = typeof price === 'number' && !isNaN(price) ? price : 0;
+  return num.toLocaleString('mn-MN') + '₮';
 }
 
 /** Horizontal checkout progress indicator. */
@@ -84,7 +85,7 @@ function Stepper({ current }: { current: number }) {
 
 export default function CheckoutClient() {
   const tenantHref = useTenantHref();
-  const { tenantId, shippingFee, shippingFreeThreshold } = useTenant();
+  const { tenantId, shippingFee, shippingFreeThreshold, branding } = useTenant();
   const [authChecked, setAuthChecked] = useState(false);
   const [step, setStep] = useState(0); // 0 Сагс · 1 Мэдээлэл · 2 Төлбөр
   const [items, setItems] = useState<CartItem[]>([]);
@@ -100,6 +101,8 @@ export default function CheckoutClient() {
   const [qpayLoading, setQpayLoading] = useState(false);
   const [qpayPaid, setQpayPaid] = useState(false);
   const [qpayOrderNum, setQpayOrderNum] = useState<string>('');
+  const [qpayInvoicedAmount, setQpayInvoicedAmount] = useState<number>(0);
+  const qpayRegeneratingRef = useRef(false);
 
   // И-Баримт inline
   const [ebarimtType, setEbarimtType] = useState<'person' | 'org'>('person');
@@ -158,20 +161,36 @@ export default function CheckoutClient() {
   });
 
   useEffect(() => {
-    restoreSession().then(() => {
-      const user = readAuth();
-      if (user) {
-        setCustomerInfo((prev) => ({
-          ...prev,
-          lastName: user.lastName ?? '',
-          firstName: user.firstName ?? '',
-          phone: user.phone ?? '',
-        }));
+    restoreSession()
+      .then(() => {
+        const user = readAuth();
+        if (user) {
+          setCustomerInfo((prev) => ({
+            ...prev,
+            lastName: user.lastName ?? '',
+            firstName: user.firstName ?? '',
+            phone: user.phone ?? '',
+          }));
+        }
+      })
+      .catch(() => {
+        // ignore
+      })
+      .finally(() => {
+        setAuthChecked(true);
+        try {
+          setItems(readCart());
+        } catch {
+          setItems([]);
+        }
+      });
+    const onCartChange = () => {
+      try {
+        setItems(readCart());
+      } catch {
+        setItems([]);
       }
-      setAuthChecked(true);
-      setItems(readCart());
-    });
-    const onCartChange = () => setItems(readCart());
+    };
     window.addEventListener('cart:changed', onCartChange);
     return () => window.removeEventListener('cart:changed', onCartChange);
   }, []);
@@ -181,14 +200,6 @@ export default function CheckoutClient() {
   const total = useMemo(() => getCartTotal(), [items]);
   const shipping = total >= threshold ? 0 : fee;
   const finalTotal = total + shipping;
-
-  if (!authChecked) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
 
   const handleQuantityChange = (id: string, delta: number) => {
     const item = items.find((x) => x.id === id);
@@ -245,20 +256,21 @@ export default function CheckoutClient() {
   // QPay: generate invoice + render banks inline + poll
   const generateQpayInvoice = async () => {
     setQpayLoading(true);
-    setQpayInvoice(null);
     setQpayPaid(false);
     setErrorMessage('');
     try {
       const orderNum = `ORD-${Date.now()}`;
+      const invoicedAmount = finalTotal;
       setQpayOrderNum(orderNum);
       const res = await fetch('/api/qpay/invoice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId, zakhialgiinDugaar: orderNum, dun: finalTotal, tailbar: `Захиалга ${orderNum}` }),
+        body: JSON.stringify({ tenantId, zakhialgiinDugaar: orderNum, dun: invoicedAmount, tailbar: `Захиалга ${orderNum}` }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? 'QPay invoice үүсгэхэд алдаа гарлаа');
       setQpayInvoice(body.data);
+      setQpayInvoicedAmount(invoicedAmount);
       stopQpayPolling();
       qpayPollRef.current = setInterval(async () => {
         try {
@@ -282,6 +294,26 @@ export default function CheckoutClient() {
     }
   };
 
+  // Silently regenerate QPay invoice if user returns to Step 2 after modifying cart
+  useEffect(() => {
+    if (
+      step === 2 &&
+      selectedPayment === 'qpay' &&
+      qpayInvoice &&
+      !qpayLoading &&
+      !qpayPaid &&
+      qpayInvoicedAmount > 0 &&
+      qpayInvoicedAmount !== finalTotal &&
+      !qpayRegeneratingRef.current
+    ) {
+      qpayRegeneratingRef.current = true;
+      generateQpayInvoice().finally(() => {
+        qpayRegeneratingRef.current = false;
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, selectedPayment, finalTotal, qpayInvoicedAmount]);
+
   // Selecting a payment method. QPay auto-generates its invoice + banks inline.
   const handleSelectPayment = (id: string) => {
     setSelectedPayment(id);
@@ -289,6 +321,7 @@ export default function CheckoutClient() {
     stopQpayPolling();
     setQpayInvoice(null);
     setQpayPaid(false);
+    setQpayInvoicedAmount(0);
     if (id === 'qpay') generateQpayInvoice();
   };
 
@@ -327,6 +360,14 @@ export default function CheckoutClient() {
     step === 0 ? items.length > 0
       : step === 1 ? infoFilled && orgTinOk
         : Boolean(selectedPayment);
+
+  if (!authChecked) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (items.length === 0 && !showSuccessModal) {
     return (
@@ -676,6 +717,9 @@ export default function CheckoutClient() {
                   <span className="flex items-center gap-1.5"><Ticket className="w-3.5 h-3.5" strokeWidth={2} /> Цахим төлбөрийн баримт</span>
                   <span className="text-[10px] bg-emerald-600 text-white font-extrabold px-2 py-0.5 rounded-full">E-BARIMT</span>
                 </div>
+                {branding?.name && (
+                  <p className="text-sm font-bold text-emerald-950 mb-2">{branding.name}</p>
+                )}
                 <div className="space-y-2 text-xs">
                   {successOrder.items[0].ebarimtLottery && (
                     <div className="flex justify-between items-center">
