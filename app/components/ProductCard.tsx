@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Package } from 'lucide-react';
+import { Package, Scale } from 'lucide-react';
 import { CATEGORY_ICONS, type CatalogCategoryKey, formatPrice } from '../lib/mockCatalog';
 import { toggleCompare, readCompare } from '../lib/compareStore';
 import { addToCart } from '../lib/cartStore';
@@ -257,16 +257,30 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
                   </svg>
                   Сагсанд нэмэх
                 </button>
-                <Link
-                  href={tenantHref(`/product/${slug}`)}
-                  onClick={() => setQuickOpen(false)}
-                  className="w-full py-3 rounded-2xl font-bold text-sm text-gray-500 hover:text-primary hover:bg-gray-50 transition-colors text-center flex items-center justify-center gap-1"
-                >
-                  Дэлгэрэнгүй харах
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    href={tenantHref(`/product/${slug}`)}
+                    onClick={() => setQuickOpen(false)}
+                    className="py-3 rounded-2xl font-bold text-sm text-gray-500 hover:text-primary hover:bg-gray-50 transition-colors text-center flex items-center justify-center gap-1"
+                  >
+                    Дэлгэрэнгүй харах
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleCompare(e); }}
+                    className={`py-3 rounded-2xl font-bold text-sm border transition-colors flex items-center justify-center gap-1.5 ${
+                      inCompare
+                        ? 'bg-primary text-white border-primary'
+                        : 'border-gray-200 text-gray-500 hover:text-primary hover:border-primary'
+                    }`}
+                  >
+                    <Scale className="w-3.5 h-3.5" />
+                    <span>{inCompare ? 'Харьцуулж байна' : 'Харьцуулах'}</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>

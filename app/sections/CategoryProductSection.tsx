@@ -371,6 +371,12 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
     return () => window.removeEventListener('compare:changed', onComp)
   }, [])
 
+  useEffect(() => {
+    syncCart()
+    window.addEventListener('cart:changed', syncCart)
+    return () => window.removeEventListener('cart:changed', syncCart)
+  }, [])
+
   function handleAddToCart(e: React.MouseEvent, p: Product, brand: string) {
     e.preventDefault()
     e.stopPropagation()
@@ -544,24 +550,24 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
               </div>
 
               {/* Info */}
-              <div className="p-5 sm:p-6 flex flex-col justify-between">
+              <div className="p-5 sm:p-6 flex flex-col gap-3">
                 <div>
                   <div className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{brand}</div>
-                  <h3 className="text-base font-bold text-gray-900 leading-snug mb-3">{qv.name}</h3>
-                  <div className="flex items-baseline gap-2 mb-3">
+                  <h3 className="text-base font-bold text-gray-900 leading-snug mb-2">{qv.name}</h3>
+                  <div className="flex items-baseline gap-2 mb-2">
                     <span className="text-xl font-black" style={{ color: primaryColor }}>{formatPrice(displayPrice)}</span>
                     {qv.salePrice && <span className="text-sm font-medium text-gray-400 line-through">{formatPrice(qv.price)}</span>}
                   </div>
                   {qv.stock === 0 ? (
-                    <p className="text-sm font-semibold text-gray-400 mb-4">Дууссан</p>
+                    <p className="text-sm font-semibold text-gray-400">Дууссан</p>
                   ) : (
-                    <p className="text-xs text-emerald-600 mb-4 flex items-center gap-1">
+                    <p className="text-xs text-emerald-600 flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       {typeof qv.stock === 'number' ? `Үлдэгдэл: ${qv.stock.toLocaleString('mn-MN')}ш` : 'Бэлэн байгаа'}
                     </p>
                   )}
                 </div>
-                <div className="flex flex-col gap-2 pt-3 border-t border-gray-100 mt-2">
+                <div className="flex flex-col gap-2 pt-3 border-t border-gray-100">
                   <button
                     type="button"
                     disabled={qv.stock === 0}
