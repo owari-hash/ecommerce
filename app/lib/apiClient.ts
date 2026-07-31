@@ -4,16 +4,33 @@
  */
 export function resolveUploadUrl(url: string | undefined | null): string {
   if (!url) return '';
-  if (url.startsWith('data:') || url.startsWith('blob:')) return url;
-  // Already relative
-  if (url.startsWith('/upload/')) return url;
-  // Extract the /upload/... suffix from an absolute URL
-  const match = url.match(/\/upload\/(.+)$/);
-  if (match) return `/upload/${match[1]}`;
-  // External CDN / Unsplash etc — keep as-is
-  if (url.startsWith('https://')) return url;
-  // http:// backend URL without /upload/ path — just keep it (will still fail, but at least explicit)
-  return url;
+  const clean = String(url).trim();
+  if (!clean) return '';
+  if (clean.startsWith('data:') || clean.startsWith('blob:')) return clean;
+
+  // Match /upload/... or /uploads/... or upload/... or uploads/...
+  const match = clean.match(/(?:^|\/)uploads?\/(.+)$/i);
+  if (match) {
+    return `/upload/${match[1]}`;
+  }
+
+  if (clean.startsWith('http://') || clean.startsWith('https://')) {
+    const httpMatch = clean.match(/\/uploads?\/(.+)$/i);
+    if (httpMatch) return `/upload/${httpMatch[1]}`;
+    return clean;
+  }
+
+  // If it has an image file extension (e.g. image.png, /image.jpg)
+  if (/\.(png|jpe?g|webp|svg|gif|avif)$/i.test(clean)) {
+    const basename = clean.replace(/^\/+/, '');
+    if (basename.toLowerCase().startsWith('upload/') || basename.toLowerCase().startsWith('uploads/')) {
+      return `/${basename.replace(/^uploads?\//i, 'upload/')}`;
+    }
+    return `/upload/${basename}`;
+  }
+
+  if (clean.startsWith('/')) return clean;
+  return clean;
 }
 
 export class ApiError extends Error {

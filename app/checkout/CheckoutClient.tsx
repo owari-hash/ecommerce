@@ -46,17 +46,11 @@ function formatPrice(price: number | undefined | null): string {
 function CartItemThumbnail({ image, icon }: { image?: string; icon?: string }) {
   const [failed, setFailed] = useState(false);
 
-  const raw = image || icon || '';
-  const isImageFile =
-    raw.startsWith('/upload/') ||
-    raw.startsWith('http://') ||
-    raw.startsWith('https://') ||
-    raw.startsWith('data:') ||
-    raw.startsWith('blob:');
+  const raw = (image || icon || '').trim();
+  const resolved = resolveUploadUrl(raw);
+  const isGenericTag = !raw.includes('/') && !raw.includes('.') && !raw.startsWith('http') && !raw.startsWith('data:');
 
-  const resolved = isImageFile ? resolveUploadUrl(raw) : null;
-
-  if (failed || !resolved) {
+  if (failed || !resolved || isGenericTag) {
     return <ImagePlaceholder />;
   }
 
