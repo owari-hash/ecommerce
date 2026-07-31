@@ -197,7 +197,7 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
         >
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div
-            className="relative bg-white rounded-3xl shadow-2xl ring-1 ring-black/5 w-full max-w-3xl overflow-hidden grid sm:grid-cols-2"
+            className="relative bg-white rounded-3xl shadow-2xl ring-1 ring-black/5 w-full max-w-2xl max-h-[90vh] overflow-y-auto grid grid-cols-1 sm:grid-cols-2"
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
           >
             <button
@@ -212,7 +212,7 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
             </button>
 
             {/* Image */}
-            <div className="relative aspect-square sm:aspect-auto sm:min-h-[360px] bg-gradient-to-br from-gray-50 to-gray-100/60 flex items-center justify-center p-8">
+            <div className="relative h-52 sm:h-auto sm:min-h-[280px] bg-gradient-to-br from-gray-50 to-gray-100/60 flex items-center justify-center p-6">
               {previewImage ? (
                 <div className="relative w-full h-full rounded-2xl bg-white shadow-sm overflow-hidden">
                   <Image src={previewImage} alt={name} fill className="object-contain p-6" sizes="(max-width:640px) 100vw, 360px" unoptimized />
