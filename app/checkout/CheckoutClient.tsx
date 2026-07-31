@@ -37,8 +37,9 @@ function BrandLogo({ id, size = 40 }: { id: string; size?: number }) {
   );
 }
 
-function formatPrice(price: number): string {
-  return price.toLocaleString('mn-MN') + '₮';
+function formatPrice(price: number | undefined | null): string {
+  const num = typeof price === 'number' && !isNaN(price) ? price : 0;
+  return num.toLocaleString('mn-MN') + '₮';
 }
 
 /** Horizontal checkout progress indicator. */

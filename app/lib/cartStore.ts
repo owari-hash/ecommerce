@@ -15,11 +15,30 @@ const STORAGE_KEY = 'Их Наяд Плаза.cart.items.v1';
 
 export function readCart(): CartItem[] {
   try {
+    if (typeof window === 'undefined') return [];
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((x) => x && typeof x.id === 'string' && typeof x.name === 'string');
+    return parsed
+      .filter((x) => x && typeof x.id === 'string' && typeof x.name === 'string')
+      .map((x) => {
+        const rawPrice = typeof x.price === 'number' ? x.price : parseInt(String(x.price || '').replace(/[^0-9]/g, ''), 10);
+        const price = typeof rawPrice === 'number' && !isNaN(rawPrice) ? rawPrice : 0;
+        const rawOldPrice = typeof x.oldPrice === 'number' ? x.oldPrice : (x.oldPrice ? parseInt(String(x.oldPrice || '').replace(/[^0-9]/g, ''), 10) : undefined);
+        const oldPrice = typeof rawOldPrice === 'number' && !isNaN(rawOldPrice) ? rawOldPrice : undefined;
+        const quantity = typeof x.quantity === 'number' && x.quantity > 0 ? Math.floor(x.quantity) : 1;
+        return {
+          id: String(x.id),
+          name: String(x.name),
+          slug: String(x.slug || ''),
+          price,
+          oldPrice,
+          icon: String(x.icon || ''),
+          brand: String(x.brand || ''),
+          quantity,
+        };
+      });
   } catch {
     return [];
   }
