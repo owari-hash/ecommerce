@@ -162,20 +162,36 @@ export default function CheckoutClient() {
   });
 
   useEffect(() => {
-    restoreSession().then(() => {
-      const user = readAuth();
-      if (user) {
-        setCustomerInfo((prev) => ({
-          ...prev,
-          lastName: user.lastName ?? '',
-          firstName: user.firstName ?? '',
-          phone: user.phone ?? '',
-        }));
+    restoreSession()
+      .then(() => {
+        const user = readAuth();
+        if (user) {
+          setCustomerInfo((prev) => ({
+            ...prev,
+            lastName: user.lastName ?? '',
+            firstName: user.firstName ?? '',
+            phone: user.phone ?? '',
+          }));
+        }
+      })
+      .catch(() => {
+        // ignore auth error
+      })
+      .finally(() => {
+        setAuthChecked(true);
+        try {
+          setItems(readCart());
+        } catch {
+          setItems([]);
+        }
+      });
+    const onCartChange = () => {
+      try {
+        setItems(readCart());
+      } catch {
+        setItems([]);
       }
-      setAuthChecked(true);
-      setItems(readCart());
-    });
-    const onCartChange = () => setItems(readCart());
+    };
     window.addEventListener('cart:changed', onCartChange);
     return () => window.removeEventListener('cart:changed', onCartChange);
   }, []);
