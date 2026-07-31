@@ -11,10 +11,10 @@ export const ORDER_STATUS: Record<string, StatusMeta> = {
   cancelled: { label: 'Цуцлагдсан', color: '#DC2626', bg: '#FEE2E2' },
 };
 
-export const PAYMENT_STATUS: Record<string, { label: string; color: string }> = {
-  pending: { label: 'Төлөгдөөгүй', color: '#D97706' },
-  paid: { label: 'Төлөгдсөн', color: '#059669' },
-  refunded: { label: 'Буцаагдсан', color: '#6B7280' },
+export const PAYMENT_STATUS: Record<string, StatusMeta> = {
+  pending: { label: 'Төлөгдөөгүй', color: '#D97706', bg: '#FEF3C7' },
+  paid: { label: 'Төлөгдсөн', color: '#059669', bg: '#D1FAE5' },
+  refunded: { label: 'Буцаагдсан', color: '#6B7280', bg: '#F3F4F6' },
 };
 
 /** Forward progression used to render the tracking stepper (cancelled is out-of-band). */
