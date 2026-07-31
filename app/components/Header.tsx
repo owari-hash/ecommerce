@@ -422,9 +422,9 @@ export default function Header() {
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
                     <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
-                      <div className="px-4 py-2 border-b border-gray-100">
-                        <p className="font-bold text-gray-900">{user.lastName} {user.firstName}</p>
-                        <p className="text-xs text-gray-500">{user.phone}</p>
+                      <div className="px-4 py-2 border-b border-gray-100 text-center">
+                        <p className="font-bold text-gray-900 leading-tight">{user.lastName ? `${user.lastName} ` : ''}{user.firstName}</p>
+                        {user.phone && <p className="text-xs text-gray-500 mt-0.5">{user.phone}</p>}
                       </div>
                       <Link href="/account" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary"><UserIcon className="w-4 h-4 shrink-0" strokeWidth={1.8} /> Хувийн мэдээлэл</Link>
                       {/* Wishlist ("Хадгалсан") disabled for now — feature isn't implemented yet */}

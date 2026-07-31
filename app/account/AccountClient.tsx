@@ -329,10 +329,9 @@ export default function AccountClient() {
     e.preventDefault(); setError(''); setSuccess('');
     setLoading(true);
     try {
-      const res = await fetch('/api/users/me', {
+      const res = await fetchWithAuth('/api/users/me', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ firstName: editFirstName, lastName: editLastName, email: editEmail || undefined, phone: editPhone }),
       });
       const data = await res.json();

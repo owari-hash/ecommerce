@@ -378,10 +378,10 @@ export default function ProductDetailClient({ product }: Props) {
               <button
                 onClick={handleAddToCart}
                 disabled={product.stock === 0}
-                className={`hidden sm:flex items-center gap-2 font-bold px-5 py-3 rounded-xl text-sm transition-colors shrink-0 ${
+                className={`w-full sm:w-auto flex items-center justify-center gap-2 font-bold px-6 py-3.5 rounded-xl text-sm transition-colors shrink-0 ${
                   product.stock === 0
                     ? 'bg-gray-300 hover:bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-primary hover:bg-primary-dark text-white'
+                    : 'bg-primary hover:bg-primary-dark text-white shadow-md hover:shadow-lg'
                 }`}
               >
                 {product.stock === 0 ? null : (
@@ -392,24 +392,6 @@ export default function ProductDetailClient({ product }: Props) {
                 {product.stock === 0 ? 'Дууссан' : 'Сагсанд нэмэх'}
               </button>
             </div>
-
-            {/* Mobile: full-width cart button inside price box */}
-            <button
-              onClick={handleAddToCart}
-              disabled={product.stock === 0}
-              className={`sm:hidden mt-3 w-full flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-sm transition-colors ${
-                product.stock === 0
-                  ? 'bg-gray-300 hover:bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-primary hover:bg-primary-dark text-white'
-              }`}
-            >
-              {product.stock === 0 ? null : (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              )}
-              {product.stock === 0 ? 'Дууссан' : 'Сагсанд нэмэх'}
-            </button>
           </div>
 
           {/* Key specs */}
@@ -488,32 +470,7 @@ export default function ProductDetailClient({ product }: Props) {
         </section>
       </div>
 
-      {/* Sticky bottom bar — mobile only */}
-      <div className="fixed bottom-[52px] left-0 right-0 z-40 sm:hidden bg-white border-t border-gray-200 px-4 py-3 flex items-center gap-3 shadow-lg">
-        <div className="min-w-0">
-          <div className="text-[10px] text-gray-400 font-semibold leading-none mb-0.5">Үнэ</div>
-          <div className="text-lg font-black text-gray-900 leading-none">{product.price}</div>
-          {product.oldPrice && (
-            <div className="text-xs text-gray-400 line-through leading-none mt-0.5">{product.oldPrice}</div>
-          )}
-        </div>
-        <button
-          onClick={handleAddToCart}
-          disabled={product.stock === 0}
-          className={`flex-1 flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-sm transition-colors ${
-            product.stock === 0
-              ? 'bg-gray-300 hover:bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-primary hover:bg-primary-dark text-white'
-          }`}
-        >
-          {product.stock === 0 ? null : (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-          )}
-          {product.stock === 0 ? 'Дууссан' : 'Сагсанд нэмэх'}
-        </button>
-      </div>
+
 
       {/* Toast */}
       {showToast && (
