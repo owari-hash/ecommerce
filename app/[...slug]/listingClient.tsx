@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Package, Heart } from 'lucide-react';
+import { Package, Heart, Scale } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 import { addToCart, readCart, updateQuantity, removeFromCart } from '../lib/cartStore';
 import { useTenantHref } from '../lib/useTenantHref';
@@ -1001,7 +1001,7 @@ export default function CategoryListingClient({
         >
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
           <div
-            className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden grid sm:grid-cols-2 max-h-[92vh]"
+            className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto grid grid-cols-1 sm:grid-cols-2"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -1014,8 +1014,8 @@ export default function CategoryListingClient({
             </button>
 
             {/* Gallery */}
-            <div className="bg-gray-50 p-4 flex flex-col">
-              <div className="relative flex-1 min-h-[240px] rounded-xl overflow-hidden bg-white flex items-center justify-center">
+            <div className="bg-gray-50 p-4 flex flex-col justify-center items-center">
+              <div className="relative w-full h-52 sm:h-64 rounded-xl overflow-hidden bg-white flex items-center justify-center">
                 {quickImages[quickImg] ? (
                   <Image src={quickImages[quickImg]} alt={quickView.name} fill className="object-contain p-4" sizes="(max-width:640px) 100vw, 384px" unoptimized />
                 ) : (
@@ -1023,15 +1023,15 @@ export default function CategoryListingClient({
                 )}
               </div>
               {quickImages.length > 1 && (
-                <div className="mt-3 flex gap-2 overflow-x-auto">
+                <div className="mt-3 flex gap-2 overflow-x-auto max-w-full">
                   {quickImages.map((img, i) => (
                     <button
                       key={i}
                       type="button"
                       onClick={() => setQuickImg(i)}
-                      className={`relative w-14 h-14 shrink-0 rounded-lg overflow-hidden border-2 transition-colors ${i === quickImg ? 'border-primary' : 'border-gray-200 hover:border-gray-300'}`}
+                      className={`relative w-12 h-12 shrink-0 rounded-lg overflow-hidden border-2 transition-colors ${i === quickImg ? 'border-primary' : 'border-gray-200 hover:border-gray-300'}`}
                     >
-                      <Image src={img} alt={`${quickView.name} ${i + 1}`} fill className="object-cover" sizes="56px" unoptimized />
+                      <Image src={img} alt={`${quickView.name} ${i + 1}`} fill className="object-cover" sizes="48px" unoptimized />
                     </button>
                   ))}
                 </div>
@@ -1039,22 +1039,24 @@ export default function CategoryListingClient({
             </div>
 
             {/* Info */}
-            <div className="p-5 sm:p-6 flex flex-col overflow-y-auto">
-              <div className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{quickView.brand}</div>
-              <h3 className="text-base font-bold text-gray-900 leading-snug mb-3">{quickView.name}</h3>
-              <div className="flex items-baseline gap-2 mb-3">
-                <span className="text-xl font-black text-primary">{quickView.price}</span>
-                {quickView.oldPrice && <span className="text-sm font-medium text-gray-400 line-through">{quickView.oldPrice}</span>}
+            <div className="p-5 sm:p-6 flex flex-col justify-between">
+              <div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{quickView.brand}</div>
+                <h3 className="text-base font-bold text-gray-900 leading-snug mb-3">{quickView.name}</h3>
+                <div className="flex items-baseline gap-2 mb-3">
+                  <span className="text-xl font-black text-primary">{quickView.price}</span>
+                  {quickView.oldPrice && <span className="text-sm font-medium text-gray-400 line-through">{quickView.oldPrice}</span>}
+                </div>
+                {quickView.stock === 0 ? (
+                  <p className="text-sm font-semibold text-gray-400 mb-4">Дууссан</p>
+                ) : (
+                  <p className="text-xs text-emerald-600 mb-4 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    {typeof quickView.stock === 'number' ? `Үлдэгдэл: ${quickView.stock.toLocaleString('mn-MN')}ш` : 'Бэлэн байгаа'}
+                  </p>
+                )}
               </div>
-              {quickView.stock === 0 ? (
-                <p className="text-sm font-semibold text-gray-400 mb-4">Дууссан</p>
-              ) : (
-                <p className="text-xs text-emerald-600 mb-4 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  {typeof quickView.stock === 'number' ? `Үлдэгдэл: ${quickView.stock.toLocaleString('mn-MN')}ш` : 'Бэлэн байгаа'}
-                </p>
-              )}
-              <div className="mt-auto flex flex-col gap-2 pt-2">
+              <div className="flex flex-col gap-2 pt-3 border-t border-gray-100 mt-2">
                 <button
                   type="button"
                   disabled={quickView.stock === 0}
@@ -1077,12 +1079,39 @@ export default function CategoryListingClient({
                 >
                   Сагсанд нэмэх
                 </button>
-                <Link
-                  href={tenantHref(`/product/${quickView.slug}`)}
-                  className="w-full py-3 rounded-xl font-bold text-sm border border-gray-200 text-gray-700 hover:border-primary hover:text-primary transition-colors text-center"
-                >
-                  Дэлгэрэнгүй харах
-                </Link>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    href={tenantHref(`/product/${quickView.slug}`)}
+                    onClick={() => setQuickView(null)}
+                    className="py-2.5 rounded-xl font-bold text-xs border border-gray-200 text-gray-700 hover:border-primary hover:text-primary transition-colors text-center flex items-center justify-center"
+                  >
+                    Дэлгэрэнгүй харах
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const qvPrice = parsePrice(quickView.price);
+                      const qvOldPrice = quickView.oldPrice ? parsePrice(quickView.oldPrice) : undefined;
+                      toggleCompare({
+                        id: quickView.id,
+                        title: quickView.name,
+                        slug: quickView.slug,
+                        image: quickView.image,
+                        brand: quickView.brand,
+                        price: qvPrice,
+                        oldPrice: qvOldPrice,
+                      });
+                    }}
+                    className={`py-2.5 rounded-xl font-bold text-xs border transition-colors flex items-center justify-center gap-1.5 ${
+                      compareIds.has(quickView.id)
+                        ? 'bg-primary text-white border-primary'
+                        : 'border-gray-200 text-gray-700 hover:border-primary hover:text-primary'
+                    }`}
+                  >
+                    <Scale className="w-3.5 h-3.5" />
+                    <span>{compareIds.has(quickView.id) ? 'Харьцуулж байна' : 'Харьцуулах'}</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>

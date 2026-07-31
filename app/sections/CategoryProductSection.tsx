@@ -2,12 +2,13 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Fragment, useEffect, useRef, useState } from 'react'
-import { Check } from 'lucide-react'
+import { Check, Scale } from 'lucide-react'
 import { useTenant } from '../lib/TenantContext'
 import { useTenantHref } from '../lib/useTenantHref'
 import { resolveUploadUrl } from '../lib/apiClient'
 import { formatPrice } from '../lib/mockCatalog'
 import { addToCart, readCart, updateQuantity, removeFromCart } from '../lib/cartStore'
+import { toggleCompare, readCompare, type CompareItem } from '../lib/compareStore'
 import ImagePlaceholder from '../components/ImagePlaceholder'
 import { getCategorySlug } from '../lib/categoryUtils'
 import Reveal from '../components/Reveal'
@@ -362,10 +363,12 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
     setCartMap(map)
   }
 
+  const [compareList, setCompareList] = useState<CompareItem[]>([])
   useEffect(() => {
-    syncCart()
-    window.addEventListener('cart:changed', syncCart)
-    return () => window.removeEventListener('cart:changed', syncCart)
+    setCompareList(readCompare())
+    const onComp = () => setCompareList(readCompare())
+    window.addEventListener('compare:changed', onComp)
+    return () => window.removeEventListener('compare:changed', onComp)
   }, [])
 
   function handleAddToCart(e: React.MouseEvent, p: Product, brand: string) {
@@ -509,7 +512,7 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
         return (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" onClick={() => setQuickView(null)}>
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden grid sm:grid-cols-2 max-h-[92vh]" onClick={(e) => e.stopPropagation()}>
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto grid grid-cols-1 sm:grid-cols-2" onClick={(e) => e.stopPropagation()}>
               <button
                 type="button"
                 onClick={() => setQuickView(null)}
@@ -520,8 +523,8 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
               </button>
 
               {/* Gallery */}
-              <div className="bg-gray-50 p-4 flex flex-col">
-                <div className="relative flex-1 min-h-[240px] rounded-xl overflow-hidden bg-white flex items-center justify-center">
+              <div className="bg-gray-50 p-4 flex flex-col justify-center items-center">
+                <div className="relative w-full h-52 sm:h-64 rounded-xl overflow-hidden bg-white flex items-center justify-center">
                   {quickImages[quickImg] ? (
                     <Image src={quickImages[quickImg]} alt={qv.name} fill className="object-contain p-4" sizes="(max-width:640px) 100vw, 384px" unoptimized />
                   ) : (
@@ -529,11 +532,11 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
                   )}
                 </div>
                 {quickImages.length > 1 && (
-                  <div className="mt-3 flex gap-2 overflow-x-auto">
+                  <div className="mt-3 flex gap-2 overflow-x-auto max-w-full">
                     {quickImages.map((img, i) => (
                       <button key={i} type="button" onClick={() => setQuickImg(i)}
-                        className={`relative w-14 h-14 shrink-0 rounded-lg overflow-hidden border-2 transition-colors ${i === quickImg ? 'border-primary' : 'border-gray-200 hover:border-gray-300'}`}>
-                        <Image src={img} alt={`${qv.name} ${i + 1}`} fill className="object-cover" sizes="56px" unoptimized />
+                        className={`relative w-12 h-12 shrink-0 rounded-lg overflow-hidden border-2 transition-colors ${i === quickImg ? 'border-primary' : 'border-gray-200 hover:border-gray-300'}`}>
+                        <Image src={img} alt={`${qv.name} ${i + 1}`} fill className="object-cover" sizes="48px" unoptimized />
                       </button>
                     ))}
                   </div>
@@ -541,22 +544,24 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
               </div>
 
               {/* Info */}
-              <div className="p-5 sm:p-6 flex flex-col overflow-y-auto">
-                <div className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{brand}</div>
-                <h3 className="text-base font-bold text-gray-900 leading-snug mb-3">{qv.name}</h3>
-                <div className="flex items-baseline gap-2 mb-3">
-                  <span className="text-xl font-black" style={{ color: primaryColor }}>{formatPrice(displayPrice)}</span>
-                  {qv.salePrice && <span className="text-sm font-medium text-gray-400 line-through">{formatPrice(qv.price)}</span>}
+              <div className="p-5 sm:p-6 flex flex-col justify-between">
+                <div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{brand}</div>
+                  <h3 className="text-base font-bold text-gray-900 leading-snug mb-3">{qv.name}</h3>
+                  <div className="flex items-baseline gap-2 mb-3">
+                    <span className="text-xl font-black" style={{ color: primaryColor }}>{formatPrice(displayPrice)}</span>
+                    {qv.salePrice && <span className="text-sm font-medium text-gray-400 line-through">{formatPrice(qv.price)}</span>}
+                  </div>
+                  {qv.stock === 0 ? (
+                    <p className="text-sm font-semibold text-gray-400 mb-4">Дууссан</p>
+                  ) : (
+                    <p className="text-xs text-emerald-600 mb-4 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      {typeof qv.stock === 'number' ? `Үлдэгдэл: ${qv.stock.toLocaleString('mn-MN')}ш` : 'Бэлэн байгаа'}
+                    </p>
+                  )}
                 </div>
-                {qv.stock === 0 ? (
-                  <p className="text-sm font-semibold text-gray-400 mb-4">Дууссан</p>
-                ) : (
-                  <p className="text-xs text-emerald-600 mb-4 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    {typeof qv.stock === 'number' ? `Үлдэгдэл: ${qv.stock.toLocaleString('mn-MN')}ш` : 'Бэлэн байгаа'}
-                  </p>
-                )}
-                <div className="mt-auto flex flex-col gap-2 pt-2">
+                <div className="flex flex-col gap-2 pt-3 border-t border-gray-100 mt-2">
                   <button
                     type="button"
                     disabled={qv.stock === 0}
@@ -572,10 +577,36 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
                   >
                     Сагсанд нэмэх
                   </button>
-                  <Link href={tenantHref(`/product/${qv.slug || qv.id}`)} onClick={() => setQuickView(null)}
-                    className="w-full py-3 rounded-xl font-bold text-sm border border-gray-200 text-gray-700 hover:border-primary hover:text-primary transition-colors text-center">
-                    Дэлгэрэнгүй харах
-                  </Link>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link href={tenantHref(`/product/${qv.slug || qv.id}`)} onClick={() => setQuickView(null)}
+                      className="py-2.5 rounded-xl font-bold text-xs border border-gray-200 text-gray-700 hover:border-primary hover:text-primary transition-colors text-center flex items-center justify-center">
+                      Дэлгэрэнгүй харах
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const qvImg = resolveUploadUrl(qv.images?.[0]) || resolveUploadUrl((qv as any).image)
+                        toggleCompare({
+                          id: qv.id,
+                          title: qv.name,
+                          slug: qv.slug || qv.id,
+                          image: qvImg,
+                          brand,
+                          price: displayPrice,
+                          oldPrice: qv.salePrice ? qv.price : undefined,
+                        })
+                        setCompareList(readCompare())
+                      }}
+                      className={`py-2.5 rounded-xl font-bold text-xs border transition-colors flex items-center justify-center gap-1.5 ${
+                        compareList.some((x) => x.id === qv.id)
+                          ? 'bg-primary text-white border-primary'
+                          : 'border-gray-200 text-gray-700 hover:border-primary hover:text-primary'
+                      }`}
+                    >
+                      <Scale className="w-3.5 h-3.5" />
+                      <span>{compareList.some((x) => x.id === qv.id) ? 'Харьцуулж байна' : 'Харьцуулах'}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

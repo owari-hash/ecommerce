@@ -115,7 +115,19 @@ export default function CheckoutClient() {
   const tenantHref = useTenantHref();
   const { tenantId, shippingFee, shippingFreeThreshold, branding } = useTenant();
   const [authChecked, setAuthChecked] = useState(false);
+  const stepperRef = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(0); // 0 Сагс · 1 Мэдээлэл · 2 Төлбөр
+
+  const goToStep = (s: number) => {
+    setStep(s);
+    setTimeout(() => {
+      if (stepperRef.current) {
+        stepperRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 0);
+  };
   const [items, setItems] = useState<CartItem[]>([]);
   const [selectedPayment, setSelectedPayment] = useState<string>('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -388,7 +400,7 @@ export default function CheckoutClient() {
 
   // Bottom CTA: cash creates order; QPay manual re-check.
   const handleCta = async () => {
-    if (step < 2) { setStep(step + 1); return; }
+    if (step < 2) { goToStep(step + 1); return; }
     if (selectedPayment === 'cash') {
       await processPaymentWithMethod('cash', undefined, ebarimtType, ebarimtTin || undefined);
     } else if (selectedPayment === 'qpay' && qpayOrderNum) {
@@ -472,7 +484,7 @@ export default function CheckoutClient() {
         <h1 className="text-xl sm:text-2xl font-black text-gray-800">Төлбөр төлөх</h1>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-4 mb-6">
+      <div ref={stepperRef} className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-4 mb-6">
         <Stepper current={step} />
       </div>
 
@@ -742,7 +754,7 @@ export default function CheckoutClient() {
                   {!isProcessing && (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>)}
                 </button>
                 {step > 0 && (
-                  <button onClick={() => setStep(step - 1)} className="w-full mt-2 py-2.5 rounded-xl font-semibold text-sm text-gray-500 hover:bg-gray-50 transition-colors">Буцах</button>
+                  <button onClick={() => goToStep(step - 1)} className="w-full mt-2 py-2.5 rounded-xl font-semibold text-sm text-gray-500 hover:bg-gray-50 transition-colors">Буцах</button>
                 )}
                 {!canAdvance && (
                   <p className="text-center text-xs text-gray-400 mt-2">
