@@ -7,6 +7,7 @@ export type CartItem = {
   price: number;
   oldPrice?: number;
   icon: string;
+  image?: string;
   brand: string;
   quantity: number;
 };
@@ -28,13 +29,15 @@ export function readCart(): CartItem[] {
         const rawOldPrice = typeof x.oldPrice === 'number' ? x.oldPrice : (x.oldPrice ? parseInt(String(x.oldPrice || '').replace(/[^0-9]/g, ''), 10) : undefined);
         const oldPrice = typeof rawOldPrice === 'number' && !isNaN(rawOldPrice) ? rawOldPrice : undefined;
         const quantity = typeof x.quantity === 'number' && x.quantity > 0 ? Math.floor(x.quantity) : 1;
+        const img = String(x.image || x.icon || '');
         return {
           id: String(x.id),
           name: String(x.name),
           slug: String(x.slug || ''),
           price,
           oldPrice,
-          icon: String(x.icon || ''),
+          icon: img,
+          image: img,
           brand: String(x.brand || ''),
           quantity,
         };

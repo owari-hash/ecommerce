@@ -61,6 +61,18 @@ export default function Header() {
     };
   }, []);
 
+  // Reset search bar and menus when navigating between pages
+  useEffect(() => {
+    setSearch('');
+    setDebouncedSearch('');
+    setShowSuggestions(false);
+    setShowMobileSearch(false);
+    setMobileSearch('');
+    setMobileDebouncedSearch('');
+    setMenuOpen(false);
+    setUserMenuOpen(false);
+  }, [pathname]);
+
   useEffect(() => {
     if (!isHome) return;
     const hero = document.getElementById('hero-banner');

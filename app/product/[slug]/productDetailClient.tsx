@@ -149,7 +149,8 @@ export default function ProductDetailClient({ product }: Props) {
     if (product.stock === 0) return;
     const price = parsePrice(product.price);
     const oldPrice = product.oldPrice ? parsePrice(product.oldPrice) : undefined;
-    addToCart({ id: product.id, name: product.name, slug: product.slug, price, oldPrice, icon: product.category, brand: product.brand });
+    const pImg = product.images?.[0] || product.image;
+    addToCart({ id: product.id, name: product.name, slug: product.slug, price, oldPrice, icon: pImg || product.category, image: pImg, brand: product.brand });
     setToastMsg(`${product.name} сагсанд нэмэгдлээ`);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 2000);

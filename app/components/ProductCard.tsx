@@ -80,7 +80,7 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({ id, slug, name, price, oldPrice, icon: category, brand });
+    addToCart({ id, slug, name, price, oldPrice, icon: image || category, image, brand });
     window.dispatchEvent(new Event('cart:changed'));
   };
 

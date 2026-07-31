@@ -14,6 +14,7 @@ import {
 import { useTenantHref } from '../lib/useTenantHref';
 import { useTenant } from '../lib/TenantContext';
 import { restoreSession, readAuth, isLoggedIn } from '../lib/authStore';
+import { resolveUploadUrl } from '../lib/apiClient';
 import ImagePlaceholder from '../components/ImagePlaceholder';
 
 const paymentMethods = [
@@ -430,41 +431,53 @@ export default function CheckoutClient() {
                 )}
               </div>
               <div className="divide-y divide-gray-100">
-                {items.map((item) => (
-                  <div key={item.id} className="p-3 sm:p-4 flex gap-3 sm:gap-4">
-                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0">
-                      <ImagePlaceholder />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-1.5">
-                        <div className="min-w-0">
-                          <Link href={tenantHref(`/product/${item.slug}`)} className="block text-sm font-bold text-gray-900 hover:text-primary transition-colors line-clamp-2">
-                            {item.name}
-                          </Link>
-                          <p className="text-xs text-gray-500 mt-0.5 truncate">{item.brand}</p>
-                        </div>
-                        <button onClick={() => handleRemove(item.id)} className="text-gray-400 hover:text-primary transition-colors p-0.5 shrink-0" title="Устгах">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
+                {items.map((item) => {
+                  const imgUrl = resolveUploadUrl(item.image || item.icon);
+                  return (
+                    <div key={item.id} className="p-3 sm:p-4 flex gap-3 sm:gap-4">
+                      <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 border border-gray-100 flex items-center justify-center">
+                        {imgUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={imgUrl}
+                            alt={item.name}
+                            className="w-full h-full object-contain p-1"
+                          />
+                        ) : (
+                          <ImagePlaceholder />
+                        )}
                       </div>
-                      <div className="mt-2.5 flex items-center justify-between gap-2">
-                        <div className="flex items-center border border-gray-200 rounded-lg p-0.5 shrink-0">
-                          <button onClick={() => handleQuantityChange(item.id, -1)} className="w-6 h-6 sm:w-7 sm:h-7 rounded-md flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-primary transition-colors">−</button>
-                          <span className="w-6 sm:w-8 text-center text-sm font-semibold">{item.quantity}</span>
-                          <button onClick={() => handleQuantityChange(item.id, 1)} className="w-6 h-6 sm:w-7 sm:h-7 rounded-md flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-primary transition-colors">+</button>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-1.5">
+                          <div className="min-w-0">
+                            <Link href={tenantHref(`/product/${item.slug}`)} className="block text-sm font-bold text-gray-900 hover:text-primary transition-colors line-clamp-2">
+                              {item.name}
+                            </Link>
+                            <p className="text-xs text-gray-500 mt-0.5 truncate">{item.brand}</p>
+                          </div>
+                          <button onClick={() => handleRemove(item.id)} className="text-gray-400 hover:text-primary transition-colors p-0.5 shrink-0" title="Устгах">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
                         </div>
-                        <div className="text-right min-w-0">
-                          <div className="text-sm font-bold text-gray-900 whitespace-nowrap">{formatPrice(item.price * item.quantity)}</div>
-                          {item.oldPrice && (
-                            <div className="text-[11px] text-gray-400 line-through whitespace-nowrap">{formatPrice(item.oldPrice * item.quantity)}</div>
-                          )}
+                        <div className="mt-2.5 flex items-center justify-between gap-2">
+                          <div className="flex items-center border border-gray-200 rounded-lg p-0.5 shrink-0">
+                            <button onClick={() => handleQuantityChange(item.id, -1)} className="w-6 h-6 sm:w-7 sm:h-7 rounded-md flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-primary transition-colors">−</button>
+                            <span className="w-6 sm:w-8 text-center text-sm font-semibold">{item.quantity}</span>
+                            <button onClick={() => handleQuantityChange(item.id, 1)} className="w-6 h-6 sm:w-7 sm:h-7 rounded-md flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-primary transition-colors">+</button>
+                          </div>
+                          <div className="text-right min-w-0">
+                            <div className="text-sm font-bold text-gray-900 whitespace-nowrap">{formatPrice(item.price * item.quantity)}</div>
+                            {item.oldPrice && (
+                              <div className="text-[11px] text-gray-400 line-through whitespace-nowrap">{formatPrice(item.oldPrice * item.quantity)}</div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
