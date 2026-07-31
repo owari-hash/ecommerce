@@ -516,9 +516,9 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
         const brand = (qv.brandId && qv.brandId !== 'br1') ? qv.brandId : tenantName
         const displayPrice = qv.salePrice ?? qv.price
         return (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" onClick={() => setQuickView(null)}>
+          <div className="fixed inset-0 z-[200]" onClick={() => setQuickView(null)}>
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto grid grid-cols-1 sm:grid-cols-2" onClick={(e) => e.stopPropagation()}>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl grid grid-cols-1 sm:grid-cols-2" onClick={(e) => e.stopPropagation()}>
               <button
                 type="button"
                 onClick={() => setQuickView(null)}

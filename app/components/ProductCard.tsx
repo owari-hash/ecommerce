@@ -192,12 +192,14 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
       {/* Quick view modal (portal — kept out of the <a> DOM tree) */}
       {mounted && quickOpen && createPortal(
         <div
-          className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+          className="fixed inset-0 z-[200]"
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); setQuickOpen(false); }}
         >
+          {/* Backdrop */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          {/* Modal — always centered via translate, unaffected by scroll or parent transforms */}
           <div
-            className="relative bg-white rounded-3xl shadow-2xl ring-1 ring-black/5 w-full max-w-2xl max-h-[90vh] overflow-y-auto grid grid-cols-1 sm:grid-cols-2"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl ring-1 ring-black/5 grid grid-cols-1 sm:grid-cols-2"
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
           >
             <button
