@@ -110,10 +110,15 @@ export default async function RootLayout({
     --font-body: '${config.branding.font}', sans-serif;
   `;
 
+  const logo = resolveUploadUrl(config?.branding?.logo) || "/logo.png";
+
   return (
     <html lang="mn" className={roboto.variable}>
       <head>
         <style>{`:root { ${cssVars} }`}</style>
+        <link rel="icon" href={logo} />
+        <link rel="shortcut icon" href={logo} />
+        <link rel="apple-touch-icon" href={logo} />
       </head>
       <body className="min-h-screen flex flex-col bg-[#faf8f5] overflow-x-clip">
         <TenantProvider config={config}>

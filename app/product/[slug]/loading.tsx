@@ -38,13 +38,13 @@ export default function Loading() {
               <Sk className="h-3 w-32 rounded" />
             </div>
 
-            {/* Stars */}
-            <div className="flex items-center gap-1.5">
+            {/* Stars (Hidden) */}
+            {/* <div className="flex items-center gap-1.5">
               {Array.from({ length: 5 }).map((_, i) => (
                 <Sk key={i} className="w-4 h-4 rounded" />
               ))}
               <Sk className="h-3 w-10 rounded ml-1" />
-            </div>
+            </div> */}
 
             {/* Price box */}
             <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 space-y-3">

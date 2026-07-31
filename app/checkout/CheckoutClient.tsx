@@ -43,6 +43,34 @@ function formatPrice(price: number | undefined | null): string {
   return num.toLocaleString('mn-MN') + '₮';
 }
 
+function CartItemThumbnail({ image, icon }: { image?: string; icon?: string }) {
+  const [failed, setFailed] = useState(false);
+
+  const raw = image || icon || '';
+  const isImageFile =
+    raw.startsWith('/upload/') ||
+    raw.startsWith('http://') ||
+    raw.startsWith('https://') ||
+    raw.startsWith('data:') ||
+    raw.startsWith('blob:');
+
+  const resolved = isImageFile ? resolveUploadUrl(raw) : null;
+
+  if (failed || !resolved) {
+    return <ImagePlaceholder />;
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={resolved}
+      alt=""
+      className="w-full h-full object-contain p-1"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 /** Horizontal checkout progress indicator. */
 function Stepper({ current }: { current: number }) {
   const steps = ['Сагс', 'Захиалгын мэдээлэл', 'Төлбөр төлөх'];
@@ -431,22 +459,11 @@ export default function CheckoutClient() {
                 )}
               </div>
               <div className="divide-y divide-gray-100">
-                {items.map((item) => {
-                  const imgUrl = resolveUploadUrl(item.image || item.icon);
-                  return (
-                    <div key={item.id} className="p-3 sm:p-4 flex gap-3 sm:gap-4">
-                      <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 border border-gray-100 flex items-center justify-center">
-                        {imgUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={imgUrl}
-                            alt={item.name}
-                            className="w-full h-full object-contain p-1"
-                          />
-                        ) : (
-                          <ImagePlaceholder />
-                        )}
-                      </div>
+                {items.map((item) => (
+                  <div key={item.id} className="p-3 sm:p-4 flex gap-3 sm:gap-4">
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 border border-gray-100 flex items-center justify-center">
+                      <CartItemThumbnail image={item.image} icon={item.icon} />
+                    </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-1.5">
                           <div className="min-w-0">
@@ -476,8 +493,7 @@ export default function CheckoutClient() {
                         </div>
                       </div>
                     </div>
-                  );
-                })}
+                  ))}
               </div>
             </div>
           )}
