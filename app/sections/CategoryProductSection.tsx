@@ -424,6 +424,8 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
     else updateQuantity(id, next)
   }
 
+  const [allCategories, setAllCategories] = useState<Category[]>([])
+
   useEffect(() => {
     Promise.all([
       fetch(`/api/categories/public?tenantId=${tenantId}`).then((r) => r.json()),
@@ -431,11 +433,12 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
     ])
       .then(([catBody, prodBody]) => {
         if (catBody?.data) {
-          const allCats = catBody.data.filter((c: Category) => c.status === 'active' && !c.parentId)
+          const activeCats = catBody.data.filter((c: Category) => c.status === 'active')
+          setAllCategories(activeCats)
           if (categoryId) {
-            setCategories(allCats.filter((c: Category) => c.id === categoryId))
+            setCategories(activeCats.filter((c: Category) => c.id === categoryId))
           } else {
-            setCategories(allCats)
+            setCategories(activeCats.filter((c: Category) => !c.parentId))
           }
         }
         if (prodBody?.data) setProducts(prodBody.data.filter((p: Product) => p.status === 'active' || !p.status))
@@ -473,10 +476,14 @@ export default function CategoryProductSection({ categoryId }: { categoryId?: st
   }
 
   const categoriesWithProducts = categories
-    .map((cat) => ({
-      cat,
-      items: products.filter((p) => p.categoryId === cat.id && (p.stock ?? 1) > 0).slice(0, 24),
-    }))
+    .map((cat) => {
+      const childCatIds = allCategories.filter((c) => c.parentId === cat.id).map((c) => c.id)
+      const targetCatIds = new Set([cat.id, ...childCatIds])
+      return {
+        cat,
+        items: products.filter((p) => targetCatIds.has(p.categoryId) && (p.stock ?? 1) > 0).slice(0, 24),
+      }
+    })
     .filter(({ items }) => items.length > 0)
 
   if (categoriesWithProducts.length === 0) return null

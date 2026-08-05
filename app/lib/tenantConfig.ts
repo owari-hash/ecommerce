@@ -3,6 +3,7 @@ import { cache } from 'react'
 export interface TenantBranding {
   name?: string
   logo: string
+  favicon?: string
   primaryColor: string
   secondaryColor?: string
   accentColor?: string

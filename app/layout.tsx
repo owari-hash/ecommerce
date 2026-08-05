@@ -29,6 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const tenantName = config?.branding?.name || "Дэлгүүр";
   const logo = resolveUploadUrl(config?.branding?.logo) || "/logo.png";
+  const faviconUrl = resolveUploadUrl(config?.branding?.favicon) || logo;
 
   return {
     // `%s | <tenant>` so each route's own title shows with the tenant name;
@@ -39,9 +40,9 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: config?.branding?.description || "Бүх төрлийн бараа, хэрэгсэл",
     icons: {
-      icon: logo,
-      shortcut: logo,
-      apple: logo,
+      icon: faviconUrl,
+      shortcut: faviconUrl,
+      apple: faviconUrl,
     },
   };
 }
@@ -111,14 +112,15 @@ export default async function RootLayout({
   `;
 
   const logo = resolveUploadUrl(config?.branding?.logo) || "/logo.png";
+  const faviconUrl = resolveUploadUrl(config?.branding?.favicon) || logo;
 
   return (
     <html lang="mn" className={roboto.variable}>
       <head>
         <style>{`:root { ${cssVars} }`}</style>
-        <link rel="icon" href={logo} />
-        <link rel="shortcut icon" href={logo} />
-        <link rel="apple-touch-icon" href={logo} />
+        <link rel="icon" href={faviconUrl} />
+        <link rel="shortcut icon" href={faviconUrl} />
+        <link rel="apple-touch-icon" href={faviconUrl} />
       </head>
       <body className="min-h-screen flex flex-col bg-[#faf8f5] overflow-x-clip">
         <TenantProvider config={config}>
