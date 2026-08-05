@@ -70,6 +70,8 @@ export default function ProductDetailClient({ product }: Props) {
   }, [product.id]);
 
   const logoFallback = resolveProductImageUrl(branding.logo);
+  const isId = (s?: string) => !s || s === 'br1' || /^[0-9a-fA-F]{24}$/.test(s) || /^br\d+$/i.test(s);
+  const displayBrand = !isId(product.brand) ? product.brand : (branding?.name ?? '');
 
   const images = useMemo(() => {
     if (product.images && product.images.length > 0) {
@@ -148,12 +150,18 @@ export default function ProductDetailClient({ product }: Props) {
   const handleAddToCart = () => {
     if (product.stock === 0) return;
     const price = parsePrice(product.price);
-    const oldPrice = product.oldPrice ? parsePrice(product.oldPrice) : undefined;
-    const pImg = product.images?.[0] || product.image;
-    addToCart({ id: product.id, name: product.name, slug: product.slug, price, oldPrice, icon: pImg || product.category, image: pImg, brand: product.brand });
-    setToastMsg(`${product.name} сагсанд нэмэгдлээ`);
+    addToCart({ id: product.id, slug: product.slug, name: product.name, price, icon: product.image || product.category, image: product.image, brand: displayBrand });
+    window.dispatchEvent(new Event('cart:changed'));
+    setToastMsg('Сагсанд нэмэгдлээ');
     setShowToast(true);
     setTimeout(() => setShowToast(false), 2000);
+  };
+
+  const handleToggleCompare = () => {
+    const price = parsePrice(product.price);
+    const oldPrice = product.oldPrice ? parsePrice(product.oldPrice) : undefined;
+    const next = toggleCompare({ id: product.id, title: product.name, slug: product.slug, image: product.image, brand: displayBrand, price, oldPrice });
+    setInCompare(next.some((x) => x.id === product.id));
   };
 
   return (
@@ -178,7 +186,7 @@ export default function ProductDetailClient({ product }: Props) {
                     fill
                     className={`object-contain p-2 ${images[imgIdx].isLogo ? 'opacity-20' : ''}`}
                     sizes="(max-width:768px) 100vw, 50vw"
-                    unoptimized={true}
+                    quality={92}
                   />
                 ) : (
                   <div className="select-none"><CategoryIcon className="w-24 h-24 sm:w-28 sm:h-28 text-gray-300" strokeWidth={1.2} /></div>
@@ -253,7 +261,7 @@ export default function ProductDetailClient({ product }: Props) {
                 >
                   <div className="relative h-full w-full flex items-center justify-center">
                     {img.isImage ? (
-                      <Image src={img.src} alt={img.alt} fill className={`object-contain p-1 ${img.isLogo ? 'opacity-20' : ''}`} sizes="64px" unoptimized={true} />
+                      <Image src={img.src} alt={img.alt} fill className={`object-contain p-1 ${img.isLogo ? 'opacity-20' : ''}`} sizes="128px" quality={90} />
                     ) : (
                       <CategoryIcon className="w-6 h-6 text-gray-400" strokeWidth={1.4} />
                     )}
@@ -302,7 +310,7 @@ export default function ProductDetailClient({ product }: Props) {
                       className="relative w-full h-full"
                       style={{ transform: `scale(${zoom.scale}) rotate(${zoom.rot}deg) scaleX(${zoom.flipX ? -1 : 1}) scaleY(${zoom.flipY ? -1 : 1})`, transition: 'transform 120ms ease-out' }}
                     >
-                      <Image src={images[imgIdx].src} alt={images[imgIdx].alt} fill className={`object-contain ${images[imgIdx].isLogo ? 'opacity-20' : ''}`} sizes="95vw" unoptimized={true} />
+                      <Image src={images[imgIdx].src} alt={images[imgIdx].alt} fill className={`object-contain ${images[imgIdx].isLogo ? 'opacity-20' : ''}`} sizes="100vw" quality={92} />
                     </div>
                   ) : (
                     <div
@@ -324,6 +332,8 @@ export default function ProductDetailClient({ product }: Props) {
                     className="flex items-center gap-1.5 border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-50"><FlipHorizontal className="w-3.5 h-3.5" strokeWidth={2} /> Flip X</button>
                   <button onClick={() => setZoom(z => ({ ...z, flipY: !z.flipY }))}
                     className="flex items-center gap-1.5 border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-50"><FlipVertical className="w-3.5 h-3.5" strokeWidth={2} /> Flip Y</button>
+                  <button onClick={() => setZoom({ scale: 1, rot: 0, flipX: false, flipY: false })}
+                    className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-50">Шинэчлэх</button>
                 </div>
               </div>
             </div>
@@ -335,10 +345,12 @@ export default function ProductDetailClient({ product }: Props) {
           {/* Brand + Title + Share */}
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <Link href={`/search?q=${encodeURIComponent(product.brand)}`}
-                className="inline-block text-xs font-bold text-primary uppercase tracking-wide mb-1 hover:underline">
-                {product.brand}
-              </Link>
+              {displayBrand ? (
+                <Link href={`/search?q=${encodeURIComponent(displayBrand)}`}
+                  className="inline-block text-xs font-bold text-primary uppercase tracking-wide mb-1 hover:underline">
+                  {displayBrand}
+                </Link>
+              ) : null}
               <h1 className="text-lg sm:text-2xl font-black text-gray-900 leading-tight">{product.name}</h1>
               <div className="mt-1 text-xs text-gray-400">{product.categoryLabel}</div>
             </div>

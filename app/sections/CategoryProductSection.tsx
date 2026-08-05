@@ -233,7 +233,8 @@ function CategoryRow({
         >
           {items.map((p) => {
             const img = resolveUploadUrl(p.images?.[0])
-            const brand = (p.brandId && p.brandId !== 'br1') ? p.brandId : tenantName
+            const isId = (s?: string) => !s || s === 'br1' || /^[0-9a-fA-F]{24}$/.test(s) || /^br\d+$/i.test(s)
+            const brand = !isId(p.brandId) ? p.brandId : (!isId((p as any).brandName) ? (p as any).brandName : tenantName)
             const isOnSale = !!p.salePrice
             const displayPrice = p.salePrice ?? p.price
 
@@ -251,7 +252,8 @@ function CategoryRow({
                       alt={p.name}
                       fill
                       className={`object-cover group-hover:scale-105 transition-transform duration-300 ${p.stock === 0 ? 'grayscale opacity-60' : ''}`}
-                      sizes="(min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw"
+                      sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
+                      quality={90}
                     />
                   ) : (
                     <ImagePlaceholder />
@@ -283,7 +285,7 @@ function CategoryRow({
                 </div>
 
                 <div className="p-2.5 flex flex-col flex-1">
-                  <p className="text-[10px] text-gray-400 font-medium truncate">{brand}</p>
+                  {brand ? <p className="text-[10px] text-gray-400 font-medium truncate">{brand}</p> : null}
                   <p className="text-[11px] sm:text-xs font-bold text-gray-800 leading-tight mt-0.5 line-clamp-2 flex-1">{p.name}</p>
                   <div className="mt-1.5 flex items-baseline gap-1.5">
                     <span className="text-xs sm:text-sm font-black" style={{ color: primaryColor }}>

@@ -31,9 +31,19 @@ function resolveProductImageUrl(url: string | undefined) {
   return resolveUploadUrl(url);
 }
 
+function cleanBrandName(b?: string, fallback?: string): string {
+  if (!b) return fallback || '';
+  const s = String(b).trim();
+  if (!s || s === 'br1' || /^[0-9a-fA-F]{24}$/.test(s) || /^br\d+$/i.test(s)) {
+    return fallback || '';
+  }
+  return s;
+}
+
 export default function ProductCard({ id, slug, name, brand, category, price, oldPrice, isNew, image, stock }: Props) {
   const tenantHref = useTenantHref();
   const { branding } = useTenant();
+  const displayBrand = cleanBrandName(brand, branding.name);
   const discountPct = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
   const [inCompare, setInCompare] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
@@ -67,7 +77,7 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
   const handleCompare = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const next = toggleCompare({ id, title: name, slug, image: resolvedImage, brand, price, oldPrice });
+    const next = toggleCompare({ id, title: name, slug, image: resolvedImage, brand: displayBrand, price, oldPrice });
     setInCompare(next.some((x) => x.id === id));
   };
 
@@ -80,7 +90,7 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({ id, slug, name, price, oldPrice, icon: image || category, image, brand });
+    addToCart({ id, slug, name, price, oldPrice, icon: image || category, image, brand: displayBrand });
     window.dispatchEvent(new Event('cart:changed'));
   };
 
@@ -97,8 +107,8 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
             alt={name}
             fill
             className={`object-cover group-hover:scale-105 transition-transform duration-300 ${stock === 0 ? 'grayscale opacity-60' : ''}`}
-            sizes="(max-width:640px) 50vw, (max-width:1280px) 25vw, 20vw"
-            unoptimized={true}
+            sizes="(max-width:640px) 50vw, (max-width:1280px) 33vw, 25vw"
+            quality={90}
           />
         ) : fallbackImage ? (
           <div className="w-full h-full flex items-center justify-center bg-gray-50 p-6">
@@ -107,8 +117,8 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
               alt={branding.name ?? 'Logo'}
               fill
               className={`object-contain opacity-25 ${stock === 0 ? 'grayscale opacity-40' : ''}`}
-              sizes="(max-width:640px) 50vw, (max-width:1280px) 25vw, 20vw"
-              unoptimized={true}
+              sizes="(max-width:640px) 50vw, (max-width:1280px) 33vw, 25vw"
+              quality={90}
             />
           </div>
         ) : (
@@ -171,7 +181,9 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
         >
           {name}
         </div>
-        <div className="text-[10px] md:text-[11px] text-gray-400 truncate">{brand}</div>
+        {displayBrand ? (
+          <div className="text-[10px] md:text-[11px] text-gray-400 truncate">{displayBrand}</div>
+        ) : null}
         <div className="flex items-baseline gap-1.5 mt-1">
           <span className={`text-xs md:text-sm font-black ${oldPrice ? 'text-primary' : 'text-gray-900'}`}>{formatPrice(price)}</span>
           {oldPrice && (
@@ -217,7 +229,7 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
             <div className="relative h-52 sm:h-auto sm:min-h-[280px] bg-gradient-to-br from-gray-50 to-gray-100/60 flex items-center justify-center p-6">
               {previewImage ? (
                 <div className="relative w-full h-full rounded-2xl bg-white shadow-sm overflow-hidden">
-                  <Image src={previewImage} alt={name} fill className="object-contain p-6" sizes="(max-width:640px) 100vw, 360px" unoptimized />
+                  <Image src={previewImage} alt={name} fill className="object-contain p-6" sizes="(max-width:640px) 100vw, 500px" quality={90} />
                 </div>
               ) : (
                 <CategoryIcon className="w-16 h-16 text-gray-300" strokeWidth={1.4} />
@@ -229,9 +241,11 @@ export default function ProductCard({ id, slug, name, brand, category, price, ol
 
             {/* Details */}
             <div className="p-6 sm:p-7 flex flex-col">
-              <span className="inline-flex self-start items-center bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full mb-3">
-                {brand}
-              </span>
+              {displayBrand ? (
+                <span className="inline-flex self-start items-center bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full mb-3">
+                  {displayBrand}
+                </span>
+              ) : null}
               <h3 className="text-lg font-black text-gray-900 leading-snug mb-3">{name}</h3>
               <div className="flex items-baseline gap-2 mb-3">
                 <span className="text-2xl font-black text-gray-900">{formatPrice(price)}</span>

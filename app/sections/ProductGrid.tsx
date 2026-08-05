@@ -39,12 +39,12 @@ export default function ProductGrid({
     fetch(`/api/products/public?tenantId=${tenantId}`)
       .then((res) => res.json())
       .then((body) => {
-        if (body && body.data) {
+          const isId = (s?: string) => !s || s === 'br1' || /^[0-9a-fA-F]{24}$/.test(s) || /^br\d+$/i.test(s);
           const mapped = body.data.map((p: any) => ({
             id: p.id,
             slug: p.slug,
             name: p.name,
-            brand: (p.brandId && p.brandId !== 'br1') ? p.brandId : tenantName,
+            brand: !isId(p.brandId) ? p.brandId : (!isId(p.brandName) ? p.brandName : tenantName),
             category: p.categoryId,
             price: p.salePrice ? p.salePrice : p.price,
             oldPrice: p.salePrice ? p.price : undefined,
