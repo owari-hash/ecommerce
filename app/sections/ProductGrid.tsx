@@ -39,6 +39,7 @@ export default function ProductGrid({
     fetch(`/api/products/public?tenantId=${tenantId}`)
       .then((res) => res.json())
       .then((body) => {
+        if (body && body.data) {
           const isId = (s?: string) => !s || s === 'br1' || /^[0-9a-fA-F]{24}$/.test(s) || /^br\d+$/i.test(s);
           const mapped = body.data.map((p: any) => ({
             id: p.id,
@@ -52,13 +53,13 @@ export default function ProductGrid({
             isSale: p.salePrice ? true : false,
             image: resolveUploadUrl(p.images?.[0]) || '',
             stock: p.stock,
-          }))
-          setProducts(mapped)
+          }));
+          setProducts(mapped);
         }
       })
       .catch((err) => console.error('Failed to fetch products', err))
-      .finally(() => setLoading(false))
-  }, [tenantId])
+      .finally(() => setLoading(false));
+  }, [tenantId]);
 
   if (loading) {
     return (
